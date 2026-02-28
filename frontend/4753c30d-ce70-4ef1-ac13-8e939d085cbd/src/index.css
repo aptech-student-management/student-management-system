@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  --color-admin: #1e40af;
+  --color-lecturer: #0d9488;
+  --color-student: #0284c7;
+  --sidebar-width: 260px;
+  --header-height: 64px;
+}
+* {
+  box-sizing: border-box;
+}
+html, body {
+  height: 100%;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+#root {
+  height: 100%;
+}
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+/* Table responsive wrapper */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* Smooth transitions */
+.sidebar-transition {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Grade input */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+/* Focus ring */
+.focus-ring:focus {
+  outline: 2px solid var(--color-admin);
+  outline-offset: 2px;
+}
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+}
+/* Toast container */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+.toast-item {
+  pointer-events: all;
+  animation: toastIn 0.3s ease-out;
+}
+@keyframes toastIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes toastOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+.toast-exit {
+  animation: toastOut 0.3s ease-in forwards;
+}
+/* Schedule grid */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(6, 1fr);
+}
+/* Attendance radio */
+.attendance-radio:checked + label {
+  font-weight: 600;
+}
+/* Recharts custom */
+.recharts-tooltip-wrapper {
+  outline: none;
+}
