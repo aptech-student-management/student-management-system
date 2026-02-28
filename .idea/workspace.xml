@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c2769300-2281-4abe-9779-fbd67a4b8da8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/backend/student_management/.gitattributes" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/build.gradle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/gradlew" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/gradlew.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/settings.gradle" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/StudentManagementApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/auth/controller/AuthController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/auth/controller/TestController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/auth/dto/JwtResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/auth/dto/LoginRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/auth/dto/RegisterRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/auth/service/AuthService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/auth/service/RefreshTokenService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/config/CorsConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/config/SecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/entity/ClassEntity.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/entity/Department.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/entity/RefreshToken.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/entity/Role.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/entity/User.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/entity/UserStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/repository/RefreshTokenRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/repository/UserRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/security/AuthEntryPointJwt.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/security/CustomUserDetailsService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/security/JwtAuthenticationFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/java/com/example/student_management/security/JwtUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/main/resources/application.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/student_management/src/test/java/com/example/student_management/StudentManagementApplicationTests.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/student-management-frontend/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/api/axiosClient.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/contexts/AuthContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/index.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/services/authService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/student_management/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.gitkeep" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/sms/backend/SmsBackendApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/sms/backend/SmsBackendApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/.eslintrc.cjs" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/.eslintrc.cjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/postcss.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/postcss.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/layout/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/layout/Header.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/layout/Layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/layout/Layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/layout/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/layout/Sidebar.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/Badge.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/Badge.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/Button.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/Button.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/Card.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/Card.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/Input.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/Input.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/Modal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/Modal.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/Pagination.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/Pagination.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/Select.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/Select.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/StatCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/StatCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/components/ui/Table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/components/ui/Table.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/contexts/AuthContext.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/contexts/ToastContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/contexts/ToastContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/data/mockData.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/data/mockData.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/index.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/LoginPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/LoginPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/RegisterPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/RegisterPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/admin/AdminDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/admin/AdminDashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/admin/AuditLog.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/admin/AuditLog.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/admin/ClassManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/admin/ClassManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/admin/DepartmentManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/admin/DepartmentManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/admin/SemesterManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/admin/SemesterManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/admin/SubjectManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/admin/SubjectManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/admin/UserManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/admin/UserManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/lecturer/AttendanceManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/lecturer/AttendanceManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/lecturer/GradeManagement.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/lecturer/GradeManagement.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/lecturer/LecturerDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/lecturer/LecturerDashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/lecturer/MyClasses.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/lecturer/MyClasses.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/shared/ProfilePage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/shared/ProfilePage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/student/CourseRegistration.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/student/CourseRegistration.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/student/Schedule.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/student/Schedule.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/student/StudentDashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/student/StudentDashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/pages/student/Transcript.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/pages/student/Transcript.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/src/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/src/types/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/tailwind.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/tailwind.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/tsconfig.node.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/tsconfig.node.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/4753c30d-ce70-4ef1-ac13-8e939d085cbd/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/student-management-frontend/vite.config.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="3AI59hq8uy2LYLdk6smhWNBfLCz" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "show.migrate.to.gradle.popup": "false"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c2769300-2281-4abe-9779-fbd67a4b8da8" name="Changes" comment="" />
+      <created>1772267098826</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1772267098826</updated>
+    </task>
+    <servers />
+  </component>
+</project>
