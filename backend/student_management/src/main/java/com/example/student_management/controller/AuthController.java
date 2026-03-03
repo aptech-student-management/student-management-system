@@ -2,6 +2,7 @@ package com.example.student_management.auth.controller;
 
 import com.example.student_management.auth.dto.*;
 import com.example.student_management.auth.service.AuthService;
+import com.example.student_management.repository.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,17 @@ public class AuthController {
 
         return ResponseEntity.ok(
                 authService.login(request)
+        );
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<?> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        authService.changePassword(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(null, "Đổi mật khẩu thành công")
         );
     }
 }
