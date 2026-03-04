@@ -1,14 +1,19 @@
-package com.example.student_management.auth.service;
+package com.example.student_management.service;
 
-import com.example.student_management.auth.dto.*;
+import com.example.student_management.dto.*;
+import com.example.student_management.entity.RefreshToken;
 import com.example.student_management.entity.User;
 import com.example.student_management.repository.UserRepository;
 import com.example.student_management.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 
 @Service
 @RequiredArgsConstructor
@@ -18,16 +23,35 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
+
+    public boolean checkEmailExists(String email) {
+
+        String normalizedEmail = normalizeEmail(email);
+
+        if (normalizedEmail == null || normalizedEmail.isBlank()) {
+            throw badRequest("Email không được để trống");
+        }
+
+        return userRepository.existsByEmail(normalizedEmail);
+    }
+
+    //register
 
     public void register(RegisterRequest request) {
 
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email exists");
+        String email = request.getEmail().trim().toLowerCase();
+
+        if (userRepository.existsByEmail(email)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Email đã tồn tại"
+            );
         }
 
         User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
+                .name(request.getName().trim())
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .build();
@@ -35,39 +59,57 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    //login
+
     public JwtResponse login(LoginRequest request) {
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (AuthenticationException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Email hoặc mật khẩu không đúng"
+            );
+        }
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Người dùng không tồn tại"
+                        )
+                );
 
-        String token = jwtUtil.generateToken(
+        String accessToken = jwtUtil.generateToken(
                 user.getEmail(),
                 user.getRole().name()
         );
 
-        return new JwtResponse(token);
+        RefreshToken refreshToken =
+                refreshTokenService.createRefreshToken(user.getEmail());
+
+        return new JwtResponse(
+                accessToken,
+                refreshToken.getToken()
+        );
     }
 
-    public void changePassword(ChangePasswordRequest request) {
+    //util
 
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+    private String normalizeEmail(String email) {
+        return email == null ? null : email.trim().toLowerCase();
+    }
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow();
+    private String safeTrim(String value) {
+        return value == null ? null : value.trim();
+    }
 
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Mật khẩu cũ không đúng");
-        }
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+    private ResponseStatusException badRequest(String message) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }
 }

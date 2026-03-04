@@ -1,13 +1,22 @@
-package com.example.student_management.auth.controller;
+package com.example.student_management.controller;
 
-import com.example.student_management.auth.dto.*;
-import com.example.student_management.auth.service.AuthService;
-import com.example.student_management.repository.ApiResponse;
+import com.example.student_management.dto.*;
+import com.example.student_management.entity.BlacklistedToken;
+import com.example.student_management.entity.RefreshRequest;
+import com.example.student_management.entity.RefreshToken;
+import com.example.student_management.repository.UserRepository;
+import com.example.student_management.service.AuthService;
+import com.example.student_management.service.RefreshTokenService;
+import com.example.student_management.repository.RefreshTokenRepository;
+import com.example.student_management.repository.BlacklistedTokenRepository;
+import com.example.student_management.security.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -15,32 +24,79 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final BlacklistedTokenRepository blacklistedTokenRepository;
+    private final JwtUtil jwtUtil;
+    private UserRepository userService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(
             @Valid @RequestBody RegisterRequest request) {
 
         authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(201).build();
     }
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(
-            @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request) {
+
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<JwtResponse> refresh(@RequestBody RefreshRequest request) {
+
+        RefreshToken refreshToken = refreshTokenRepository
+                .findByToken(request.getRefreshToken())
+                .orElseThrow(() ->
+                        new RuntimeException("Refresh token không tồn tại"));
+
+        refreshTokenService.verifyExpiration(refreshToken);
+
+        String newAccessToken = jwtUtil.generateToken(
+                refreshToken.getUser().getEmail(),
+                refreshToken.getUser().getRole().name()
+        );
 
         return ResponseEntity.ok(
-                authService.login(request)
+                new JwtResponse(newAccessToken, refreshToken.getToken())
         );
     }
 
-    @PutMapping("/me/password")
-    public ResponseEntity<?> changePassword(
-            @Valid @RequestBody ChangePasswordRequest request) {
+//    @PostMapping("/logout")
+//    public ResponseEntity<?> logout(HttpServletRequest request) {
+//
+//        String token = extractToken(request);
+//
+//        blacklistedTokenRepository.save(
+//                BlacklistedToken.builder()
+//                        .token(token)
+//                        .expiryDate(jwtUtil.extractExpiration(token).toInstant())
+//                        .build()
+//        );
+//
+//        return ResponseEntity.ok().build();
+//    }
 
-        authService.changePassword(request);
+    private String extractToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+        return null;
+    }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmail(
+            @RequestParam String email
+    ) {
+        boolean exists = authService.checkEmailExists(email);
 
         return ResponseEntity.ok(
-                ApiResponse.success(null, "Đổi mật khẩu thành công")
+                Map.of("exists", exists)
         );
     }
+
 }

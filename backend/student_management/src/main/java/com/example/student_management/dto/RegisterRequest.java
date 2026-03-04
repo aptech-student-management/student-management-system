@@ -1,10 +1,12 @@
-package com.example.student_management.auth.dto;
+package com.example.student_management.dto;
 
 
 import jakarta.validation.constraints.*;
 
 import com.example.student_management.entity.Role;
+import lombok.Data;
 
+@Data
 public class RegisterRequest {
 
     @NotBlank(message = "Họ tên không được để trống")
@@ -36,60 +38,4 @@ public class RegisterRequest {
     private String phone;
 
     private String studentId;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public com.example.student_management.entity.Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public String getDepartmentId() {
-        return departmentId;
-    }
-
-    public void setDepartmentId(String departmentId) {
-        this.departmentId = departmentId;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
 }

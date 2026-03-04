@@ -34,4 +34,6 @@ public class User {
 
     @Builder.Default
     private Instant createdAt = Instant.now();
+
+    private String avatarUrl;
 }

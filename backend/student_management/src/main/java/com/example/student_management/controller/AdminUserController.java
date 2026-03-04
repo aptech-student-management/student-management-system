@@ -1,6 +1,6 @@
-package com.example.student_management.auth.controller;
+package com.example.student_management.controller;
 
-import com.example.student_management.auth.service.UserService;
+import com.example.student_management.service.UserService;
 import com.example.student_management.repository.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

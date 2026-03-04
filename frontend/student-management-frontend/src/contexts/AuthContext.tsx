@@ -36,41 +36,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
+const login = useCallback(async (email: string, password: string) => {
+  try {
+    setIsLoading(true);
 
-      const res = await loginApi(email, password);
+    const res = await loginApi(email, password);
 
-      const { accessToken } = res.data;
+    const { accessToken } = res.data;
 
-      // decode JWT để lấy role/email nếu muốn
-      const payload = JSON.parse(atob(accessToken.split(".")[1]));
+    const payload = JSON.parse(atob(accessToken.split(".")[1]));
 
-      const user: User = {
-        email: payload.sub,
-        role: payload.role
-      } as User;
+    const user: User = {
+      email: payload.sub,
+      role: payload.role
+    } as User;
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("uni_user", JSON.stringify(user));
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("uni_user", JSON.stringify(user));
 
-      setCurrentUser(user);
-      setIsLoading(false);
+    setCurrentUser(user);
+    setIsLoading(false);
 
-      return { success: true };
+    return { success: true };
 
-    } catch (error: any) {
-      setIsLoading(false);
+  }catch (error: any) {
+  setIsLoading(false);
 
-      if (error.response?.status === 401) {
-        return { success: false, error: "Sai email hoặc mật khẩu" };
-      }
+  if (error.response) {
 
-      return { success: false, error: "Server error" };
+    const data = error.response.data;
+    if (typeof data === "object" && !data.error) {
+      const firstError = Object.values(data)[0] as string;
+      return { success: false, error: firstError };
     }
-  }, []);
 
+    return { success: false, error: data.error || "Lỗi không xác định" };
+  }
+
+  return { success: false, error: "Không kết nối được server" };
+}
+}, []);
   const logout = useCallback(() => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("uni_user");

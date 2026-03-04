@@ -6,8 +6,9 @@ import {
   SaveIcon,
   PhoneIcon,
   MailIcon,
-  BuildingIcon } from
-'lucide-react';
+  BuildingIcon
+} from
+  'lucide-react';
 import { Layout } from '../../components/layout/Layout';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -16,7 +17,14 @@ import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { departments, classes } from '../../data/mockData';
+import { uploadAvatarApi } from "../../services/userService";
 import type { Role } from '../../types';
+import { useEffect } from "react";
+import {
+  updateProfileApi,
+  changePasswordApi,
+} from "../../services/userService";
+
 const roleLabel: Record<Role, string> = {
   ADMIN: 'Quản trị viên',
   LECTURER: 'Giảng viên',
@@ -38,6 +46,15 @@ export function ProfilePage() {
     email: currentUser?.email ?? '',
     phone: currentUser?.phone ?? ''
   });
+  useEffect(() => {
+    if (currentUser) {
+      setProfileForm({
+        name: currentUser.name ?? "",
+        email: currentUser.email ?? "",
+        phone: currentUser.phone ?? ""
+      });
+    }
+  }, [currentUser]);
   const [passwordForm, setPasswordForm] = useState({
     oldPassword: '',
     newPassword: '',
@@ -48,47 +65,90 @@ export function ProfilePage() {
   );
   const dept = departments.find((d) => d.id === currentUser?.departmentId);
   const cls = classes.find((c) => c.id === currentUser?.classId);
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      showToast('Ảnh đại diện đã được cập nhật (demo)', 'success');
+    if (!file) return;
+
+    try {
+      const res = await uploadAvatarApi(file);
+
+      setAvatarPreview("http://localhost:8080" + res.data);
+
+      showToast("Cập nhật avatar thành công!", "success");
+
+    } catch (err: any) {
+      showToast("Upload avatar thất bại", "error");
     }
   };
   const handleSaveProfile = async () => {
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 700));
-    showToast('Cập nhật thông tin thành công!', 'success');
-    setSaving(false);
+    try {
+      setSaving(true);
+
+      const res = await updateProfileApi({
+        name: profileForm.name,
+        phone: profileForm.phone,
+        email: profileForm.email
+      });
+
+      if (res.status === 200) {
+        showToast("Cập nhật thông tin thành công!", "success");
+      }
+
+    } catch (err: any) {
+      if (err.response?.status === 400) {
+        showToast("Dữ liệu không hợp lệ", "error");
+      } else if (err.response?.status === 409) {
+        showToast("Email đã tồn tại", "error");
+      } else {
+        showToast("Lỗi hệ thống", "error");
+      }
+    } finally {
+      setSaving(false);
+    }
   };
   const validatePassword = () => {
     const errs: Record<string, string> = {};
     if (!passwordForm.oldPassword)
-    errs.oldPassword = 'Vui lòng nhập mật khẩu cũ';
+      errs.oldPassword = 'Vui lòng nhập mật khẩu cũ';
     if (!passwordForm.newPassword)
-    errs.newPassword = 'Vui lòng nhập mật khẩu mới';else
-    if (passwordForm.newPassword.length < 6)
-    errs.newPassword = 'Mật khẩu tối thiểu 6 ký tự';
+      errs.newPassword = 'Vui lòng nhập mật khẩu mới'; else
+      if (passwordForm.newPassword.length < 6)
+        errs.newPassword = 'Mật khẩu tối thiểu 6 ký tự';
     if (passwordForm.newPassword !== passwordForm.confirmPassword)
-    errs.confirmPassword = 'Mật khẩu xác nhận không khớp';
+      errs.confirmPassword = 'Mật khẩu xác nhận không khớp';
     setPasswordErrors(errs);
     return Object.keys(errs).length === 0;
   };
   const handleChangePassword = async () => {
     if (!validatePassword()) return;
-    setChangingPassword(true);
-    await new Promise((r) => setTimeout(r, 700));
-    showToast('Đổi mật khẩu thành công!', 'success');
-    setPasswordForm({
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
-    setChangingPassword(false);
+
+    try {
+      setChangingPassword(true);
+
+      await changePasswordApi({
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword
+      });
+
+      showToast("Đổi mật khẩu thành công!", "success");
+
+      setPasswordForm({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+
+    } catch (err: any) {
+      if (err.response?.data?.message) {
+        showToast(err.response.data.message, "error");
+      } else {
+        showToast("Đổi mật khẩu thất bại", "error");
+      }
+    } finally {
+      setChangingPassword(false);
+    }
   };
   if (!currentUser) return null;
   return (
@@ -99,15 +159,18 @@ export function ProfilePage() {
           <div className="flex items-start gap-6">
             <div className="relative flex-shrink-0">
               <div className="w-20 h-20 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl font-bold text-blue-700 overflow-hidden">
-                {avatarPreview ?
-                <img
-                  src={avatarPreview}
-                  alt="Avatar"
-                  className="w-full h-full object-cover" /> :
-
-
-                (currentUser?.name ?? "").charAt(0)
-                }
+                {avatarPreview || currentUser?.avatar ? (
+                  <img
+                    src={
+                      avatarPreview ??
+                      `http://localhost:8080${currentUser.avatar}`
+                    }
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  (currentUser?.name ?? "").charAt(0)
+                )}
               </div>
               <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-white border border-slate-200 rounded-full flex items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors shadow-sm">
                 <CameraIcon className="w-3.5 h-3.5 text-slate-500" />
@@ -130,24 +193,24 @@ export function ProfilePage() {
               </div>
               <p className="text-sm text-slate-500">{currentUser.email}</p>
               {currentUser.studentId &&
-              <p className="text-xs text-slate-400 mt-1 font-mono">
+                <p className="text-xs text-slate-400 mt-1 font-mono">
                   MSSV: {currentUser.studentId}
                 </p>
               }
               {currentUser.lecturerId &&
-              <p className="text-xs text-slate-400 mt-1 font-mono">
+                <p className="text-xs text-slate-400 mt-1 font-mono">
                   Mã GV: {currentUser.lecturerId}
                 </p>
               }
               <div className="flex flex-wrap gap-3 mt-3 text-xs text-slate-500">
                 {dept &&
-                <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1">
                     <BuildingIcon className="w-3 h-3" />
                     {dept.name}
                   </span>
                 }
                 {cls &&
-                <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1">
                     <UserIcon className="w-3 h-3" />
                     {cls.name}
                   </span>
@@ -164,22 +227,23 @@ export function ProfilePage() {
               label="Họ và tên"
               value={profileForm.name}
               onChange={(e) =>
-              setProfileForm((p) => ({
-                ...p,
-                name: e.target.value
-              }))
+                setProfileForm((p) => ({
+                  ...p,
+                  name: e.target.value
+                }))
               }
-              icon={<UserIcon className="w-4 h-4" />} />
+              icon={<UserIcon className="w-4 h-4" />}
+            />
 
             <Input
               label="Email"
               type="email"
               value={profileForm.email}
               onChange={(e) =>
-              setProfileForm((p) => ({
-                ...p,
-                email: e.target.value
-              }))
+                setProfileForm((p) => ({
+                  ...p,
+                  email: e.target.value
+                }))
               }
               icon={<MailIcon className="w-4 h-4" />} />
 
@@ -187,27 +251,27 @@ export function ProfilePage() {
               label="Số điện thoại"
               value={profileForm.phone}
               onChange={(e) =>
-              setProfileForm((p) => ({
-                ...p,
-                phone: e.target.value
-              }))
+                setProfileForm((p) => ({
+                  ...p,
+                  phone: e.target.value
+                }))
               }
               icon={<PhoneIcon className="w-4 h-4" />} />
 
             {dept &&
-            <Input
-              label="Khoa"
-              value={dept.name}
-              disabled
-              hint="Thông tin này chỉ có thể thay đổi bởi Admin" />
+              <Input
+                label="Khoa"
+                value={dept.name}
+                disabled
+                hint="Thông tin này chỉ có thể thay đổi bởi Admin" />
 
             }
             {cls &&
-            <Input
-              label="Lớp"
-              value={cls.name}
-              disabled
-              hint="Thông tin này chỉ có thể thay đổi bởi Admin" />
+              <Input
+                label="Lớp"
+                value={cls.name}
+                disabled
+                hint="Thông tin này chỉ có thể thay đổi bởi Admin" />
 
             }
             <div className="flex justify-end pt-2">
@@ -231,10 +295,10 @@ export function ProfilePage() {
               type="password"
               value={passwordForm.oldPassword}
               onChange={(e) =>
-              setPasswordForm((p) => ({
-                ...p,
-                oldPassword: e.target.value
-              }))
+                setPasswordForm((p) => ({
+                  ...p,
+                  oldPassword: e.target.value
+                }))
               }
               error={passwordErrors.oldPassword}
               required />
@@ -244,10 +308,10 @@ export function ProfilePage() {
               type="password"
               value={passwordForm.newPassword}
               onChange={(e) =>
-              setPasswordForm((p) => ({
-                ...p,
-                newPassword: e.target.value
-              }))
+                setPasswordForm((p) => ({
+                  ...p,
+                  newPassword: e.target.value
+                }))
               }
               error={passwordErrors.newPassword}
               hint="Tối thiểu 6 ký tự"
@@ -258,10 +322,10 @@ export function ProfilePage() {
               type="password"
               value={passwordForm.confirmPassword}
               onChange={(e) =>
-              setPasswordForm((p) => ({
-                ...p,
-                confirmPassword: e.target.value
-              }))
+                setPasswordForm((p) => ({
+                  ...p,
+                  confirmPassword: e.target.value
+                }))
               }
               error={passwordErrors.confirmPassword}
               required />
@@ -282,3 +346,5 @@ export function ProfilePage() {
     </Layout>);
 
 }
+
+

@@ -1,4 +1,4 @@
-package com.example.student_management.auth.dto;
+package com.example.student_management.dto;
 
 import jakarta.validation.constraints.*;
 
@@ -7,10 +7,11 @@ import lombok.Data;
 @Data
 public class ChangePasswordRequest {
 
-    @NotBlank
+
+    @NotBlank(message = "Mật khẩu cũ không được để trống")
     private String oldPassword;
 
-    @NotBlank
+    @NotBlank(message = "Mật khẩu mới không được để trống")
     @Size(min = 6)
     @Pattern(
             regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",

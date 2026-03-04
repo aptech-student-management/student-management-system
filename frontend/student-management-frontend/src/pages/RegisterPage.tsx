@@ -18,7 +18,7 @@ import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { departments } from '../data/mockData';
 import type { Role } from '../types';
-import {registerApi} from "../services/authService.ts";
+import {checkEmailExists, registerApi} from "../services/authService.ts";
 interface RegisterForm {
   name: string;
   email: string;
@@ -81,19 +81,38 @@ export function RegisterPage() {
       [field]: undefined
     }));
   };
-  const validateStep1 = (): boolean => {
-    const errs: FormErrors = {};
-    if (!form.name.trim()) errs.name = 'Vui lòng nhập họ và tên';else
-    if (form.name.trim().length < 3)
-    errs.name = 'Họ tên phải có ít nhất 3 ký tự';
-    if (!form.email.trim()) errs.email = 'Vui lòng nhập email';else
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-    errs.email = 'Email không hợp lệ';
-    if (form.phone && !/^(0|\+84)[0-9]{8,9}$/.test(form.phone))
-    errs.phone = 'Số điện thoại không hợp lệ';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
+const validateStep1 = async (): Promise<boolean> => {
+  const errs: FormErrors = {};
+
+  if (!form.name.trim()) {
+    errs.name = "Vui lòng nhập họ và tên";
+  } else if (form.name.trim().length < 3) {
+    errs.name = "Họ tên phải có ít nhất 3 ký tự";
+  }
+
+  if (!form.email.trim()) {
+    errs.email = "Vui lòng nhập email";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    errs.email = "Email không hợp lệ";
+  }
+
+  if (form.phone && !/^(0|\+84)[0-9]{8,9}$/.test(form.phone)) {
+    errs.phone = "Số điện thoại không hợp lệ";
+  }
+  if (!errs.email) {
+    try {
+      const exists = await checkEmailExists(form.email.trim());
+      if (exists) {
+        errs.email = "Email đã tồn tại trong hệ thống";
+      }
+    } catch {
+      errs.email = "Không thể kiểm tra email";
+    }
+  }
+
+  setErrors(errs);
+  return Object.keys(errs).length === 0;
+};
   const validateStep2 = (): boolean => {
     const errs: FormErrors = {};
     if (!form.role) errs.role = 'Vui lòng chọn vai trò';
@@ -117,68 +136,70 @@ export function RegisterPage() {
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
-  const handleNext = () => {
-    if (step === 1 && validateStep1()) setStep(2);else
-    if (step === 2 && validateStep2()) setStep(3);
-  };
+const handleNext = async () => {
+  if (step === 1) {
+    const valid = await validateStep1();
+    if (valid) setStep(2);
+  } else if (step === 2) {
+    if (validateStep2()) setStep(3);
+  }
+};
   const handleBack = () => {
     if (step > 1) setStep((prev) => prev - 1);
   };
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // đảm bảo cả step 1 + 2 + 3 đều hợp lệ
-    if (!validateStep1()) {
-      setStep(1);
-      return;
+  const step1Valid = await validateStep1();
+  if (!step1Valid) {
+    setStep(1);
+    return;
+  }
+
+  if (!validateStep2()) {
+    setStep(2);
+    return;
+  }
+
+  if (!validateStep3()) {
+    setStep(3);
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    await registerApi({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      password: form.password,
+      role: form.role as Role,
+      departmentId: form.departmentId,
+      phone: form.phone || undefined,
+      studentId: form.studentId || undefined
+    });
+
+    showToast(
+      "Đăng ký tài khoản thành công! Vui lòng đăng nhập.",
+      "success"
+    );
+
+    navigate("/login");
+
+  } catch (err: any) {
+    if (err.response?.status === 409) {
+      showToast("Email đã tồn tại trong hệ thống", "error");
+    } else if (err.response?.status === 400) {
+      showToast("Dữ liệu không hợp lệ", "error");
+    } else if (err.response?.status === 500) {
+      showToast("Lỗi máy chủ", "error");
+    } else {
+      showToast("Không thể kết nối đến server", "error");
     }
-
-    if (!validateStep2()) {
-      setStep(2);
-      return;
-    }
-
-    if (!validateStep3()) {
-      setStep(3);
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      await registerApi({
-        name: form.name.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        role: form.role as Role,
-        departmentId: form.departmentId,
-        phone: form.phone || undefined,
-        studentId: form.studentId || undefined
-      });
-
-      showToast(
-          "Đăng ký tài khoản thành công! Vui lòng đăng nhập.",
-          "success"
-      );
-
-      navigate("/login"); // sửa lại cho đúng route
-
-    } catch (err: any) {
-
-      if (err.response?.status === 409) {
-        showToast("Email đã tồn tại trong hệ thống", "error");
-      } else if (err.response?.status === 400) {
-        showToast("Dữ liệu không hợp lệ", "error");
-      } else if (err.response?.status === 500) {
-        showToast("Lỗi máy chủ", "error");
-      } else {
-        showToast("Không thể kết nối đến server", "error");
-      }
-
-    } finally {
-      setLoading(false);
-    }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
   const roleOptions = [
   {
     value: 'STUDENT',
