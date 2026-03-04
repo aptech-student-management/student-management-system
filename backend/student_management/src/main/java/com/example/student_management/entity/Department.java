@@ -1,21 +1,20 @@
 package com.example.student_management.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
+@Entity
+@Table(name = "department")
 @Getter
 @Setter
-@Entity
-@Table
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Department {
 
     @Id
-    @Column(length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -23,10 +22,15 @@ public class Department {
     @Column(unique = true, nullable = false)
     private String code;
 
-    private String headLecturerId;
+    @Column(name = "head_lecturer_id")
+    private Long headLecturerId;
 
+    @Builder.Default
+    @Column(name = "student_count")
     private Integer studentCount = 0;
 
+    @Builder.Default
+    @Column(name = "subject_count")
     private Integer subjectCount = 0;
 
     @Column(columnDefinition = "TEXT")

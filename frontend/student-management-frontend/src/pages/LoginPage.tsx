@@ -61,8 +61,8 @@ export function LoginPage() {
         password: 'admin123'
       },
       lecturer: {
-        email: 'lecturer1@uni.edu.vn',
-        password: 'lecturer123'
+        email: 'trieu.tombi@gmail.com',
+        password: 'Graigrai1'
       },
       student: {
         email: 'student1@uni.edu.vn',
@@ -253,7 +253,7 @@ export function LoginPage() {
                       👑 Quản trị viên
                     </p>
                     <p className="text-xs text-blue-600">
-                      admin@uni.edu.vn / admin123
+                      trieu.tombi@gmail.com / Graigrai
                     </p>
                   </div>
                   <span className="text-xs text-blue-500">Dùng thử →</span>
@@ -267,7 +267,7 @@ export function LoginPage() {
                       👨‍🏫 Giảng viên
                     </p>
                     <p className="text-xs text-teal-600">
-                      lecturer1@uni.edu.vn / lecturer123
+                      trieu.tombi@gmail.com / Graigrai1
                     </p>
                   </div>
                   <span className="text-xs text-teal-500">Dùng thử →</span>
