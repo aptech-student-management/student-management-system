@@ -27,9 +27,7 @@ export function LoginPage() {
       email?: string;
       password?: string;
     } = {};
-    if (!email) newErrors.email = 'Vui lòng nhập email';else
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    newErrors.email = 'Email không hợp lệ';
+    if (!email) newErrors.email = 'Vui lòng nhập tài khoản';
     if (!password) newErrors.password = 'Vui lòng nhập mật khẩu';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -147,9 +145,9 @@ export function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
-                label="Email"
-                type="email"
-                placeholder="example@uni.edu.vn"
+                label="Tài khoản"
+                type="text"
+                placeholder="Nhập tài khoản"
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -161,7 +159,7 @@ export function LoginPage() {
                 error={errors.email}
                 icon={<UserIcon className="w-4 h-4" />}
                 required
-                autoComplete="email" />
+                autoComplete="username" />
 
 
               <div className="flex flex-col gap-1">
@@ -174,7 +172,7 @@ export function LoginPage() {
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder="Nhập mật khẩu"
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
@@ -210,7 +208,7 @@ export function LoginPage() {
                 size="lg"
                 className="mt-2">
 
-                {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                {isLoaAing ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </Button>
             </form>
 

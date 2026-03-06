@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/grades")
-public class GradeController {
+public class                                                                            GradeController {
 
     private final GradeRepository gradeRepository;
 
