@@ -11,7 +11,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import type { Role } from './types';
 // Pages
 import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
+
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { DepartmentManagement } from './pages/admin/DepartmentManagement';
 import { ClassManagement } from './pages/admin/ClassManagement';
@@ -88,10 +88,6 @@ function AppRoutes() {
       <Route
         path="/login"
         element={currentUser ? <RoleRedirect /> : <LoginPage />} />
-
-      <Route
-        path="/register"
-        element={currentUser ? <RoleRedirect /> : <RegisterPage />} />
 
 
       {/* Root redirect */}
