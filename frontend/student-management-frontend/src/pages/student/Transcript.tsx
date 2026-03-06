@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   DownloadIcon,
   TrendingUpIcon,
@@ -14,29 +14,51 @@ import { Badge } from '../../components/ui/Badge';
 import { StatCard } from '../../components/ui/StatCard';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
-import {
-  grades,
-  enrollments,
-  courseSections,
-  subjects,
-  semesters
-} from
-  '../../data/mockData';
+import type { CourseSection, Grade, Semester, Subject } from '../../types';
+import { getGradesApi } from '../../services/gradeService';
+import { getCourseSectionsApi } from '../../services/courseSectionService';
+import { getSubjectsApi } from '../../services/subjectService';
+import { getSemestersApi } from '../../services/semesterService';
 const TOTAL_CREDITS_REQUIRED = 120;
 export function Transcript() {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
-  const [selectedSemester, setSelectedSemester] = useState(semesters[0].id);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [selectedSemester, setSelectedSemester] = useState('');
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [gradeData, sectionData, subjectData, semesterData] = await Promise.all([
+          getGradesApi({ studentId: currentUser?.id }),
+          getCourseSectionsApi(),
+          getSubjectsApi(),
+          getSemestersApi()
+        ]);
+
+        setGrades(gradeData);
+        setCourseSections(sectionData);
+        setSubjects(subjectData);
+        setSemesters(semesterData);
+        if (!selectedSemester && semesterData.length > 0) {
+          setSelectedSemester(semesterData[0].id);
+        }
+      } catch {
+        showToast('Không thể tải dữ liệu bảng điểm', 'error');
+      }
+    };
+
+    if (currentUser?.id) {
+      void loadData();
+    }
+  }, [currentUser?.id, showToast]);
+
   const myGrades = useMemo(
     () => grades.filter((g) => g.studentId === currentUser?.id),
-    [currentUser]
-  );
-  const myEnrollments = useMemo(
-    () =>
-      enrollments.filter(
-        (e) => e.studentId === currentUser?.id && e.status === 'ENROLLED'
-      ),
-    [currentUser]
+    [grades, currentUser]
   );
   const gradesBySemester = useMemo(() => {
     const result: Record<string, typeof myGrades> = {};
@@ -179,13 +201,14 @@ export function Transcript() {
           padding={false}
           title="Chi tiết điểm số"
           action={
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<DownloadIcon className="w-4 h-4" />}
-              onClick={handleExport}>
-              Xuất PDF
-            </Button>
+            <span onClick={handleExport}>
+              <Button
+                variant="outline"
+                size="sm"
+                icon={<DownloadIcon className="w-4 h-4" />}>
+                Xuất PDF
+              </Button>
+            </span>
           }>
 
           {/* Semester tabs */}

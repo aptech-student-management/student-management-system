@@ -1,7 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
   CalendarIcon,
   ListIcon } from
 'lucide-react';
@@ -9,13 +7,12 @@ import { Layout } from '../../components/layout/Layout';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import {
-  enrollments,
-  courseSections,
-  subjects,
-  users,
-  semesters } from
-'../../data/mockData';
+import { getEnrollmentsApi } from '../../services/enrollmentService';
+import { getCourseSectionsApi } from '../../services/courseSectionService';
+import { getSubjectsApi } from '../../services/subjectService';
+import { getUsersApi } from '../../services/userService';
+import { getSemestersApi } from '../../services/semesterService';
+import type { CourseSection, Enrollment, Semester, Subject, User } from '../../types';
 const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
 const PERIODS = ['1-3', '4-6', '7-9', '10-12'];
 const SUBJECT_COLORS = [
@@ -29,16 +26,45 @@ const SUBJECT_COLORS = [
 export function Schedule() {
   const { currentUser } = useAuth();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [enrollmentData, sectionData, subjectData, userData, semesterData] = await Promise.all([
+          getEnrollmentsApi(),
+          getCourseSectionsApi(),
+          getSubjectsApi(),
+          getUsersApi(),
+          getSemestersApi()
+        ]);
+        setEnrollments(enrollmentData);
+        setCourseSections(sectionData);
+        setSubjects(subjectData);
+        setUsers(userData);
+        setSemesters(semesterData);
+      } catch {
+        // silent fail to keep UI stable
+      }
+    };
+
+    void loadData();
+  }, []);
+
   const activeSemester = semesters.find((s) => s.status === 'ACTIVE');
   const myCourseSections = useMemo(() => {
     const myEnrollments = enrollments.filter(
       (e) => e.studentId === currentUser?.id && e.status === 'ENROLLED'
     );
-    return myEnrollments.
-    map((e) => courseSections.find((cs) => cs.id === e.courseSectionId)).
-    filter((cs) => cs?.semesterId === activeSemester?.id).
-    filter(Boolean);
-  }, [currentUser, activeSemester]);
+    return myEnrollments
+      .map((e) => courseSections.find((cs) => cs.id === e.courseSectionId))
+      .filter((cs) => cs?.semesterId === activeSemester?.id)
+      .filter(Boolean) as CourseSection[];
+  }, [currentUser, activeSemester, enrollments, courseSections]);
   // Build schedule grid
   const scheduleGrid = useMemo(() => {
     const grid: Record<

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -11,18 +11,16 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
 import { Input } from '../../components/ui/Input';
-import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
-import {
-  courseSections,
-  subjects,
-  enrollments,
-  users,
-  attendanceRecords as initialAttendance } from
-'../../data/mockData';
-import type { Attendance } from '../../types';
+import type { Attendance, CourseSection, Enrollment, Subject, User } from '../../types';
+import { getCourseSectionsApi } from '../../services/courseSectionService';
+import { getSubjectsApi } from '../../services/subjectService';
+import { getEnrollmentsApi } from '../../services/enrollmentService';
+import { getUsersApi } from '../../services/userService';
+import { getAttendanceApi, upsertAttendanceApi } from '../../services/attendanceService';
 type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE';
+
 export function AttendanceManagement() {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
@@ -32,29 +30,57 @@ export function AttendanceManagement() {
   );
   const [attendanceMap, setAttendanceMap] = useState<
     Record<string, AttendanceStatus>>(
-    {});
+    {}
+  );
   const [saving, setSaving] = useState(false);
-  const [savedRecords, setSavedRecords] =
-  useState<Attendance[]>(initialAttendance);
+  const [savedRecords, setSavedRecords] = useState<Attendance[]>([]);
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [sectionData, subjectData, enrollmentData, userData, attendanceData] = await Promise.all([
+          getCourseSectionsApi(),
+          getSubjectsApi(),
+          getEnrollmentsApi(),
+          getUsersApi(),
+          getAttendanceApi()
+        ]);
+        setCourseSections(sectionData);
+        setSubjects(subjectData);
+        setEnrollments(enrollmentData);
+        setUsers(userData);
+        setSavedRecords(attendanceData);
+      } catch {
+        showToast('Không thể tải dữ liệu điểm danh', 'error');
+      }
+    };
+
+    void loadData();
+  }, [showToast]);
+
   const myClasses = useMemo(
     () => courseSections.filter((cs) => cs.lecturerId === currentUser?.id),
-    [currentUser]
+    [courseSections, currentUser]
   );
   const sectionStudents = useMemo(() => {
     if (!selectedSection) return [];
-    return enrollments.
-    filter(
+    return enrollments
+    .filter(
       (e) => e.courseSectionId === selectedSection && e.status === 'ENROLLED'
-    ).
-    map((e) => users.find((u) => u.id === e.studentId)).
-    filter(Boolean);
-  }, [selectedSection]);
+    )
+    .map((e) => users.find((u) => u.id === e.studentId))
+    .filter(Boolean) as User[];
+  }, [selectedSection, enrollments, users]);
   const handleSectionChange = (sectionId: string) => {
     setSelectedSection(sectionId);
     const existing: Record<string, AttendanceStatus> = {};
-    savedRecords.
-    filter((a) => a.courseSectionId === sectionId && a.date === selectedDate).
-    forEach((a) => {
+    savedRecords
+    .filter((a) => a.courseSectionId === sectionId && a.date === selectedDate)
+    .forEach((a) => {
       existing[a.studentId] = a.status;
     });
     setAttendanceMap(existing);
@@ -63,9 +89,9 @@ export function AttendanceManagement() {
     setSelectedDate(date);
     if (!selectedSection) return;
     const existing: Record<string, AttendanceStatus> = {};
-    savedRecords.
-    filter((a) => a.courseSectionId === selectedSection && a.date === date).
-    forEach((a) => {
+    savedRecords
+    .filter((a) => a.courseSectionId === selectedSection && a.date === date)
+    .forEach((a) => {
       existing[a.studentId] = a.status;
     });
     setAttendanceMap(existing);
@@ -73,7 +99,7 @@ export function AttendanceManagement() {
   const markAll = (status: AttendanceStatus) => {
     const newMap: Record<string, AttendanceStatus> = {};
     sectionStudents.forEach((s) => {
-      if (s) newMap[s.id] = status;
+      newMap[s.id] = status;
     });
     setAttendanceMap(newMap);
   };
@@ -82,38 +108,47 @@ export function AttendanceManagement() {
       showToast('Vui lòng chọn lớp và ngày', 'warning');
       return;
     }
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 700));
-    const newRecords: Attendance[] = sectionStudents.
-    filter(Boolean).
-    map((s) => ({
-      id: `att-${s!.id}-${selectedSection}-${selectedDate}`,
-      studentId: s!.id,
-      courseSectionId: selectedSection,
-      date: selectedDate,
-      status: attendanceMap[s!.id] ?? 'ABSENT'
-    }));
-    setSavedRecords((prev) => {
-      const filtered = prev.filter(
-        (a) =>
-        !(a.courseSectionId === selectedSection && a.date === selectedDate)
-      );
-      return [...filtered, ...newRecords];
-    });
-    showToast('Lưu điểm danh thành công!', 'success');
-    setSaving(false);
+
+    try {
+      setSaving(true);
+      const newRecords: Attendance[] = [];
+
+      for (const s of sectionStudents) {
+        const saved = await upsertAttendanceApi({
+          studentId: s.id,
+          courseSectionId: selectedSection,
+          date: selectedDate,
+          status: attendanceMap[s.id] ?? 'ABSENT'
+        });
+        newRecords.push(saved);
+      }
+
+      setSavedRecords((prev) => {
+        const filtered = prev.filter(
+          (a) =>
+          !(a.courseSectionId === selectedSection && a.date === selectedDate)
+        );
+        return [...filtered, ...newRecords];
+      });
+
+      showToast('Lưu điểm danh thành công!', 'success');
+    } catch {
+      showToast('Lưu điểm danh thất bại', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
   const historyDates = useMemo(() => {
     if (!selectedSection) return [];
     const dates = [
     ...new Set(
-      savedRecords.
-      filter((a) => a.courseSectionId === selectedSection).
-      map((a) => a.date)
-    )].
+      savedRecords
+      .filter((a) => a.courseSectionId === selectedSection)
+      .map((a) => a.date)
+    )]
 
-    sort().
-    reverse();
+    .sort()
+    .reverse();
     return dates.slice(0, 5).map((date) => {
       const records = savedRecords.filter(
         (a) => a.courseSectionId === selectedSection && a.date === date
@@ -153,7 +188,6 @@ export function AttendanceManagement() {
   return (
     <Layout title="Quản lý Điểm danh">
       <div className="space-y-6">
-        {/* Controls */}
         <Card>
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex-1 min-w-[200px]">
@@ -203,7 +237,6 @@ export function AttendanceManagement() {
 
         {selectedSection &&
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Student list */}
             <div className="lg:col-span-2">
               <Card
               title={`Danh sách sinh viên (${sectionStudents.length})`}
@@ -211,7 +244,6 @@ export function AttendanceManagement() {
 
                 <div className="divide-y divide-slate-100">
                   {sectionStudents.map((student, idx) => {
-                  if (!student) return null;
                   const status = attendanceMap[student.id] ?? 'ABSENT';
                   return (
                     <div
@@ -234,8 +266,8 @@ export function AttendanceManagement() {
                         </div>
                         <div className="flex gap-1">
                           {(
-                        ['PRESENT', 'LATE', 'ABSENT'] as AttendanceStatus[]).
-                        map((s) =>
+                        ['PRESENT', 'LATE', 'ABSENT'] as AttendanceStatus[])
+                        .map((s) =>
                         <button
                           key={s}
                           onClick={() =>
@@ -260,7 +292,6 @@ export function AttendanceManagement() {
               </Card>
             </div>
 
-            {/* History */}
             <div>
               <Card title="Lịch sử điểm danh" subtitle="5 buổi gần nhất">
                 <div className="space-y-3">

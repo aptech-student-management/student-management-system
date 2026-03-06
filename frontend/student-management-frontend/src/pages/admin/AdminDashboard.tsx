@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   UsersIcon,
@@ -30,17 +30,51 @@ import { StatCard } from '../../components/ui/StatCard';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import {
-  users,
-  departments,
-  courseSections,
-  semesters,
-  grades,
-  auditLogs } from
-'../../data/mockData';
+import { useToast } from '../../contexts/ToastContext';
+import type { User, Department, CourseSection, Semester, Grade } from '../../types';
+import { getAdminUsersApi } from '../../services/adminUserService';
+import { getDepartmentsApi } from '../../services/departmentService';
+import { getCourseSectionsApi } from '../../services/courseSectionService';
+import { getSemestersApi } from '../../services/semesterService';
+import { getGradesApi } from '../../services/gradeService';
+import { auditLogs } from '../../data/mockData';
+
 const COLORS = ['#3b82f6', '#0d9488', '#f59e0b', '#8b5cf6', '#ef4444'];
+
 export function AdminDashboard() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [userData, deptData, sectionData, semesterData, gradeData] = await Promise.all([
+          getAdminUsersApi(),
+          getDepartmentsApi(),
+          getCourseSectionsApi(),
+          getSemestersApi(),
+          getGradesApi()
+        ]);
+
+        setUsers(userData);
+        setDepartments(deptData);
+        setCourseSections(sectionData);
+        setSemesters(semesterData);
+        setGrades(gradeData);
+      } catch {
+        showToast('Không thể tải dữ liệu dashboard', 'error');
+      }
+    };
+
+    void loadData();
+  }, [showToast]);
+
   const stats = useMemo(() => {
     const students = users.filter((u) => u.role === 'STUDENT');
     const lecturers = users.filter((u) => u.role === 'LECTURER');
@@ -48,28 +82,31 @@ export function AdminDashboard() {
     const openSections = courseSections.filter(
       (cs) => cs.semesterId === activeSemester?.id && cs.status !== 'CLOSED'
     );
+
     const passGrades = grades.filter(
       (g) => g.gpaPoint !== undefined && g.gpaPoint > 0
     );
-    const passRate =
-    grades.length > 0 ?
-    Math.round(passGrades.length / grades.length * 100) :
-    0;
+
+    const passRate = grades.length > 0 ? Math.round(passGrades.length / grades.length * 100) : 0;
+
     return {
       students: students.length,
       lecturers: lecturers.length,
       openSections: openSections.length,
-      passRate
+      passRate,
+      activeSemesterName: activeSemester?.name ?? 'Hiện tại'
     };
-  }, []);
+  }, [users, semesters, courseSections, grades]);
+
   const deptChartData = useMemo(
     () =>
     departments.map((d) => ({
       name: d.code,
       'Sinh viên': d.studentCount
     })),
-    []
+    [departments]
   );
+
   const passRateData = useMemo(
     () => [
     {
@@ -95,6 +132,7 @@ export function AdminDashboard() {
 
     []
   );
+
   const yearDistribution = useMemo(
     () => [
     {
@@ -120,7 +158,9 @@ export function AdminDashboard() {
 
     []
   );
+
   const recentLogs = auditLogs.slice(0, 5);
+
   const actionBadge = (action: string) => {
     const map: Record<
       string,
@@ -131,14 +171,14 @@ export function AdminDashboard() {
       DELETE: 'error',
       LOGIN: 'info',
       LOGOUT: 'neutral',
-      EXPORT: 'purple' as 'neutral'
+      EXPORT: 'neutral'
     };
     return <Badge variant={map[action] ?? 'neutral'}>{action}</Badge>;
   };
+
   return (
     <Layout title="Dashboard - Quản trị viên">
       <div className="space-y-6">
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title="Tổng sinh viên"
@@ -159,7 +199,7 @@ export function AdminDashboard() {
           <StatCard
             title="Môn học đang mở"
             value={stats.openSections}
-            subtitle="HK1 2024-2025"
+            subtitle={stats.activeSemesterName}
             icon={<BookOpenIcon className="w-5 h-5" />}
             color="amber" />
 
@@ -173,7 +213,6 @@ export function AdminDashboard() {
 
         </div>
 
-        {/* Quick actions */}
         <div className="flex flex-wrap gap-3">
           <Button
             variant="primary"
@@ -209,7 +248,6 @@ export function AdminDashboard() {
           </Button>
         </div>
 
-        {/* Charts row 1 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card
             title="Sinh viên theo Khoa"
@@ -303,7 +341,6 @@ export function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Charts row 2 + recent activity */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card title="Phân bố theo Năm học" subtitle="Tổng sinh viên theo năm">
             <ResponsiveContainer width="100%" height={200}>

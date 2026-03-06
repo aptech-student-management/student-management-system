@@ -37,7 +37,7 @@ public class SubjectService {
     public SubjectResponse create(SubjectCreateRequest req) {
         String newId = req.id;
         if (newId == null || newId.isBlank()) {
-            newId = "SUB" + System.currentTimeMillis();
+            newId = generateSubjectId();
         }
 
         if (subjectRepo.existsById(newId)) {
@@ -103,5 +103,19 @@ public class SubjectService {
         r.departmentId = s.getDepartmentId();
         r.description = s.getDescription();
         return r;
+    }
+
+    private String generateSubjectId() {
+        String candidate;
+        do {
+            String base36 = Long.toString(System.currentTimeMillis(), 36).toUpperCase();
+            String suffix = base36.length() > 7 ? base36.substring(base36.length() - 7) : base36;
+            candidate = "SUB" + suffix;
+            if (candidate.length() > 10) {
+                candidate = candidate.substring(0, 10);
+            }
+        } while (subjectRepo.existsById(candidate));
+
+        return candidate;
     }
 }

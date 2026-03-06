@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   SaveIcon,
   DownloadIcon,
@@ -13,15 +13,14 @@ import { Select } from '../../components/ui/Select';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
-import {
-  courseSections,
-  subjects,
-  enrollments,
-  users,
-  grades as initialGrades,
-  attendanceRecords,
-  calculateGrade } from
-'../../data/mockData';
+import type { Attendance, CourseSection, Enrollment, Grade, Subject, User } from '../../types';
+import { getCourseSectionsApi } from '../../services/courseSectionService';
+import { getSubjectsApi } from '../../services/subjectService';
+import { getEnrollmentsApi } from '../../services/enrollmentService';
+import { getUsersApi } from '../../services/userService';
+import { getAttendanceApi } from '../../services/attendanceService';
+import { getGradesApi, upsertGradeApi } from '../../services/gradeService';
+
 interface GradeRow {
   studentId: string;
   name: string;
@@ -33,6 +32,32 @@ interface GradeRow {
   letterGrade: string;
   gpaPoint: number | null;
 }
+
+const calculateGrade = (midterm: number, final: number, attendance: number) => {
+  const totalScore = Math.round((0.1 * attendance + 0.3 * midterm + 0.6 * final) * 100) / 100;
+
+  let letterGrade = 'F';
+  let gpaPoint = 0;
+  if (totalScore >= 8.5) {
+    letterGrade = 'A';
+    gpaPoint = 4;
+  } else if (totalScore >= 8.0) {
+    letterGrade = 'B+';
+    gpaPoint = 3.5;
+  } else if (totalScore >= 7.0) {
+    letterGrade = 'B';
+    gpaPoint = 3;
+  } else if (totalScore >= 6.5) {
+    letterGrade = 'C+';
+    gpaPoint = 2.5;
+  } else if (totalScore >= 5.5) {
+    letterGrade = 'C';
+    gpaPoint = 2;
+  }
+
+  return { totalScore, letterGrade, gpaPoint };
+};
+
 export function GradeManagement() {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
@@ -40,51 +65,84 @@ export function GradeManagement() {
   const [gradeRows, setGradeRows] = useState<GradeRow[]>([]);
   const [saving, setSaving] = useState(false);
   const [locked, setLocked] = useState(false);
+
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<Attendance[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [sectionData, subjectData, enrollmentData, userData, gradeData, attendanceData] = await Promise.all([
+          getCourseSectionsApi(),
+          getSubjectsApi(),
+          getEnrollmentsApi(),
+          getUsersApi(),
+          getGradesApi(),
+          getAttendanceApi()
+        ]);
+
+        setCourseSections(sectionData);
+        setSubjects(subjectData);
+        setEnrollments(enrollmentData);
+        setUsers(userData);
+        setGrades(gradeData);
+        setAttendanceRecords(attendanceData);
+      } catch {
+        showToast('Không thể tải dữ liệu nhập điểm', 'error');
+      }
+    };
+
+    void loadData();
+  }, [showToast]);
+
   const myClasses = useMemo(
     () => courseSections.filter((cs) => cs.lecturerId === currentUser?.id),
-    [currentUser]
+    [courseSections, currentUser]
   );
+
   const loadSection = useCallback((sectionId: string) => {
     setSelectedSection(sectionId);
     setLocked(false);
-    const students = enrollments.
-    filter((e) => e.courseSectionId === sectionId && e.status === 'ENROLLED').
-    map((e) => users.find((u) => u.id === e.studentId)).
-    filter(Boolean);
-    const rows: GradeRow[] = students.
-    map((student) => {
-      if (!student) return null;
-      const existing = initialGrades.find(
+
+    const students = enrollments
+      .filter((e) => e.courseSectionId === sectionId && e.status === 'ENROLLED')
+      .map((e) => users.find((u) => u.id === e.studentId))
+      .filter(Boolean) as User[];
+
+    const rows: GradeRow[] = students.map((student) => {
+      const existing = grades.find(
         (g) => g.studentId === student.id && g.courseSectionId === sectionId
       );
+
       const attRecords = attendanceRecords.filter(
         (a) => a.studentId === student.id && a.courseSectionId === sectionId
       );
-      const presentCount = attRecords.filter(
-        (a) => a.status === 'PRESENT'
-      ).length;
+
+      const presentCount = attRecords.filter((a) => a.status === 'PRESENT').length;
       const lateCount = attRecords.filter((a) => a.status === 'LATE').length;
       const totalSessions = Math.max(attRecords.length, 1);
-      const attScore =
-      existing?.attendanceScore ??
-      Math.round(
-        (presentCount + lateCount * 0.5) / totalSessions * 10 * 10
-      ) / 10;
+
+      const attScore = existing?.attendanceScore ??
+        Math.round(((presentCount + lateCount * 0.5) / totalSessions) * 100) / 10;
+
       const midterm = existing?.midterm ?? '';
       const final = existing?.final ?? '';
+
       let totalScore: number | null = null;
       let letterGrade = '—';
       let gpaPoint: number | null = null;
+
       if (midterm !== '' && final !== '') {
-        const calc = calculateGrade(
-          midterm as number,
-          final as number,
-          attScore
-        );
+        const calc = calculateGrade(midterm as number, final as number, attScore);
         totalScore = calc.totalScore;
         letterGrade = calc.letterGrade;
         gpaPoint = calc.gpaPoint;
       }
+
       return {
         studentId: student.id,
         name: student.name,
@@ -96,71 +154,110 @@ export function GradeManagement() {
         letterGrade,
         gpaPoint
       };
-    }).
-    filter(Boolean) as GradeRow[];
+    });
+
     setGradeRows(rows);
-  }, []);
+  }, [attendanceRecords, enrollments, grades, users]);
+
   const updateGrade = (
-  studentId: string,
-  field: 'midterm' | 'final',
-  value: string) =>
-  {
+    studentId: string,
+    field: 'midterm' | 'final',
+    value: string
+  ) => {
     if (locked) return;
+
     setGradeRows((prev) =>
-    prev.map((row) => {
-      if (row.studentId !== studentId) return row;
-      const numVal =
-      value === '' ? '' : Math.min(10, Math.max(0, parseFloat(value) || 0));
-      const updated = {
-        ...row,
-        [field]: numVal
-      };
-      if (updated.midterm !== '' && updated.final !== '') {
-        const calc = calculateGrade(
-          updated.midterm as number,
-          updated.final as number,
-          updated.attendanceScore
-        );
+      prev.map((row) => {
+        if (row.studentId !== studentId) return row;
+
+        const numVal = value === '' ? '' : Math.min(10, Math.max(0, parseFloat(value) || 0));
+        const updated = {
+          ...row,
+          [field]: numVal
+        };
+
+        if (updated.midterm !== '' && updated.final !== '') {
+          const calc = calculateGrade(
+            updated.midterm as number,
+            updated.final as number,
+            updated.attendanceScore
+          );
+
+          return {
+            ...updated,
+            totalScore: calc.totalScore,
+            letterGrade: calc.letterGrade,
+            gpaPoint: calc.gpaPoint
+          };
+        }
+
         return {
           ...updated,
-          totalScore: calc.totalScore,
-          letterGrade: calc.letterGrade,
-          gpaPoint: calc.gpaPoint
+          totalScore: null,
+          letterGrade: '—',
+          gpaPoint: null
         };
-      }
-      return {
-        ...updated,
-        totalScore: null,
-        letterGrade: '—',
-        gpaPoint: null
-      };
-    })
+      })
     );
   };
+
   const handleSave = async () => {
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    showToast('Lưu bảng điểm thành công!', 'success');
-    setSaving(false);
+    if (!selectedSection) return;
+
+    try {
+      setSaving(true);
+
+      const toSave = gradeRows.filter((r) => r.midterm !== '' && r.final !== '');
+      for (const row of toSave) {
+        await upsertGradeApi({
+          studentId: row.studentId,
+          courseSectionId: selectedSection,
+          midterm: row.midterm as number,
+          finalScore: row.final as number,
+          attendanceScore: row.attendanceScore,
+          totalScore: row.totalScore ?? undefined,
+          letterGrade: row.letterGrade === '—' ? undefined : row.letterGrade,
+          gpaPoint: row.gpaPoint ?? undefined,
+          updatedBy: currentUser?.id
+        });
+      }
+
+      const latest = await getGradesApi({ courseSectionId: selectedSection });
+      setGrades((prev) => {
+        const rest = prev.filter((g) => g.courseSectionId !== selectedSection);
+        return [...rest, ...latest];
+      });
+
+      showToast('Lưu bảng điểm thành công!', 'success');
+    } catch {
+      showToast('Lưu bảng điểm thất bại', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
+
   const handleExport = () => {
     showToast('Đang xuất bảng điểm PDF... (Tính năng demo)', 'info');
   };
+
   const letterGradeBadge = (grade: string) => {
     if (grade === '—') return <span className="text-slate-400">—</span>;
-    const variant = ['A', 'B+', 'B'].includes(grade) ?
-    'success' :
-    ['C+', 'C'].includes(grade) ?
-    'warning' :
-    grade === 'F' ?
-    'error' :
-    'neutral';
+
+    const variant = ['A', 'B+', 'B'].includes(grade)
+      ? 'success'
+      : ['C+', 'C'].includes(grade)
+        ? 'warning'
+        : grade === 'F'
+          ? 'error'
+          : 'neutral';
+
     return (
       <Badge variant={variant as 'success' | 'warning' | 'error' | 'neutral'}>
         {grade}
-      </Badge>);
-
+      </Badge>
+    );
   };
+
   return (
     <Layout title="Nhập điểm">
       <div className="space-y-4">
@@ -189,9 +286,7 @@ export function GradeManagement() {
                 icon={
                 locked ?
                 <UnlockIcon className="w-4 h-4" /> :
-
                 <LockIcon className="w-4 h-4" />
-
                 }
                 onClick={() => {
                   setLocked((v) => !v);

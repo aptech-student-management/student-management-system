@@ -23,11 +23,14 @@ const toUser = (u: any): User => ({
   email: u.email,
   password: "",
   role: u.role,
-  phone: u.phone,
-  studentId: u.studentId,
-  departmentId: u.departmentId,
+  phone: u.phone ?? undefined,
+  studentId: u.studentId ?? undefined,
+  lecturerId: u.lecturerId ?? undefined,
+  departmentId: u.departmentId != null ? String(u.departmentId) : undefined,
+  classId: u.classId != null ? String(u.classId) : undefined,
+  avatar: u.avatarUrl ?? undefined,
   createdAt: u.createdAt ?? new Date().toISOString().split("T")[0],
-  status: "ACTIVE"
+  status: u.status ?? "ACTIVE"
 });
 
 export const getAdminUsersApi = async (): Promise<User[]> => {

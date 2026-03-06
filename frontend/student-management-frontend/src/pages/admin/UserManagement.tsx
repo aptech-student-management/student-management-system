@@ -16,14 +16,14 @@ import { Table } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
-import { departments } from '../../data/mockData';
-import type { User, Role } from '../../types';
+import type { User, Role, Department } from '../../types';
 import {
   createAdminUserApi,
   deleteAdminUserApi,
   getAdminUsersApi,
   updateAdminUserApi } from
 '../../services/adminUserService';
+import { getDepartmentsApi } from '../../services/departmentService';
 const PAGE_SIZE = 10;
 const roleBadge = (role: Role) => {
   const map: Record<
@@ -55,6 +55,7 @@ const roleBadge = (role: Role) => {
 export function UserManagement() {
   const { showToast } = useToast();
   const [userList, setUserList] = useState<User[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<'ALL' | Role>('ALL');
   const [page, setPage] = useState(1);
@@ -74,6 +75,17 @@ export function UserManagement() {
 
   useEffect(() => {
     fetchUsers();
+
+    const fetchDepartments = async () => {
+      try {
+        const data = await getDepartmentsApi();
+        setDepartments(data);
+      } catch {
+        showToast('Không thể tải danh sách khoa', 'error');
+      }
+    };
+
+    fetchDepartments();
   }, []);
 
   const [form, setForm] = useState({

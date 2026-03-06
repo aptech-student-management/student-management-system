@@ -25,6 +25,11 @@ public class UserController {
 
     private final UserService userService;
 
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(ApiResponse.success(userService.getAllUsers(), "Danh sách người dùng"));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getProfile() {
         return ResponseEntity.ok(userService.getCurrentUser());

@@ -1,8 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   BookOpenIcon,
   CheckCircleIcon,
-  XCircleIcon,
   AlertTriangleIcon } from
 'lucide-react';
 import { Layout } from '../../components/layout/Layout';
@@ -11,24 +10,54 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
+import type { Enrollment, CourseSection, Semester, Subject, User } from '../../types';
+import { getCourseSectionsApi } from '../../services/courseSectionService';
+import { getSubjectsApi } from '../../services/subjectService';
+import { getSemestersApi } from '../../services/semesterService';
 import {
-  courseSections,
-  subjects,
-  semesters,
-  enrollments as initialEnrollments,
-  users } from
-'../../data/mockData';
-import type { Enrollment, CourseSection } from '../../types';
+  createEnrollmentApi,
+  getEnrollmentsApi,
+  updateEnrollmentApi
+} from '../../services/enrollmentService';
+import { getUsersApi } from '../../services/userService';
 export function CourseRegistration() {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
-  const [enrollmentList, setEnrollmentList] =
-  useState<Enrollment[]>(initialEnrollments);
+  const [enrollmentList, setEnrollmentList] = useState<Enrollment[]>([]);
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [sectionData, subjectData, semesterData, enrollmentData, userData] = await Promise.all([
+          getCourseSectionsApi(),
+          getSubjectsApi(),
+          getSemestersApi(),
+          getEnrollmentsApi(),
+          getUsersApi()
+        ]);
+
+        setCourseSections(sectionData);
+        setSubjects(subjectData);
+        setSemesters(semesterData);
+        setEnrollmentList(enrollmentData);
+        setUsers(userData);
+      } catch {
+        showToast('Không thể tải dữ liệu đăng ký môn', 'error');
+      }
+    };
+
+    void loadData();
+  }, [showToast]);
+
   const activeSemester = semesters.find((s) => s.status === 'ACTIVE');
   const availableSections = useMemo(
     () => courseSections.filter((cs) => cs.semesterId === activeSemester?.id),
-    [activeSemester]
+    [courseSections, activeSemester]
   );
   const myEnrollments = useMemo(
     () =>
@@ -50,42 +79,65 @@ export function CourseRegistration() {
   };
   const handleRegister = async (sectionId: string) => {
     const section = courseSections.find((cs) => cs.id === sectionId);
-    if (!section) return;
+    if (!section || !currentUser) return;
     if (hasConflict(section)) {
       showToast('Trùng lịch học! Không thể đăng ký môn này.', 'error');
       return;
     }
-    setLoading(sectionId);
-    await new Promise((r) => setTimeout(r, 600));
-    const newEnrollment: Enrollment = {
-      id: `e${Date.now()}`,
-      studentId: currentUser!.id,
-      courseSectionId: sectionId,
-      enrolledAt: new Date().toISOString().split('T')[0],
-      status: 'ENROLLED'
-    };
-    setEnrollmentList((prev) => [...prev, newEnrollment]);
-    const subj = subjects.find((s) => s.id === section.subjectId);
-    showToast(`Đăng ký môn "${subj?.name}" thành công!`, 'success');
-    setLoading(null);
+
+    try {
+      setLoading(sectionId);
+      const saved = await createEnrollmentApi({
+        studentId: currentUser.id,
+        courseSectionId: sectionId,
+        enrolledAt: new Date().toISOString().split('T')[0],
+        status: 'ENROLLED'
+      });
+
+      setEnrollmentList((prev) => {
+        const idx = prev.findIndex((e) => e.id === saved.id);
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = saved;
+          return next;
+        }
+        return [...prev.filter((e) => !(e.studentId === saved.studentId && e.courseSectionId === saved.courseSectionId)), saved];
+      });
+
+      const subj = subjects.find((s) => s.id === section.subjectId);
+      showToast(`Đăng ký môn "${subj?.name}" thành công!`, 'success');
+    } catch {
+      showToast('Đăng ký môn thất bại', 'error');
+    } finally {
+      setLoading(null);
+    }
   };
   const handleDrop = async (sectionId: string) => {
-    setLoading(sectionId);
-    await new Promise((r) => setTimeout(r, 600));
-    setEnrollmentList((prev) =>
-    prev.map((e) =>
-    e.studentId === currentUser?.id && e.courseSectionId === sectionId ?
-    {
-      ...e,
-      status: 'DROPPED'
-    } :
-    e
-    )
+    const target = enrollmentList.find(
+      (e) =>
+        e.studentId === currentUser?.id &&
+        e.courseSectionId === sectionId &&
+        e.status === 'ENROLLED'
     );
-    const section = courseSections.find((cs) => cs.id === sectionId);
-    const subj = subjects.find((s) => s.id === section?.subjectId);
-    showToast(`Đã hủy đăng ký môn "${subj?.name}"`, 'warning');
-    setLoading(null);
+
+    if (!target) return;
+
+    try {
+      setLoading(sectionId);
+      const updated = await updateEnrollmentApi(target.id, { status: 'DROPPED' });
+
+      setEnrollmentList((prev) =>
+        prev.map((e) => (e.id === updated.id ? updated : e))
+      );
+
+      const section = courseSections.find((cs) => cs.id === sectionId);
+      const subj = subjects.find((s) => s.id === section?.subjectId);
+      showToast(`Đã hủy đăng ký môn "${subj?.name}"`, 'warning');
+    } catch {
+      showToast('Hủy đăng ký thất bại', 'error');
+    } finally {
+      setLoading(null);
+    }
   };
   const getLecturerName = (id: string) =>
   users.find((u) => u.id === id)?.name ?? '—';

@@ -9,18 +9,19 @@ import { Modal } from '../../components/ui/Modal';
 import { Table } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
 import { useToast } from '../../contexts/ToastContext';
-import { departments } from '../../data/mockData';
-import type { Class } from '../../types';
+import type { Class, Department } from '../../types';
 import {
   createClassApi,
   deleteClassApi,
   getClassesApi,
   updateClassApi } from
 '../../services/classService';
+import { getDepartmentsApi } from '../../services/departmentService';
 const PAGE_SIZE = 8;
 export function ClassManagement() {
   const { showToast } = useToast();
   const [classList, setClassList] = useState<Class[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [search, setSearch] = useState('');
   const [filterDept, setFilterDept] = useState('');
   const [page, setPage] = useState(1);
@@ -45,8 +46,18 @@ export function ClassManagement() {
     }
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const data = await getDepartmentsApi();
+      setDepartments(data);
+    } catch {
+      showToast('Không thể tải danh sách khoa', 'error');
+    }
+  };
+
   useEffect(() => {
     fetchClasses();
+    fetchDepartments();
   }, []);
 
   const filtered = useMemo(() => {

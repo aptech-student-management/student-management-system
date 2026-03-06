@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { SearchIcon, DownloadIcon, ShieldIcon } from 'lucide-react';
 import { Layout } from '../../components/layout/Layout';
 import { Card } from '../../components/ui/Card';
@@ -9,7 +9,7 @@ import { Table } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
-import { auditLogs } from '../../data/mockData';
+import { getAuditLogsApi } from '../../services/auditLogService';
 import type { AuditLog as AuditLogType } from '../../types';
 const PAGE_SIZE = 10;
 const actionConfig: Record<
@@ -50,21 +50,28 @@ export function AuditLog() {
   const [filterAction, setFilterAction] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [page, setPage] = useState(1);
+  const [logs, setLogs] = useState<AuditLogType[]>([]);
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      try {
+        const data = await getAuditLogsApi({
+          action: filterAction || undefined,
+          date: filterDate || undefined,
+          search: search || undefined
+        });
+        setLogs(data);
+      } catch {
+        showToast('Không thể tải audit log', 'error');
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [filterAction, filterDate, search, showToast]);
+
   const filtered = useMemo(() => {
-    let result = [...auditLogs].sort((a, b) =>
-    b.timestamp.localeCompare(a.timestamp)
-    );
-    if (search)
-    result = result.filter(
-      (l) =>
-      l.userName.toLowerCase().includes(search.toLowerCase()) ||
-      l.detail.toLowerCase().includes(search.toLowerCase())
-    );
-    if (filterAction) result = result.filter((l) => l.action === filterAction);
-    if (filterDate)
-    result = result.filter((l) => l.timestamp.startsWith(filterDate));
-    return result;
-  }, [search, filterAction, filterDate]);
+    return [...logs].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  }, [logs]);
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const handleExport = () => {
@@ -137,12 +144,11 @@ export function AuditLog() {
   return (
     <Layout title="Audit Log - Lịch sử hoạt động">
       <div className="space-y-4">
-        {/* Summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Object.entries(actionConfig).
           slice(0, 4).
           map(([action, cfg]) => {
-            const count = auditLogs.filter((l) => l.action === action).length;
+            const count = logs.filter((l) => l.action === action).length;
             return (
               <div
                 key={action}

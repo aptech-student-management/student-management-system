@@ -16,14 +16,15 @@ import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { departments, classes } from '../../data/mockData';
 import { uploadAvatarApi } from "../../services/userService";
-import type { Role } from '../../types';
+import type { Class, Department, Role } from '../../types';
 import { useEffect } from "react";
 import {
   updateProfileApi,
   changePasswordApi,
 } from "../../services/userService";
+import { getDepartmentsApi } from '../../services/departmentService';
+import { getClassesApi } from '../../services/classService';
 
 const roleLabel: Record<Role, string> = {
   ADMIN: 'Quản trị viên',
@@ -36,7 +37,7 @@ const roleBadgeVariant: Record<Role, 'info' | 'success' | 'neutral'> = {
   STUDENT: 'neutral'
 };
 export function ProfilePage() {
-  const { currentUser } = useAuth();
+  const { currentUser, refreshProfile } = useAuth();
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -55,6 +56,23 @@ export function ProfilePage() {
       });
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    const fetchMeta = async () => {
+      try {
+        const [deptData, classData] = await Promise.all([
+          getDepartmentsApi(),
+          getClassesApi()
+        ]);
+        setDepartments(deptData);
+        setClasses(classData);
+      } catch {
+        // Ignore metadata fetch errors to avoid blocking profile page
+      }
+    };
+
+    void fetchMeta();
+  }, []);
   const [passwordForm, setPasswordForm] = useState({
     oldPassword: '',
     newPassword: '',
@@ -63,8 +81,10 @@ export function ProfilePage() {
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>(
     {}
   );
-  const dept = departments.find((d) => d.id === currentUser?.departmentId);
-  const cls = classes.find((c) => c.id === currentUser?.classId);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const dept = departments.find((d) => String(d.id) === String(currentUser?.departmentId));
+  const cls = classes.find((c) => String(c.id) === String(currentUser?.classId));
   const handleAvatarChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -73,9 +93,12 @@ export function ProfilePage() {
 
     try {
       const res = await uploadAvatarApi(file);
+      const avatarPath = typeof res.data === 'string' ? res.data : '';
+      if (avatarPath) {
+        setAvatarPreview(`http://localhost:8080${avatarPath}`);
+      }
 
-      setAvatarPreview("http://localhost:8080" + res.data);
-
+      await refreshProfile();
       showToast("Cập nhật avatar thành công!", "success");
 
     } catch (err: any) {
@@ -93,6 +116,7 @@ export function ProfilePage() {
       });
 
       if (res.status === 200) {
+        await refreshProfile();
         showToast("Cập nhật thông tin thành công!", "success");
       }
 

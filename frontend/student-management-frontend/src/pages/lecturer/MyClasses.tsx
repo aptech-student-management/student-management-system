@@ -1,52 +1,88 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   BookOpenIcon,
   UsersIcon,
   ClockIcon,
-  MapPinIcon,
-  XIcon } from
+  MapPinIcon
+} from
 'lucide-react';
 import { Layout } from '../../components/layout/Layout';
-import { Card } from '../../components/ui/Card';
 import { Select } from '../../components/ui/Select';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
-import {
-  courseSections,
-  subjects,
-  classes,
-  semesters,
-  enrollments,
-  users } from
-'../../data/mockData';
+import type { CourseSection, Enrollment, Semester, Subject, Class, User } from '../../types';
+import { getCourseSectionsApi } from '../../services/courseSectionService';
+import { getSubjectsApi } from '../../services/subjectService';
+import { getClassesApi } from '../../services/classService';
+import { getSemestersApi } from '../../services/semesterService';
+import { getEnrollmentsApi } from '../../services/enrollmentService';
+import { getUsersApi } from '../../services/userService';
+
 export function MyClasses() {
   const { currentUser } = useAuth();
-  const [filterSemester, setFilterSemester] = useState(
-    semesters.find((s) => s.status === 'ACTIVE')?.id ?? ''
-  );
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [filterSemester, setFilterSemester] = useState('');
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [sectionData, subjectData, classData, semesterData, enrollmentData, userData] = await Promise.all([
+          getCourseSectionsApi(),
+          getSubjectsApi(),
+          getClassesApi(),
+          getSemestersApi(),
+          getEnrollmentsApi(),
+          getUsersApi()
+        ]);
+
+        setCourseSections(sectionData);
+        setSubjects(subjectData);
+        setClasses(classData);
+        setSemesters(semesterData);
+        setEnrollments(enrollmentData);
+        setUsers(userData);
+
+        const activeSem = semesterData.find((s) => s.status === 'ACTIVE');
+        setFilterSemester(activeSem?.id ?? '');
+      } catch {
+        // keep UI stable
+      }
+    };
+
+    void loadData();
+  }, []);
+
   const myClasses = useMemo(
     () =>
-    courseSections.filter(
-      (cs) =>
-      cs.lecturerId === currentUser?.id && (
-      filterSemester ? cs.semesterId === filterSemester : true)
-    ),
-    [currentUser, filterSemester]
+      courseSections.filter(
+        (cs) =>
+          cs.lecturerId === currentUser?.id &&
+          (filterSemester ? cs.semesterId === filterSemester : true)
+      ),
+    [courseSections, currentUser?.id, filterSemester]
   );
-  const selectedSectionData = selectedSection ?
-  courseSections.find((cs) => cs.id === selectedSection) :
-  null;
+
+  const selectedSectionData = selectedSection
+    ? courseSections.find((cs) => cs.id === selectedSection)
+    : null;
+
   const sectionStudents = useMemo(() => {
     if (!selectedSection) return [];
-    return enrollments.
-    filter(
-      (e) => e.courseSectionId === selectedSection && e.status === 'ENROLLED'
-    ).
-    map((e) => users.find((u) => u.id === e.studentId)).
-    filter(Boolean);
-  }, [selectedSection]);
+    return enrollments
+      .filter(
+        (e) => e.courseSectionId === selectedSection && e.status === 'ENROLLED'
+      )
+      .map((e) => users.find((u) => u.id === e.studentId))
+      .filter(Boolean) as User[];
+  }, [selectedSection, enrollments, users]);
+
   return (
     <Layout title="Lớp học của tôi">
       <div className="space-y-4">
@@ -138,7 +174,6 @@ export function MyClasses() {
         </div>
       </div>
 
-      {/* Student list modal */}
       <Modal
         isOpen={!!selectedSection}
         onClose={() => setSelectedSection(null)}
@@ -150,7 +185,6 @@ export function MyClasses() {
             {sectionStudents.length} sinh viên đã đăng ký
           </p>
           {sectionStudents.map((student, idx) => {
-            if (!student) return null;
             return (
               <div
                 key={student.id}

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BookOpenIcon,
@@ -22,42 +22,83 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import {
-  courseSections,
-  subjects,
-  classes,
-  enrollments,
-  grades,
-  semesters } from
-'../../data/mockData';
+import type { CourseSection, Enrollment, Grade, Semester, Subject, Class } from '../../types';
+import { getCourseSectionsApi } from '../../services/courseSectionService';
+import { getSubjectsApi } from '../../services/subjectService';
+import { getClassesApi } from '../../services/classService';
+import { getEnrollmentsApi } from '../../services/enrollmentService';
+import { getGradesApi } from '../../services/gradeService';
+import { getSemestersApi } from '../../services/semesterService';
+
 export function LecturerDashboard() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [sectionData, subjectData, classData, enrollmentData, gradeData, semesterData] = await Promise.all([
+          getCourseSectionsApi(),
+          getSubjectsApi(),
+          getClassesApi(),
+          getEnrollmentsApi(),
+          getGradesApi(),
+          getSemestersApi()
+        ]);
+
+        setCourseSections(sectionData);
+        setSubjects(subjectData);
+        setClasses(classData);
+        setEnrollments(enrollmentData);
+        setGrades(gradeData);
+        setSemesters(semesterData);
+      } catch {
+        // keep UI stable
+      }
+    };
+
+    void loadData();
+  }, []);
+
   const myClasses = useMemo(
     () => courseSections.filter((cs) => cs.lecturerId === currentUser?.id),
-    [currentUser]
+    [courseSections, currentUser]
   );
+
   const activeSemester = semesters.find((s) => s.status === 'ACTIVE');
+
   const myActiveClasses = myClasses.filter(
     (cs) => cs.semesterId === activeSemester?.id
   );
+
   const totalStudents = useMemo(
     () => myActiveClasses.reduce((sum, cs) => sum + cs.enrolledCount, 0),
     [myActiveClasses]
   );
+
   const pendingGrades = useMemo(() => {
     const myEnrollments = enrollments.filter(
       (e) =>
       myActiveClasses.some((cs) => cs.id === e.courseSectionId) &&
       e.status === 'ENROLLED'
     );
+
     const gradedIds = new Set(
       grades.map((g) => `${g.studentId}-${g.courseSectionId}`)
     );
+
     return myEnrollments.filter(
       (e) => !gradedIds.has(`${e.studentId}-${e.courseSectionId}`)
     ).length;
-  }, [myActiveClasses]);
+  }, [myActiveClasses, enrollments, grades]);
+
   const attendanceChartData = useMemo(
     () =>
     myActiveClasses.map((cs) => {
@@ -69,15 +110,16 @@ export function LecturerDashboard() {
         Trễ: Math.floor(cs.enrolledCount * 0.05)
       };
     }),
-    [myActiveClasses]
+    [myActiveClasses, subjects]
   );
-  const recentGrades = grades.
-  filter((g) => myClasses.some((cs) => cs.id === g.courseSectionId)).
-  slice(0, 5);
+
+  const recentGrades = grades
+    .filter((g) => myClasses.some((cs) => cs.id === g.courseSectionId))
+    .slice(0, 5);
+
   return (
     <Layout title="Dashboard - Giảng viên">
       <div className="space-y-6">
-        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title="Lớp đang dạy"
@@ -110,7 +152,6 @@ export function LecturerDashboard() {
 
         </div>
 
-        {/* My classes grid */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-slate-900">
@@ -178,7 +219,6 @@ export function LecturerDashboard() {
           </div>
         </div>
 
-        {/* Charts + recent grades */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card title="Tổng hợp điểm danh" subtitle="Theo lớp học phần">
             <ResponsiveContainer width="100%" height={220}>
