@@ -208,7 +208,7 @@ export function LoginPage() {
                 size="lg"
                 className="mt-2">
 
-                {isLoaAing ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </Button>
             </form>
 

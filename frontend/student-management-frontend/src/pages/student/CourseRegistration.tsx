@@ -20,6 +20,18 @@ import {
   updateEnrollmentApi
 } from '../../services/enrollmentService';
 import { getUsersApi } from '../../services/userService';
+const formatVNDate = (date?: string) => {
+  if (!date) return "—";
+
+  const d = new Date(date);
+
+  return d.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Ho_Chi_Minh"
+  });
+};
 export function CourseRegistration() {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
@@ -169,21 +181,33 @@ export function CourseRegistration() {
     <Layout title="Đăng ký Môn học">
       <div className="space-y-6">
         {/* Semester info */}
-        <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 flex items-start gap-3">
-          <BookOpenIcon className="w-5 h-5 text-sky-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-sky-900">
-              {activeSemester?.name ?? 'Không có học kỳ đang mở'}
-            </p>
-            <p className="text-xs text-sky-700 mt-0.5">
-              Thời gian đăng ký: {activeSemester?.startDate} —{' '}
-              {activeSemester?.endDate} · Đã đăng ký:{' '}
-              <strong>
-                {myEnrollments.length} môn ({totalRegisteredCredits} tín chỉ)
-              </strong>
-            </p>
-          </div>
-        </div>
+       <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 flex items-start gap-3">
+  <BookOpenIcon className="w-5 h-5 text-sky-600 flex-shrink-0 mt-0.5" />
+
+  <div className="space-y-1">
+    <p className="text-sm font-semibold text-sky-900">
+      {activeSemester?.name ?? "Không có học kỳ đang mở"}
+    </p>
+
+    <p className="text-xs text-sky-700">
+      Thời gian đăng ký:{" "}
+      <span className="font-medium">
+        {formatVNDate(activeSemester?.startDate)}
+      </span>{" "}
+      —{" "}
+      <span className="font-medium">
+        {formatVNDate(activeSemester?.endDate)}
+      </span>
+    </p>
+
+    <p className="text-xs text-sky-700">
+      Đã đăng ký:{" "}
+      <strong>
+        {myEnrollments.length} môn ({totalRegisteredCredits} tín chỉ)
+      </strong>
+    </p>
+  </div>
+</div>
 
         {/* Available courses */}
         <Card

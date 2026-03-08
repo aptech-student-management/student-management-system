@@ -9,6 +9,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Table } from '../../components/ui/Table';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
+import { formatVNDate } from "../../utils/date";
 import {
   createSemesterApi,
   deleteSemesterApi,
@@ -292,17 +293,16 @@ export function SemesterManagement() {
 
   },
   {
-    key: 'startDate',
-    label: 'Bắt đầu',
-    render: (_: unknown, row: Semester) =>
-    <span className="text-sm">{row.startDate}</span>
-
+  key: 'startDate',
+  label: 'Bắt đầu',
+  render: (_: unknown, row: Semester) =>
+    <span className="text-sm">{formatVNDate(row.startDate)}</span>
   },
   {
     key: 'endDate',
     label: 'Kết thúc',
     render: (_: unknown, row: Semester) =>
-    <span className="text-sm">{row.endDate}</span>
+    <span className="text-sm">{formatVNDate(row.endDate)}</span>
 
   },
   {
