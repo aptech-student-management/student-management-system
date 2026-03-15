@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TrendingUpIcon,
@@ -25,6 +25,8 @@ import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 
 import { useAuth } from "../../contexts/AuthContext";
+import { getEarlyWarningApi } from "../../services/earlyWarningService";
+import type { EarlyWarning } from "../../types";
 
 import {
   enrollments,
@@ -40,6 +42,7 @@ export function StudentDashboard() {
 
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const [earlyWarning, setEarlyWarning] = useState<EarlyWarning | null>(null);
 
   const myEnrollments = useMemo(
     () =>
@@ -165,6 +168,27 @@ export function StudentDashboard() {
     100
   );
 
+  useEffect(() => {
+    const loadEarlyWarning = async () => {
+      if (!currentUser?.studentId) return;
+      try {
+        const data = await getEarlyWarningApi(currentUser.studentId);
+        setEarlyWarning(data);
+      } catch {
+        setEarlyWarning(null);
+      }
+    };
+
+    void loadEarlyWarning();
+  }, [currentUser?.studentId]);
+
+  const riskBadgeClass =
+    earlyWarning?.riskLevel === "HIGH"
+      ? "bg-red-100 text-red-700 border-red-200"
+      : earlyWarning?.riskLevel === "MEDIUM"
+        ? "bg-amber-100 text-amber-700 border-amber-200"
+        : "bg-emerald-100 text-emerald-700 border-emerald-200";
+
   return (
 
     <Layout title="Dashboard - Sinh viên">
@@ -251,6 +275,54 @@ export function StudentDashboard() {
           </div>
 
         </Card>
+
+        {earlyWarning && (
+          <Card
+            title="AI Early Warning"
+            subtitle="Đánh giá nguy cơ học tập theo dữ liệu điểm và chuyên cần"
+          >
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className={riskBadgeClass}>
+                  Mức nguy cơ: {earlyWarning.riskLevel}
+                </Badge>
+                <Badge variant="info">
+                  Điểm rủi ro: {earlyWarning.riskScore.toFixed(1)}/100
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+                  <p className="text-slate-500">Tỷ lệ chuyên cần</p>
+                  <p className="font-semibold text-slate-800">
+                    {(earlyWarning.attendanceRate * 100).toFixed(0)}%
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+                  <p className="text-slate-500">GPA trung bình</p>
+                  <p className="font-semibold text-slate-800">
+                    {earlyWarning.averageGpa?.toFixed(2) ?? "N/A"}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+                  <p className="text-slate-500">Môn có nguy cơ trượt</p>
+                  <p className="font-semibold text-slate-800">
+                    {earlyWarning.failedCourseCount}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-slate-700 mb-2">Gợi ý từ AI</p>
+                <ul className="list-disc pl-5 space-y-1 text-sm text-slate-600">
+                  {earlyWarning.recommendations.map((recommendation) => (
+                    <li key={recommendation}>{recommendation}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* COURSES + GPA CHART */}
 

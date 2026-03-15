@@ -118,3 +118,15 @@ export interface ToastItem {
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
 }
+
+export interface EarlyWarning {
+  studentId: string;
+  studentName: string;
+  riskScore: number;
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  attendanceRate: number;
+  averageGpa?: number | null;
+  failedCourseCount: number;
+  enrolledCourseCount: number;
+  recommendations: string[];
+}
