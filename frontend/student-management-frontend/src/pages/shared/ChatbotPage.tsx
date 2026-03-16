@@ -25,10 +25,14 @@ export function ChatbotPage() {
     "Hướng dẫn đăng ký môn"
   ]);
   const [isSending, setIsSending] = useState(false);
- codex/generate-ai-project-ideas
+
   const [serverMode, setServerMode] = useState<"server" | "fallback">("server");
   const [lastError, setLastError] = useState<string>("");
 
+
+ codex/generate-ai-project-ideas
+  const [serverMode, setServerMode] = useState<"server" | "fallback">("server");
+  const [lastError, setLastError] = useState<string>("");
 
   const history = useMemo(
     () => messages.map((m) => ({ role: m.role, content: m.content })),
@@ -37,13 +41,17 @@ export function ChatbotPage() {
 
   const sendMessage = async (content: string) => {
     const trimmed = content.trim();
+
+    if (!trimmed || !currentUser || isSending) return;
+
     if (!trimmed || !currentUser) return;
+
 
     const nextMessages = [...messages, { role: "user" as const, content: trimmed }];
     setMessages(nextMessages);
     setInput("");
     setIsSending(true);
- codex/generate-ai-project-ideas
+
     const response = await askChatbotApi({
       message: trimmed,
       role: currentUser.role,
@@ -69,6 +77,10 @@ export function ChatbotPage() {
 
       setMessages((prev) => [...prev, { role: "assistant", content: response.reply }]);
       setSuggestions(response.suggestions);
+
+      setServerMode(response.source === "fallback" ? "fallback" : "server");
+      setLastError(response.errorMessage ?? "");
+
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -116,7 +128,12 @@ export function ChatbotPage() {
                   type="button"
                   key={suggestion}
                   onClick={() => void sendMessage(suggestion)}
+
+                  disabled={isSending}
+                  className="px-3 py-1.5 text-xs rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+
                   className="px-3 py-1.5 text-xs rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+
                 >
                   {suggestion}
                 </button>
@@ -127,6 +144,14 @@ export function ChatbotPage() {
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void sendMessage(input);
+                  }
+                }}
+
                 placeholder="Nhập câu hỏi của bạn..."
                 rows={2}
                 className="flex-1 resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -135,6 +160,8 @@ export function ChatbotPage() {
                 onClick={() => void sendMessage(input)}
                 loading={isSending}
                 icon={<SendIcon className="w-4 h-4" />}
+                disabled={!input.trim()}
+
               >
                 Gửi
               </Button>
@@ -143,7 +170,7 @@ export function ChatbotPage() {
         </Card>
 
         <Card title="Trạng thái" icon={<MessageSquareIcon className="w-4 h-4" />}>
- codex/generate-ai-project-ideas
+
           <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
             <Badge variant="info">{currentUser?.role}</Badge>
             {serverMode === "server" ? (
@@ -152,9 +179,11 @@ export function ChatbotPage() {
               <Badge variant="warning">Đang dùng fallback local</Badge>
             )}
             {lastError && <span className="text-amber-700">({lastError})</span>}
+
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <Badge variant="info">{currentUser?.role}</Badge>
             <span>Chatbot đã sẵn sàng hỗ trợ theo vai trò của bạn.</span>
+
           </div>
         </Card>
       </div>

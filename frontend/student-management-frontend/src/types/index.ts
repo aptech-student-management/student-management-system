@@ -130,8 +130,7 @@ export interface EarlyWarning {
   enrolledCourseCount: number;
   recommendations: string[];
 }
-codex/generate-ai-project-ideas
-codex/generate-ai-project-ideas
+
 
 export interface ChatbotMessage {
   role: 'user' | 'assistant';
@@ -142,7 +141,7 @@ export interface ChatbotReply {
   reply: string;
   intent: string;
   suggestions: string[];
-codex/generate-ai-project-ideas
+
   source?: 'server' | 'fallback';
   errorMessage?: string;
 }
