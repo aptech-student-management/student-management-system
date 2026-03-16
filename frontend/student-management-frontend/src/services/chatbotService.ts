@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import axiosClient from "../api/axiosClient";
 import type { ChatbotMessage, ChatbotReply, Role } from "../types";
@@ -9,9 +10,15 @@ type ApiResponse<T> = {
 };
 
 type ChatbotReplyApi = {
+
   reply?: string;
   intent?: string;
   suggestions?: string[];
+};
+
+  reply: string;
+  intent: string;
+  suggestions: string[];
 };
 
 const buildFallbackReply = (payload: {
@@ -19,7 +26,11 @@ const buildFallbackReply = (payload: {
   role?: Role;
   studentId?: string;
 }): ChatbotReply => {
+
   const message = (payload.message ?? "").toLowerCase();
+
+  const message = payload.message.toLowerCase();
+
 
   if (message.includes("early warning") || message.includes("cảnh báo") || message.includes("rủi ro")) {
     if (!payload.studentId) {
@@ -77,6 +88,7 @@ export const askChatbotApi = async (payload: {
   studentId?: string;
   history?: ChatbotMessage[];
 }): Promise<ChatbotReply> => {
+
   try {
     const res = await axiosClient.post<ApiResponse<ChatbotReplyApi>>("/ai/chatbot", payload, {
       timeout: 12000
@@ -87,6 +99,13 @@ export const askChatbotApi = async (payload: {
       reply: data?.reply?.trim() || "Mình đã nhận câu hỏi, bạn có thể hỏi chi tiết hơn để mình hỗ trợ tốt hơn.",
       intent: data?.intent || "GENERAL",
       suggestions: Array.isArray(data?.suggestions) ? data.suggestions : [],
+
+    const data = res.data.data;
+    return {
+      reply: data.reply,
+      intent: data.intent,
+      suggestions: data.suggestions ?? [],
+
       source: "server"
     };
   } catch (error) {
@@ -105,4 +124,15 @@ export const askChatbotApi = async (payload: {
       errorMessage: reason
     };
   }
+
+
+  const res = await axiosClient.post<ApiResponse<ChatbotReplyApi>>("/ai/chatbot", payload);
+  const data = res.data.data;
+
+  return {
+    reply: data.reply,
+    intent: data.intent,
+    suggestions: data.suggestions ?? []
+  };
+
 };
