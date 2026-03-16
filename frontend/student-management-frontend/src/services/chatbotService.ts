@@ -1,3 +1,4 @@
+ codex/generate-ai-project-ideas
 import axios from "axios";
 import axiosClient from "../api/axiosClient";
 import type { ChatbotMessage, ChatbotReply, Role } from "../types";
@@ -14,6 +15,7 @@ type ChatbotReplyApi = {
   suggestions: string[];
 };
 
+codex/generate-ai-project-ideas
 const buildFallbackReply = (payload: {
   message: string;
   role?: Role;
@@ -77,6 +79,7 @@ export const askChatbotApi = async (payload: {
   studentId?: string;
   history?: ChatbotMessage[];
 }): Promise<ChatbotReply> => {
+ codex/generate-ai-project-ideas
   try {
     const res = await axiosClient.post<ApiResponse<ChatbotReplyApi>>("/ai/chatbot", payload, {
       timeout: 12000
@@ -105,4 +108,13 @@ export const askChatbotApi = async (payload: {
       errorMessage: reason
     };
   }
+
+  const res = await axiosClient.post<ApiResponse<ChatbotReplyApi>>("/ai/chatbot", payload);
+  const data = res.data.data;
+
+  return {
+    reply: data.reply,
+    intent: data.intent,
+    suggestions: data.suggestions ?? []
+  };
 };
