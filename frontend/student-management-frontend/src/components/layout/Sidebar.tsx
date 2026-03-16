@@ -19,7 +19,8 @@ import {
   UserIcon,
   ChevronRightIcon,
   ShieldIcon,
-  ListChecksIcon } from
+  ListChecksIcon,
+  BotIcon } from
 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Role } from '../../types';
@@ -63,6 +64,11 @@ const adminNav: NavItem[] = [
   label: 'Audit Log',
   path: '/admin/audit',
   icon: <ShieldIcon className="w-4 h-4" />
+},
+{
+  label: 'AI Chatbot',
+  path: '/chatbot',
+  icon: <BotIcon className="w-4 h-4" />
 }];
 
 const lecturerNav: NavItem[] = [
@@ -85,6 +91,11 @@ const lecturerNav: NavItem[] = [
   label: 'Nhập điểm',
   path: '/lecturer/grades',
   icon: <ClipboardListIcon className="w-4 h-4" />
+},
+{
+  label: 'AI Chatbot',
+  path: '/chatbot',
+  icon: <BotIcon className="w-4 h-4" />
 }];
 
 const studentNav: NavItem[] = [
@@ -107,6 +118,11 @@ const studentNav: NavItem[] = [
   label: 'Bảng điểm',
   path: '/student/transcript',
   icon: <FileTextIcon className="w-4 h-4" />
+},
+{
+  label: 'AI Chatbot',
+  path: '/chatbot',
+  icon: <BotIcon className="w-4 h-4" />
 },
 {
   label: 'Hồ sơ',
