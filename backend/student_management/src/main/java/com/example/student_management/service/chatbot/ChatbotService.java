@@ -19,6 +19,7 @@ public class ChatbotService {
     }
 
     public ChatbotResponse reply(ChatbotRequest request) {
+
         if (request == null) {
             return ChatbotResponse.builder()
                     .intent("EMPTY")
@@ -98,6 +99,7 @@ public class ChatbotService {
                     .reply(reply)
                     .suggestions(List.of("Xem toàn bộ gợi ý", "Lập kế hoạch học 4 tuần", "Tư vấn cải thiện GPA"))
                     .build();
+
         } catch (Exception ex) {
             return ChatbotResponse.builder()
                     .intent("EARLY_WARNING")
