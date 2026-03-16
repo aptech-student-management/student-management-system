@@ -28,8 +28,6 @@ class ChatbotServiceTest {
     }
 
     @Test
-
-
     void reply_shouldReturnGreetingIntent_whenMessageIsGreeting() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
         ChatbotService chatbotService = new ChatbotService(earlyWarningService);
@@ -42,8 +40,8 @@ class ChatbotServiceTest {
         assertEquals("GREETING", response.getIntent());
         assertTrue(response.getReply().toLowerCase().contains("xin chào"));
     }
-    @Test
 
+    @Test
     void reply_shouldUseEarlyWarning_whenStudentIdProvided() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
         ChatbotService chatbotService = new ChatbotService(earlyWarningService);
@@ -72,8 +70,6 @@ class ChatbotServiceTest {
     }
 
     @Test
-
-
     void reply_shouldReturnSafeResponse_whenEarlyWarningThrows() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
         ChatbotService chatbotService = new ChatbotService(earlyWarningService);
@@ -92,23 +88,12 @@ class ChatbotServiceTest {
     }
 
     @Test
-
-
     void reply_shouldReturnGeneral_whenNoKnownIntent() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
         ChatbotService chatbotService = new ChatbotService(earlyWarningService);
 
         ChatbotRequest request = new ChatbotRequest();
-
-        request.setMessage("xin chào bạn");
-
-
-
         request.setMessage("cảm ơn");
-
-        request.setMessage("xin chào bạn");
-
-
 
         ChatbotResponse response = chatbotService.reply(request);
 

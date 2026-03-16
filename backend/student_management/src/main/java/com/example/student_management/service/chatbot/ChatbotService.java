@@ -20,7 +20,6 @@ public class ChatbotService {
 
     public ChatbotResponse reply(ChatbotRequest request) {
 
-
         if (request == null) {
             return ChatbotResponse.builder()
                     .intent("EMPTY")
@@ -38,8 +37,6 @@ public class ChatbotService {
                     .suggestions(defaultSuggestions(request.getRole()))
                     .build();
         }
-
-
 
         if (containsAny(message, "hello", "hi", "xin chào", "chào")) {
             return ChatbotResponse.builder()
@@ -85,8 +82,6 @@ public class ChatbotService {
                     .build();
         }
 
-
-
         try {
             EarlyWarningResponse warning = earlyWarningService.evaluateStudent(request.getStudentId());
             String reply = String.format(
@@ -104,6 +99,7 @@ public class ChatbotService {
                     .reply(reply)
                     .suggestions(List.of("Xem toàn bộ gợi ý", "Lập kế hoạch học 4 tuần", "Tư vấn cải thiện GPA"))
                     .build();
+
         } catch (Exception ex) {
             return ChatbotResponse.builder()
                     .intent("EARLY_WARNING")
@@ -111,24 +107,6 @@ public class ChatbotService {
                     .suggestions(List.of("Về Dashboard", "Mẹo tăng GPA", "Kế hoạch học 4 tuần"))
                     .build();
         }
-
-        EarlyWarningResponse warning = earlyWarningService.evaluateStudent(request.getStudentId());
-        String reply = String.format(
-                Locale.ROOT,
-                "Kết quả Early Warning của bạn: mức %s, điểm rủi ro %.1f/100, chuyên cần %.0f%%, số môn nguy cơ trượt %d. Hành động ưu tiên: %s",
-                warning.getRiskLevel(),
-                warning.getRiskScore(),
-                warning.getAttendanceRate() * 100,
-                warning.getFailedCourseCount(),
-                warning.getRecommendations().isEmpty() ? "Theo dõi tiến độ mỗi tuần." : warning.getRecommendations().get(0)
-        );
-
-        return ChatbotResponse.builder()
-                .intent("EARLY_WARNING")
-                .reply(reply)
-                .suggestions(List.of("Xem toàn bộ gợi ý", "Lập kế hoạch học 4 tuần", "Tư vấn cải thiện GPA"))
-                .build();
-
     }
 
     private List<String> defaultSuggestions(String role) {
