@@ -131,4 +131,13 @@ export interface EarlyWarning {
   recommendations: string[];
 }
 
-export * from './chatbot';
+export interface ChatbotMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatbotReply {
+  reply: string;
+  intent: string;
+  suggestions: string[];
+}
