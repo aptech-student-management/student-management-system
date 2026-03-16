@@ -28,6 +28,22 @@ class ChatbotServiceTest {
     }
 
     @Test
+
+
+    void reply_shouldReturnGreetingIntent_whenMessageIsGreeting() {
+        EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
+        ChatbotService chatbotService = new ChatbotService(earlyWarningService);
+
+        ChatbotRequest request = new ChatbotRequest();
+        request.setMessage("hello");
+
+        ChatbotResponse response = chatbotService.reply(request);
+
+        assertEquals("GREETING", response.getIntent());
+        assertTrue(response.getReply().toLowerCase().contains("xin chào"));
+    }
+    @Test
+
     void reply_shouldUseEarlyWarning_whenStudentIdProvided() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
         ChatbotService chatbotService = new ChatbotService(earlyWarningService);
@@ -56,12 +72,43 @@ class ChatbotServiceTest {
     }
 
     @Test
+
+
+    void reply_shouldReturnSafeResponse_whenEarlyWarningThrows() {
+        EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
+        ChatbotService chatbotService = new ChatbotService(earlyWarningService);
+
+        when(earlyWarningService.evaluateStudent("SV002"))
+                .thenThrow(new RuntimeException("DB down"));
+
+        ChatbotRequest request = new ChatbotRequest();
+        request.setMessage("cho mình xem rủi ro");
+        request.setStudentId("SV002");
+
+        ChatbotResponse response = chatbotService.reply(request);
+
+        assertEquals("EARLY_WARNING", response.getIntent());
+        assertTrue(response.getReply().contains("chưa lấy được dữ liệu"));
+    }
+
+    @Test
+
+
     void reply_shouldReturnGeneral_whenNoKnownIntent() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
         ChatbotService chatbotService = new ChatbotService(earlyWarningService);
 
         ChatbotRequest request = new ChatbotRequest();
+
         request.setMessage("xin chào bạn");
+
+
+
+        request.setMessage("cảm ơn");
+
+        request.setMessage("xin chào bạn");
+
+
 
         ChatbotResponse response = chatbotService.reply(request);
 
