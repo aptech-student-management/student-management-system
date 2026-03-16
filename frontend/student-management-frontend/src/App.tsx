@@ -28,6 +28,7 @@ import { CourseRegistration } from './pages/student/CourseRegistration';
 import { Schedule } from './pages/student/Schedule';
 import { Transcript } from './pages/student/Transcript';
 import { ProfilePage } from './pages/shared/ProfilePage';
+import { ChatbotPage } from './pages/shared/ChatbotPage';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: Role;
@@ -242,6 +243,14 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
 
+
+      <Route
+        path="/chatbot"
+        element={
+        <ProtectedRoute>
+            <ChatbotPage />
+          </ProtectedRoute>
+        } />
 
       {/* 404 */}
       <Route
