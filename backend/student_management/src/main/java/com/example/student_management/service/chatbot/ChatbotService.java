@@ -20,6 +20,7 @@ public class ChatbotService {
 
     public ChatbotResponse reply(ChatbotRequest request) {
 
+
         if (request == null) {
             return ChatbotResponse.builder()
                     .intent("EMPTY")
@@ -39,6 +40,7 @@ public class ChatbotService {
         }
 
 
+
         if (containsAny(message, "hello", "hi", "xin chào", "chào")) {
             return ChatbotResponse.builder()
                     .intent("GREETING")
@@ -46,7 +48,6 @@ public class ChatbotService {
                     .suggestions(defaultSuggestions(request.getRole()))
                     .build();
         }
-
 
         if (containsAny(message, "early warning", "cảnh báo", "nguy cơ", "rủi ro")) {
             return buildEarlyWarningReply(request);
@@ -83,6 +84,7 @@ public class ChatbotService {
                     .suggestions(List.of("Cách lấy studentId", "Hỏi về GPA", "Hỏi về đăng ký môn"))
                     .build();
         }
+
 
 
         try {

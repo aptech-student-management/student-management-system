@@ -142,6 +142,8 @@ export interface ChatbotReply {
   intent: string;
   suggestions: string[];
 
+
   source?: 'server' | 'fallback';
   errorMessage?: string;
+
 }

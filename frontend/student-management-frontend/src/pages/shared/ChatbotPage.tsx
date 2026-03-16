@@ -26,6 +26,7 @@ export function ChatbotPage() {
   ]);
   const [isSending, setIsSending] = useState(false);
 
+
   const [serverMode, setServerMode] = useState<"server" | "fallback">("server");
   const [lastError, setLastError] = useState<string>("");
 
@@ -34,6 +35,7 @@ export function ChatbotPage() {
   const [serverMode, setServerMode] = useState<"server" | "fallback">("server");
   const [lastError, setLastError] = useState<string>("");
 
+
   const history = useMemo(
     () => messages.map((m) => ({ role: m.role, content: m.content })),
     [messages]
@@ -41,6 +43,9 @@ export function ChatbotPage() {
 
   const sendMessage = async (content: string) => {
     const trimmed = content.trim();
+
+    if (!trimmed || !currentUser) return;
+
 
     if (!trimmed || !currentUser || isSending) return;
 
@@ -51,6 +56,7 @@ export function ChatbotPage() {
     setMessages(nextMessages);
     setInput("");
     setIsSending(true);
+
 
     const response = await askChatbotApi({
       message: trimmed,
@@ -77,6 +83,7 @@ export function ChatbotPage() {
 
       setMessages((prev) => [...prev, { role: "assistant", content: response.reply }]);
       setSuggestions(response.suggestions);
+
 
       setServerMode(response.source === "fallback" ? "fallback" : "server");
       setLastError(response.errorMessage ?? "");
@@ -129,6 +136,9 @@ export function ChatbotPage() {
                   key={suggestion}
                   onClick={() => void sendMessage(suggestion)}
 
+                  className="px-3 py-1.5 text-xs rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+
+
                   disabled={isSending}
                   className="px-3 py-1.5 text-xs rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60"
 
@@ -145,6 +155,7 @@ export function ChatbotPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
 
+
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -160,6 +171,7 @@ export function ChatbotPage() {
                 onClick={() => void sendMessage(input)}
                 loading={isSending}
                 icon={<SendIcon className="w-4 h-4" />}
+
                 disabled={!input.trim()}
 
               >
@@ -170,6 +182,10 @@ export function ChatbotPage() {
         </Card>
 
         <Card title="Trạng thái" icon={<MessageSquareIcon className="w-4 h-4" />}>
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <Badge variant="info">{currentUser?.role}</Badge>
+            <span>Chatbot đã sẵn sàng hỗ trợ theo vai trò của bạn.</span>
+
 
           <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
             <Badge variant="info">{currentUser?.role}</Badge>

@@ -1,5 +1,7 @@
 
+
 import axios from "axios";
+
 import axiosClient from "../api/axiosClient";
 import type { ChatbotMessage, ChatbotReply, Role } from "../types";
 
@@ -11,15 +13,18 @@ type ApiResponse<T> = {
 
 type ChatbotReplyApi = {
 
+
   reply?: string;
   intent?: string;
   suggestions?: string[];
 };
 
+
   reply: string;
   intent: string;
   suggestions: string[];
 };
+
 
 const buildFallbackReply = (payload: {
   message: string;
@@ -81,6 +86,7 @@ const buildFallbackReply = (payload: {
   };
 };
 
+
 export const askChatbotApi = async (payload: {
   message: string;
   userName?: string;
@@ -88,6 +94,7 @@ export const askChatbotApi = async (payload: {
   studentId?: string;
   history?: ChatbotMessage[];
 }): Promise<ChatbotReply> => {
+
 
   try {
     const res = await axiosClient.post<ApiResponse<ChatbotReplyApi>>("/ai/chatbot", payload, {
