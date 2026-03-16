@@ -25,6 +25,10 @@ export function ChatbotPage() {
     "Hướng dẫn đăng ký môn"
   ]);
   const [isSending, setIsSending] = useState(false);
+ codex/generate-ai-project-ideas
+  const [serverMode, setServerMode] = useState<"server" | "fallback">("server");
+  const [lastError, setLastError] = useState<string>("");
+
 
   const history = useMemo(
     () => messages.map((m) => ({ role: m.role, content: m.content })),
@@ -39,6 +43,20 @@ export function ChatbotPage() {
     setMessages(nextMessages);
     setInput("");
     setIsSending(true);
+ codex/generate-ai-project-ideas
+    const response = await askChatbotApi({
+      message: trimmed,
+      role: currentUser.role,
+      userName: currentUser.name,
+      studentId: currentUser.studentId,
+      history
+    });
+
+    setMessages((prev) => [...prev, { role: "assistant", content: response.reply }]);
+    setSuggestions(response.suggestions);
+    setServerMode(response.source === "fallback" ? "fallback" : "server");
+    setLastError(response.errorMessage ?? "");
+    setIsSending(false);
 
     try {
       const response = await askChatbotApi({
@@ -125,6 +143,15 @@ export function ChatbotPage() {
         </Card>
 
         <Card title="Trạng thái" icon={<MessageSquareIcon className="w-4 h-4" />}>
+ codex/generate-ai-project-ideas
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+            <Badge variant="info">{currentUser?.role}</Badge>
+            {serverMode === "server" ? (
+              <Badge variant="success">AI server online</Badge>
+            ) : (
+              <Badge variant="warning">Đang dùng fallback local</Badge>
+            )}
+            {lastError && <span className="text-amber-700">({lastError})</span>}
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <Badge variant="info">{currentUser?.role}</Badge>
             <span>Chatbot đã sẵn sàng hỗ trợ theo vai trò của bạn.</span>
