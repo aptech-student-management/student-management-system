@@ -46,7 +46,7 @@ public class SubjectService {
         if (subjectRepo.existsByCode(req.code)) {
             throw new IllegalArgumentException("Mã môn học đã tồn tại: " + req.code);
         }
-        if (!deptRepo.existsById(req.departmentId)) {
+        if (!deptRepo.existsById(Long.valueOf(req.departmentId))) {
             throw new IllegalArgumentException("Không tìm thấy khoa: " + req.departmentId);
         }
 
@@ -73,7 +73,7 @@ public class SubjectService {
             }
         });
 
-        if (!deptRepo.existsById(req.departmentId)) {
+        if (!deptRepo.existsById(Long.valueOf(req.departmentId))) {
             throw new IllegalArgumentException("Không tìm thấy khoa: " + req.departmentId);
         }
 

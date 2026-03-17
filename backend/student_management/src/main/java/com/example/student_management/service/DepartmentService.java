@@ -24,7 +24,7 @@ public class DepartmentService {
     }
 
     public Department getById(String id) {
-        return departmentRepository.findById(id)
+        return departmentRepository.findById(Long.valueOf(id))
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy khoa"));
     }
 
@@ -35,7 +35,7 @@ public class DepartmentService {
             throw new BadRequestException("ID khoa không được để trống");
         }
 
-        if (departmentRepository.existsById(id)) {
+        if (departmentRepository.existsById(Long.valueOf(id))) {
             throw new BadRequestException("ID khoa đã tồn tại");
         }
         if (departmentRepository.existsByCode(request.getCode())) {
@@ -56,7 +56,7 @@ public class DepartmentService {
 
     @Transactional
     public Department update(String id, DepartmentUpsertRequest request) {
-        Department existing = departmentRepository.findById(id)
+        Department existing = departmentRepository.findById(Long.valueOf(id))
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy khoa"));
 
         if (!existing.getCode().equals(request.getCode())
@@ -74,9 +74,9 @@ public class DepartmentService {
 
     @Transactional
     public void delete(String id) {
-        if (!departmentRepository.existsById(id)) {
+        if (!departmentRepository.existsById(Long.valueOf(id))) {
             throw new NotFoundException("Không tìm thấy khoa");
         }
-        departmentRepository.deleteById(id);
+        departmentRepository.deleteById(Long.valueOf(id));
     }
 }

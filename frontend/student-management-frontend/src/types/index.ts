@@ -117,4 +117,32 @@ export interface ToastItem {
   id: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
+<<<<<<< HEAD
+=======
+}
+
+export interface EarlyWarning {
+  studentId: string;
+  studentName: string;
+  riskScore: number;
+  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  attendanceRate: number;
+  averageGpa?: number | null;
+  failedCourseCount: number;
+  enrolledCourseCount: number;
+  recommendations: string[];
+}
+
+export interface ChatbotMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatbotReply {
+  reply: string;
+  intent: string;
+  suggestions: string[];
+  source?: 'server' | 'fallback';
+  errorMessage?: string;
+>>>>>>> thanh
 }
