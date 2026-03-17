@@ -73,6 +73,23 @@ export function MyClasses() {
     }
 
     void loadData()
+
+    const intervalId = window.setInterval(() => {
+      void loadData()
+    }, 5000)
+
+    const handleFocus = () => {
+      void loadData()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    document.addEventListener('visibilitychange', handleFocus)
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleFocus)
+    }
   }, [])
 
   const myClasses = useMemo(
