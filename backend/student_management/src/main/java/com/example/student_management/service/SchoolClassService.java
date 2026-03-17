@@ -43,7 +43,7 @@ public class SchoolClassService {
         if (classRepo.existsByCode(req.code)) {
             throw new BadRequestException("Mã lớp đã tồn tại: " + req.code);
         }
-        if (!deptRepo.existsById(req.departmentId)) {
+        if (!deptRepo.existsById(Long.valueOf(req.departmentId))) {
             throw new NotFoundException("Không tìm thấy khoa: " + req.departmentId);
         }
 
@@ -71,7 +71,7 @@ public class SchoolClassService {
             }
         });
 
-        if (!deptRepo.existsById(req.departmentId)) {
+        if (!deptRepo.existsById(Long.valueOf(req.departmentId))) {
             throw new NotFoundException("Không tìm thấy khoa: " + req.departmentId);
         }
 
