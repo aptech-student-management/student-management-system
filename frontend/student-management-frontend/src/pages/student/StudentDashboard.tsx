@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TrendingUpIcon,
@@ -25,21 +25,52 @@ import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 
 import { useAuth } from "../../contexts/AuthContext";
-
-import {
-  enrollments,
-  courseSections,
-  subjects,
-  grades,
-  semesters
-} from "../../data/mockData";
+import { useToast } from "../../contexts/ToastContext";
+import type { CourseSection, Enrollment, Grade, Semester, Subject } from "../../types";
+import { getEnrollmentsApi } from "../../services/enrollmentService";
+import { getCourseSectionsApi } from "../../services/courseSectionService";
+import { getSubjectsApi } from "../../services/subjectService";
+import { getGradesApi } from "../../services/gradeService";
+import { getSemestersApi } from "../../services/semesterService";
 
 const TOTAL_CREDITS_REQUIRED = 120;
 
 export function StudentDashboard() {
 
   const { currentUser } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [courseSections, setCourseSections] = useState<CourseSection[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [enrollmentData, sectionData, subjectData, gradeData, semesterData] = await Promise.all([
+          getEnrollmentsApi(),
+          getCourseSectionsApi(),
+          getSubjectsApi(),
+          getGradesApi({ studentId: currentUser?.id }),
+          getSemestersApi()
+        ]);
+
+        setEnrollments(enrollmentData);
+        setCourseSections(sectionData);
+        setSubjects(subjectData);
+        setGrades(gradeData);
+        setSemesters(semesterData);
+      } catch {
+        showToast("Không thể tải dữ liệu dashboard sinh viên", "error");
+      }
+    };
+
+    if (currentUser?.id) {
+      void loadData();
+    }
+  }, [currentUser?.id, showToast]);
 
   const myEnrollments = useMemo(
     () =>
@@ -49,7 +80,7 @@ export function StudentDashboard() {
     [currentUser]
   );
 
-  const activeSemester = semesters.find((s) => s.status === "ACTIVE");
+  const activeSemester = semesters.find((s) => s.status === "ACTIVE") ?? semesters[0];
 
   const currentCourses = useMemo(
     () =>
@@ -153,12 +184,39 @@ export function StudentDashboard() {
 
   }, [myGrades]);
 
-  const gpaHistory = [
-    { name: "HK1 22-23", GPA: 3.2 },
-    { name: "HK2 22-23", GPA: 3.4 },
-    { name: "HK1 23-24", GPA: cumulativeGPA ?? 3.5 },
-    { name: "HK1 24-25", GPA: currentSemGPA ?? 3.3 }
-  ];
+  const gpaHistory = useMemo(() => {
+    const semGpaMap = semesters
+      .map((semester) => {
+        const semGrades = myGrades.filter((grade) => {
+          const section = courseSections.find((cs) => cs.id === grade.courseSectionId);
+          return section?.semesterId === semester.id && grade.gpaPoint !== undefined;
+        });
+
+        if (semGrades.length === 0) return null;
+
+        const totalPoints = semGrades.reduce((sum, grade) => {
+          const section = courseSections.find((cs) => cs.id === grade.courseSectionId);
+          const subject = subjects.find((s) => s.id === section?.subjectId);
+          return sum + (grade.gpaPoint ?? 0) * (subject?.credits ?? 0);
+        }, 0);
+
+        const totalCredits = semGrades.reduce((sum, grade) => {
+          const section = courseSections.find((cs) => cs.id === grade.courseSectionId);
+          const subject = subjects.find((s) => s.id === section?.subjectId);
+          return sum + (subject?.credits ?? 0);
+        }, 0);
+
+        if (totalCredits === 0) return null;
+
+        return {
+          name: semester.name,
+          GPA: Math.round((totalPoints / totalCredits) * 100) / 100
+        };
+      })
+      .filter(Boolean) as { name: string; GPA: number }[];
+
+    return semGpaMap.slice(-4);
+  }, [semesters, myGrades, courseSections, subjects]);
 
   const creditProgress = Math.min(
     (completedCredits / TOTAL_CREDITS_REQUIRED) * 100,
@@ -190,6 +248,7 @@ export function StudentDashboard() {
             }
             icon={<TrendingUpIcon className="w-5 h-5"/>}
             color="sky"
+            subtitle={activeSemester?.name}
           />
 
           <StatCard
@@ -244,7 +303,7 @@ export function StudentDashboard() {
             </div>
 
             <div className="flex justify-between text-xs text-slate-400">
-              <span>0</span>
+              <span>{completedCredits}</span>
               <span>{TOTAL_CREDITS_REQUIRED} TC</span>
             </div>
 
@@ -322,11 +381,11 @@ export function StudentDashboard() {
 
           </Card>
 
-          <Card
-            title="Xu hướng GPA"
-            subtitle="4 học kỳ gần nhất"
-          >
+          <Card title="Xu hướng GPA" subtitle="4 học kỳ gần nhất">
 
+            {gpaHistory.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-10">Chưa có dữ liệu GPA theo học kỳ</p>
+            ) : (
             <ResponsiveContainer width="100%" height={220}>
 
               <LineChart data={gpaHistory}>
@@ -350,6 +409,7 @@ export function StudentDashboard() {
               </LineChart>
 
             </ResponsiveContainer>
+            )}
 
           </Card>
 
