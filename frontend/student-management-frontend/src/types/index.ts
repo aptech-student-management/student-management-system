@@ -117,6 +117,8 @@ export interface ToastItem {
   id: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
+<<<<<<< HEAD
+=======
 }
 
 export interface EarlyWarning {
@@ -142,4 +144,5 @@ export interface ChatbotReply {
   suggestions: string[];
   source?: 'server' | 'fallback';
   errorMessage?: string;
+>>>>>>> thanh
 }
