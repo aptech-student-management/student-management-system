@@ -89,6 +89,24 @@ export function CourseRegistration() {
     filter(Boolean);
     return enrolledSections.some((cs) => cs?.schedule === section.schedule);
   };
+
+  const applySectionEnrollmentDelta = (sectionId: string, delta: number) => {
+    setCourseSections((prev) =>
+      prev.map((section) => {
+        if (section.id !== sectionId) return section;
+
+        const nextCount = Math.max(0, section.enrolledCount + delta);
+        const isFull = nextCount >= section.maxStudents;
+
+        return {
+          ...section,
+          enrolledCount: nextCount,
+          status: section.status === 'CLOSED' ? section.status : isFull ? 'FULL' : 'OPEN'
+        };
+      })
+    );
+  };
+
   const handleRegister = async (sectionId: string) => {
     const section = courseSections.find((cs) => cs.id === sectionId);
     if (!section || !currentUser) return;
@@ -115,6 +133,7 @@ export function CourseRegistration() {
         }
         return [...prev.filter((e) => !(e.studentId === saved.studentId && e.courseSectionId === saved.courseSectionId)), saved];
       });
+      applySectionEnrollmentDelta(sectionId, 1);
 
       const subj = subjects.find((s) => s.id === section.subjectId);
       showToast(`Đăng ký môn "${subj?.name}" thành công!`, 'success');
@@ -141,6 +160,7 @@ export function CourseRegistration() {
       setEnrollmentList((prev) =>
         prev.map((e) => (e.id === updated.id ? updated : e))
       );
+      applySectionEnrollmentDelta(sectionId, -1);
 
       const section = courseSections.find((cs) => cs.id === sectionId);
       const subj = subjects.find((s) => s.id === section?.subjectId);
