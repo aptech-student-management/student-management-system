@@ -33,7 +33,6 @@ import { getCourseSectionsApi } from "../../services/courseSectionService";
 import { getSubjectsApi } from "../../services/subjectService";
 import { getGradesApi } from "../../services/gradeService";
 import { getSemestersApi } from "../../services/semesterService";
-=======
 import { getEarlyWarningApi } from "../../services/earlyWarningService";
 import type { EarlyWarning } from "../../types";
 
