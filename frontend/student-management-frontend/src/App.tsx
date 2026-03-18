@@ -9,7 +9,6 @@ import {
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import type { Role } from './types';
-// Pages
 import { LoginPage } from './pages/LoginPage';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -18,7 +17,6 @@ import { ClassManagement } from './pages/admin/ClassManagement';
 import { SubjectManagement } from './pages/admin/SubjectManagement';
 import { UserManagement } from './pages/admin/UserManagement';
 import { SemesterManagement } from './pages/admin/SemesterManagement';
-import { AuditLog } from './pages/admin/AuditLog';
 import { LecturerDashboard } from './pages/lecturer/LecturerDashboard';
 import { MyClasses } from './pages/lecturer/MyClasses';
 import { AttendanceManagement } from './pages/lecturer/AttendanceManagement';
@@ -140,14 +138,6 @@ function AppRoutes() {
         element={
         <ProtectedRoute requiredRole="ADMIN">
             <SemesterManagement />
-          </ProtectedRoute>
-        } />
-
-      <Route
-        path="/admin/audit"
-        element={
-        <ProtectedRoute requiredRole="ADMIN">
-            <AuditLog />
           </ProtectedRoute>
         } />
 

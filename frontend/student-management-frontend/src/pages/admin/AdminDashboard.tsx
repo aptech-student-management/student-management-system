@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   UsersIcon,
@@ -7,9 +7,7 @@ import {
   TrendingUpIcon,
   PlusIcon,
   UserPlusIcon,
-  CalendarIcon,
-  BarChart2Icon
-} from 'lucide-react';
+  CalendarIcon} from 'lucide-react';
 
 import {
   BarChart,
@@ -30,7 +28,6 @@ import {
 import { Layout } from '../../components/layout/Layout';
 import { StatCard } from '../../components/ui/StatCard';
 import { Card } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -41,8 +38,6 @@ import { getDepartmentsApi } from '../../services/departmentService';
 import { getCourseSectionsApi } from '../../services/courseSectionService';
 import { getSemestersApi } from '../../services/semesterService';
 import { getGradesApi } from '../../services/gradeService';
-
-import { auditLogs } from '../../data/mockData';
 
 const COLORS = ['#3b82f6', '#0d9488', '#f59e0b', '#8b5cf6', '#ef4444'];
 
@@ -136,24 +131,6 @@ export function AdminDashboard() {
     { name: 'Năm 5+', value: 120 }
   ];
 
-  const recentLogs = auditLogs.slice(0, 5);
-
-  const actionBadge = (action: string) => {
-    const map: Record<
-      string,
-      'success' | 'warning' | 'error' | 'info' | 'neutral'
-    > = {
-      CREATE: 'success',
-      UPDATE: 'warning',
-      DELETE: 'error',
-      LOGIN: 'info',
-      LOGOUT: 'neutral',
-      EXPORT: 'neutral'
-    };
-
-    return <Badge variant={map[action] ?? 'neutral'}>{action}</Badge>;
-  };
-
   if (loading) {
     return (
       <Layout title="Dashboard - Quản trị viên">
@@ -200,15 +177,6 @@ export function AdminDashboard() {
               onClick={() => navigate('/admin/semesters')}
             >
               Quản lý học kỳ
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<BarChart2Icon className="w-4 h-4" />}
-              onClick={() => navigate('/admin/audit')}
-            >
-              Xem Audit Log
             </Button>
 
           </div>
@@ -375,42 +343,6 @@ export function AdminDashboard() {
             </ResponsiveContainer>
 
           </Card>
-
-          <Card
-            title="Hoạt động gần đây"
-            subtitle="5 hành động mới nhất"
-            className="xl:col-span-2"
-          >
-
-            <div className="space-y-2 max-h-[260px] overflow-auto pr-1">
-
-              {recentLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 transition"
-                >
-
-                  {actionBadge(log.action)}
-
-                  <div className="flex-1 min-w-0">
-
-                    <p className="text-xs font-medium text-slate-800 truncate">
-                      {log.detail}
-                    </p>
-
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {log.userName} · {log.timestamp.split(' ')[0]}
-                    </p>
-
-                  </div>
-
-                </div>
-              ))}
-
-            </div>
-
-          </Card>
-
         </div>
 
       </div>

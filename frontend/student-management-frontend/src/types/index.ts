@@ -97,16 +97,6 @@ export interface Grade {
   updatedAt?: string;
 }
 
-export interface AuditLog {
-  id: string;
-  userId: string;
-  userName: string;
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'EXPORT';
-  target: string;
-  detail: string;
-  timestamp: string;
-}
-
 export interface NavItem {
   label: string;
   path: string;
@@ -117,8 +107,7 @@ export interface ToastItem {
   id: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
-<<<<<<< HEAD
-=======
+
 }
 
 export interface EarlyWarning {
@@ -144,5 +133,4 @@ export interface ChatbotReply {
   suggestions: string[];
   source?: 'server' | 'fallback';
   errorMessage?: string;
->>>>>>> thanh
 }

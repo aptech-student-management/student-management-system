@@ -18,7 +18,6 @@ import {
   FileTextIcon,
   UserIcon,
   ChevronRightIcon,
-  ShieldIcon,
   ListChecksIcon,
   BotIcon } from
 'lucide-react';
@@ -59,11 +58,6 @@ const adminNav: NavItem[] = [
   label: 'Học kỳ & Lớp HP',
   path: '/admin/semesters',
   icon: <CalendarIcon className="w-4 h-4" />
-},
-{
-  label: 'Audit Log',
-  path: '/admin/audit',
-  icon: <ShieldIcon className="w-4 h-4" />
 },
 {
   label: 'AI Chatbot',
