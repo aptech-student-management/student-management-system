@@ -1,20 +1,18 @@
 package com.example.student_management.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
 @Entity
 @Table
 public class Department {
-
     @Id
-    @Column(length = 10)
+    @Column(name = "id", length = 10)
     private String id;
 
     @Column(nullable = false)
@@ -25,10 +23,16 @@ public class Department {
 
     private String headLecturerId;
 
-    private Integer studentCount = 0;
-
-    private Integer subjectCount = 0;
-
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @OneToMany(mappedBy = "department")
+    private List<User> users;
+
+    @OneToMany(mappedBy = "department")
+    private List<SubjectEntity> subjects;
+
+    @OneToMany(mappedBy = "department")
+    private List<SubjectEntity> schoolClass;
+
 }

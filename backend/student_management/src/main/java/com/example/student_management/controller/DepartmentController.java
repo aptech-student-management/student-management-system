@@ -1,22 +1,19 @@
 package com.example.student_management.controller;
 
 import com.example.student_management.dto.department.DepartmentUpsertRequest;
-import com.example.student_management.entity.Department;
 import com.example.student_management.repository.ApiResponse;
 import com.example.student_management.service.DepartmentService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/departments")
+@RequiredArgsConstructor
 public class DepartmentController {
 
     private final DepartmentService departmentService;
-
-    public DepartmentController(DepartmentService departmentService) {
-        this.departmentService = departmentService;
-    }
 
     @GetMapping
     public ResponseEntity<?> getAll() {
@@ -34,9 +31,8 @@ public class DepartmentController {
 
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody DepartmentUpsertRequest request) {
-        Department created = departmentService.create(request);
-        return ResponseEntity.ok(
-                ApiResponse.success(created, "Tạo khoa thành công")
+        return ResponseEntity.status(201).body(
+                ApiResponse.success(departmentService.create(request), "Tạo khoa thành công")
         );
     }
 

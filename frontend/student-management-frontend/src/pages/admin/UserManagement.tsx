@@ -16,7 +16,6 @@ import { Table } from '../../components/ui/Table';
 import { Pagination } from '../../components/ui/Pagination';
 import { Badge } from '../../components/ui/Badge';
 import { useToast } from '../../contexts/ToastContext';
-import { departments } from '../../data/mockData';
 import type { User, Role } from '../../types';
 import {
   createAdminUserApi,
@@ -24,6 +23,7 @@ import {
   getAdminUsersApi,
   updateAdminUserApi } from
 '../../services/adminUserService';
+import { getDepartmentsApi } from '../../services/departmentService';
 const PAGE_SIZE = 10;
 const roleBadge = (role: Role) => {
   const map: Record<
@@ -62,6 +62,7 @@ export function UserManagement() {
   const [deleteModal, setDeleteModal] = useState<User | null>(null);
   const [editing, setEditing] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
 
   const fetchUsers = async () => {
     try {
@@ -71,9 +72,18 @@ export function UserManagement() {
       showToast('Không thể tải danh sách tài khoản', 'error');
     }
   };
+  const fetchDepartments = async () => {
+  try {
+    const data = await getDepartmentsApi();
+    setDepartments(data);
+  } catch {
+    showToast('Không thể tải danh sách khoa', 'error');
+  }
+};
 
   useEffect(() => {
     fetchUsers();
+    fetchDepartments();
   }, []);
 
   const [form, setForm] = useState({

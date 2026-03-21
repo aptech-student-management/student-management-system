@@ -3,7 +3,7 @@ package com.example.student_management.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
+@Entity(name = "Subject")
 @Table(name = "subjects")
 @Getter
 @Setter
@@ -25,9 +25,12 @@ public class SubjectEntity {
     @Column(nullable = false)
     private Integer credits;
 
-    @Column(name = "department_id", nullable = false, length = 10)
-    private String departmentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 }
+
+

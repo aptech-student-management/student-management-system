@@ -4,9 +4,11 @@ import com.example.student_management.dto.ChangePasswordRequest;
 import com.example.student_management.dto.UpdateUserRequest;
 import com.example.student_management.dto.UserResponse;
 import com.example.student_management.dto.admin.AdminUpsertUserRequest;
+import com.example.student_management.entity.Department;
 import com.example.student_management.entity.User;
 import com.example.student_management.exception.BadRequestException;
 import com.example.student_management.exception.NotFoundException;
+import com.example.student_management.repository.DepartmentRepository;
 import com.example.student_management.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +33,7 @@ import java.util.UUID;
 public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -130,6 +133,7 @@ public class UserService {
     }
 
     public UserResponse createUserByAdmin(AdminUpsertUserRequest request) {
+
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new BadRequestException("Mật khẩu không được để trống khi tạo user");
         }
@@ -138,12 +142,18 @@ public class UserService {
             throw new BadRequestException("Email đã tồn tại");
         }
 
+        Department department = null;
+        if (request.getDepartmentId() != null) {
+            department = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new BadRequestException("Khoa không tồn tại"));
+        }
+
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
-                .departmentId(request.getDepartmentId())
+                .department(department)
                 .phone(request.getPhone())
                 .studentId(request.getStudentId())
                 .avatarUrl(null)
@@ -153,6 +163,7 @@ public class UserService {
     }
 
     public UserResponse updateUserByAdmin(Long id, AdminUpsertUserRequest request) {
+
         User existing = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy user"));
 
@@ -161,10 +172,16 @@ public class UserService {
             throw new BadRequestException("Email đã tồn tại");
         }
 
+        Department department = null;
+        if (request.getDepartmentId() != null) {
+            department = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new BadRequestException("Khoa không tồn tại"));
+        }
+
         existing.setName(request.getName());
         existing.setEmail(request.getEmail());
         existing.setRole(request.getRole());
-        existing.setDepartmentId(request.getDepartmentId());
+        existing.setDepartment(department); // ✅ FIX
         existing.setPhone(request.getPhone());
         existing.setStudentId(request.getStudentId());
 
@@ -174,7 +191,6 @@ public class UserService {
 
         return mapToResponse(userRepository.save(existing));
     }
-
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new NotFoundException("Không tìm thấy user");
@@ -202,7 +218,7 @@ public class UserService {
                 user.getRole(),
                 user.getPhone(),
                 user.getStudentId(),
-                user.getDepartmentId(),
+                user.getDepartment() != null ? user.getDepartment().getId() : null,
                 user.getAvatarUrl()
         );
     }

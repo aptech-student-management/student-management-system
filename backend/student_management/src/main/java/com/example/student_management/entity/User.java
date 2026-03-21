@@ -5,7 +5,7 @@ import lombok.*;
 
 import java.time.Instant;
 
-@Entity
+@Entity(name = "User")
 @Table(name = "users")
 @Getter
 @Setter
@@ -28,7 +28,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    private String departmentId;
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     private String phone;
     private String studentId;
 

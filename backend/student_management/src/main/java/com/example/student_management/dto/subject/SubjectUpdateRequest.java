@@ -1,5 +1,6 @@
 package com.example.student_management.dto.subject;
 
+import com.example.student_management.entity.Department;
 import jakarta.validation.constraints.*;
 
 public class SubjectUpdateRequest {
@@ -21,4 +22,5 @@ public class SubjectUpdateRequest {
     public String departmentId;
 
     public String description;
+    public Department department;
 }

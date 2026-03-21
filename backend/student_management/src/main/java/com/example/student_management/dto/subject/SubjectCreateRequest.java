@@ -1,7 +1,9 @@
 package com.example.student_management.dto.subject;
 
 import jakarta.validation.constraints.*;
+import lombok.Data;
 
+@Data
 public class SubjectCreateRequest {
 
     @Size(max = 10)
@@ -19,7 +21,6 @@ public class SubjectCreateRequest {
     @Min(1)
     public Integer credits;
 
-    @NotBlank
     @Size(max = 10)
     public String departmentId;
 

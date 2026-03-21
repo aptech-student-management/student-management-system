@@ -1,7 +1,9 @@
 package com.example.student_management.dto.schoolclass;
 
 import jakarta.validation.constraints.*;
+import lombok.Data;
 
+@Data
 public class SchoolClassCreateRequest {
 
     @NotBlank
@@ -16,7 +18,6 @@ public class SchoolClassCreateRequest {
     @Size(max = 50)
     public String code;
 
-    @NotBlank
     @Size(max = 10)
     public String departmentId;
 

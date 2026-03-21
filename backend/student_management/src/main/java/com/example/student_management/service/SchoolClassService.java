@@ -3,6 +3,7 @@ package com.example.student_management.service;
 import com.example.student_management.dto.schoolclass.SchoolClassCreateRequest;
 import com.example.student_management.dto.schoolclass.SchoolClassResponse;
 import com.example.student_management.dto.schoolclass.SchoolClassUpdateRequest;
+import com.example.student_management.entity.Department;
 import com.example.student_management.entity.SchoolClass;
 import com.example.student_management.exception.BadRequestException;
 import com.example.student_management.exception.NotFoundException;
@@ -19,10 +20,12 @@ public class SchoolClassService {
 
     private final SchoolClassRepository classRepo;
     private final DepartmentRepository deptRepo;
+    private final DepartmentRepository departmentRepository;
 
-    public SchoolClassService(SchoolClassRepository classRepo, DepartmentRepository deptRepo) {
+    public SchoolClassService(SchoolClassRepository classRepo, DepartmentRepository deptRepo, DepartmentRepository departmentRepository) {
         this.classRepo = classRepo;
         this.deptRepo = deptRepo;
+        this.departmentRepository = departmentRepository;
     }
 
     public List<SchoolClassResponse> getAll() {
@@ -43,19 +46,22 @@ public class SchoolClassService {
         if (classRepo.existsByCode(req.code)) {
             throw new BadRequestException("Mã lớp đã tồn tại: " + req.code);
         }
-        if (!deptRepo.existsById(Long.valueOf(req.departmentId))) {
+        if (!deptRepo.existsById(req.departmentId)) {
             throw new NotFoundException("Không tìm thấy khoa: " + req.departmentId);
         }
-
+        Department department = null;
+        if (req.getDepartmentId() != null) {
+            department = departmentRepository.findById(req.getDepartmentId())
+                    .orElseThrow(() -> new BadRequestException("Khoa không tồn tại"));
+        }
         SchoolClass c = SchoolClass.builder()
                 .id(req.id)
                 .name(req.name)
                 .code(req.code)
-                .departmentId(req.departmentId)
+                .department(department)
                 .year(req.year)
                 .studentCount(req.studentCount == null ? 0 : req.studentCount)
                 .build();
-
         return toResponse(classRepo.save(c));
     }
 
@@ -71,13 +77,16 @@ public class SchoolClassService {
             }
         });
 
-        if (!deptRepo.existsById(Long.valueOf(req.departmentId))) {
+        if (!deptRepo.existsById(req.departmentId)) {
             throw new NotFoundException("Không tìm thấy khoa: " + req.departmentId);
         }
+        Department department = deptRepo.findById(req.departmentId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy khoa"));
+
 
         existing.setName(req.name);
         existing.setCode(req.code);
-        existing.setDepartmentId(req.departmentId);
+        existing.setDepartment(department);
         existing.setYear(req.year);
         existing.setStudentCount(req.studentCount == null ? existing.getStudentCount() : req.studentCount);
 
@@ -97,7 +106,9 @@ public class SchoolClassService {
         r.id = c.getId();
         r.name = c.getName();
         r.code = c.getCode();
-        r.departmentId = c.getDepartmentId();
+        r.departmentId = c.getDepartment() != null
+                ? c.getDepartment().getId()
+                : null;
         r.year = c.getYear();
         r.studentCount = c.getStudentCount();
         return r;
