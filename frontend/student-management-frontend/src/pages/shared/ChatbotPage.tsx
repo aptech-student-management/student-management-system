@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MessageSquareIcon, SendIcon, SparklesIcon } from "lucide-react";
 
 import { Layout } from "../../components/layout/Layout";
@@ -11,6 +11,7 @@ import type { ChatbotMessage } from "../../types";
 
 export function ChatbotPage() {
   const { currentUser } = useAuth();
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const [messages, setMessages] = useState<ChatbotMessage[]>([
     {
@@ -30,6 +31,10 @@ export function ChatbotPage() {
   const [isSending, setIsSending] = useState(false);
   const [serverMode, setServerMode] = useState<"server" | "fallback">("server");
   const [lastError, setLastError] = useState<string>("");
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isSending]);
 
   const history = useMemo(
     () => messages.map((m) => ({ role: m.role, content: m.content })),
@@ -59,7 +64,11 @@ export function ChatbotPage() {
         { role: "assistant", content: response.reply }
       ]);
 
-      setSuggestions(response.suggestions);
+      setSuggestions(
+        response.suggestions.length > 0
+          ? response.suggestions
+          : ["Kiểm tra Early Warning của tôi", "Mẹo tăng GPA", "Hướng dẫn đăng ký môn"]
+      );
       setServerMode(response.source === "fallback" ? "fallback" : "server");
       setLastError(response.errorMessage ?? "");
     } catch {
@@ -103,6 +112,15 @@ export function ChatbotPage() {
                   </div>
                 </div>
               ))}
+
+              {isSending && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] rounded-2xl px-4 py-2 text-sm bg-white border border-slate-200 text-slate-500">
+                    AI đang soạn câu trả lời...
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -149,6 +167,9 @@ export function ChatbotPage() {
         <Card title="Trạng thái" icon={<MessageSquareIcon className="w-4 h-4" />}>
           <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
             <Badge variant="info">{currentUser?.role}</Badge>
+            {currentUser?.studentId && (
+              <Badge variant="neutral">MSSV: {currentUser.studentId}</Badge>
+            )}
 
             {serverMode === "server" ? (
               <Badge variant="success">AI server online</Badge>
@@ -159,6 +180,22 @@ export function ChatbotPage() {
             {lastError && (
               <span className="text-amber-700">({lastError})</span>
             )}
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                setMessages([
+                  {
+                    role: "assistant",
+                    content:
+                      "Đã xóa hội thoại cũ. Bạn có thể bắt đầu lại với câu hỏi mới."
+                  }
+                ])
+              }
+            >
+              Xóa hội thoại
+            </Button>
           </div>
         </Card>
       </div>
