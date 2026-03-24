@@ -21,9 +21,20 @@ public class ChatbotController {
 
     @PostMapping
     public ResponseEntity<?> chat(@RequestBody ChatbotRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(
-                chatbotService.reply(request),
-                "Phản hồi từ AI Chatbot"
-        ));
+        try {
+            var result = chatbotService.reply(request);
+
+            return ResponseEntity.ok(ApiResponse.success(
+                    result,
+                    "Phản hồi từ AI Chatbot"
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace(); // 🔥 in lỗi ra terminal
+
+            return ResponseEntity.status(500).body(
+                    ApiResponse.error("Lỗi backend: " + e.getMessage())
+            );
+        }
     }
 }

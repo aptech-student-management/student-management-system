@@ -4,124 +4,154 @@ import com.example.student_management.dto.ai.EarlyWarningResponse;
 import com.example.student_management.dto.chatbot.ChatbotRequest;
 import com.example.student_management.dto.chatbot.ChatbotResponse;
 import com.example.student_management.service.ai.EarlyWarningService;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class ChatbotService {
 
+    @Value("${gemini.api.key}")
+    private String apiKey;
+
+    @Value("${gemini.api.url}")
+    private String apiUrl;
+
     private final EarlyWarningService earlyWarningService;
+    private final WebClient webClient;
 
     public ChatbotService(EarlyWarningService earlyWarningService) {
         this.earlyWarningService = earlyWarningService;
+        this.webClient = WebClient.builder().build();
     }
 
     public ChatbotResponse reply(ChatbotRequest request) {
-
-        if (request == null) {
+        if (request == null || request.getMessage() == null || request.getMessage().isBlank()) {
             return ChatbotResponse.builder()
                     .intent("EMPTY")
                     .reply("Bạn hãy nhập câu hỏi để mình hỗ trợ nhé.")
-                    .suggestions(defaultSuggestions(null))
+                    .suggestions(defaultSuggestions(request != null ? request.getRole() : null))
                     .build();
         }
 
         String message = safeLower(request.getMessage());
 
-        if (message.isBlank()) {
-            return ChatbotResponse.builder()
-                    .intent("EMPTY")
-                    .reply("Bạn hãy nhập câu hỏi để mình hỗ trợ nhé.")
-                    .suggestions(defaultSuggestions(request.getRole()))
-                    .build();
-        }
-
-        if (containsAny(message, "hello", "hi", "xin chào", "chào")) {
-            return ChatbotResponse.builder()
-                    .intent("GREETING")
-                    .reply("Xin chào! Mình có thể hỗ trợ về Early Warning, GPA, đăng ký môn và kế hoạch học tập.")
-                    .suggestions(defaultSuggestions(request.getRole()))
-                    .build();
-        }
-
+        // Rule-based
         if (containsAny(message, "early warning", "cảnh báo", "nguy cơ", "rủi ro")) {
             return buildEarlyWarningReply(request);
         }
 
-        if (containsAny(message, "gpa", "điểm", "bảng điểm")) {
-            return ChatbotResponse.builder()
-                    .intent("GPA_GUIDANCE")
-                    .reply("Để cải thiện GPA, bạn nên ưu tiên học lại môn có điểm thấp, đặt mục tiêu chuyên cần >= 80%, và chia lịch ôn tập theo từng tuần.")
-                    .suggestions(List.of("Xem AI Early Warning", "Mẹo tăng chuyên cần", "Kế hoạch học 4 tuần"))
-                    .build();
-        }
-
-        if (containsAny(message, "đăng ký", "môn học", "schedule", "thời khóa biểu")) {
-            return ChatbotResponse.builder()
-                    .intent("REGISTRATION_GUIDANCE")
-                    .reply("Khi đăng ký môn, bạn nên cân đối tải học phần, tránh dồn quá nhiều môn khó trong cùng học kỳ và theo dõi lịch học để hạn chế trùng lịch.")
-                    .suggestions(List.of("Gợi ý số tín chỉ phù hợp", "Môn nên ưu tiên", "Cách giảm trùng lịch"))
-                    .build();
-        }
+        // AI
+        String aiReply = callGeminiAI(request);
 
         return ChatbotResponse.builder()
-                .intent("GENERAL")
-                .reply("Mình có thể hỗ trợ về cảnh báo sớm, GPA, đăng ký môn và kế hoạch học tập. Bạn muốn bắt đầu từ nội dung nào?")
+                .intent("AI_GENERATED")
+                .reply(aiReply)
                 .suggestions(defaultSuggestions(request.getRole()))
                 .build();
+    }
+
+    private String callGeminiAI(ChatbotRequest request) {
+        try {
+            String systemPrompt = String.format(
+                    "Bạn là trợ lý ảo thông minh của hệ thống quản lý học tập. " +
+                            "Người dùng: %s. Trả lời ngắn gọn, dễ hiểu bằng tiếng Việt.",
+                    request.getRole()
+            );
+
+            Map<String, Object> body = Map.of(
+                    "contents", List.of(
+                            Map.of("parts", List.of(
+                                    Map.of("text", systemPrompt + "\nCâu hỏi: " + request.getMessage())
+                            ))
+                    )
+            );
+
+            JsonNode response = this.webClient.post()
+                    .uri(apiUrl + "?key=" + apiKey) // ✅ FIX URL + KEY
+                    .header("Content-Type", "application/json") // ✅ thêm header
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+
+            // ✅ DEBUG
+            if (response != null) {
+                System.out.println("Gemini response:");
+                System.out.println(response.toPrettyString());
+            }
+
+            // ✅ CHECK AN TOÀN
+            if (response != null
+                    && response.has("candidates")
+                    && response.get("candidates").size() > 0) {
+
+                return response.path("candidates").get(0)
+                        .path("content").path("parts").get(0)
+                        .path("text").asText();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Lỗi gọi AI: " + e.getMessage();
+        }
+
+        return "Xin lỗi, mình chưa hiểu câu hỏi của bạn.";
     }
 
     private ChatbotResponse buildEarlyWarningReply(ChatbotRequest request) {
         if (request.getStudentId() == null || request.getStudentId().isBlank()) {
             return ChatbotResponse.builder()
                     .intent("EARLY_WARNING")
-                    .reply("Mình cần mã sinh viên để kiểm tra Early Warning. Hãy đăng nhập bằng tài khoản sinh viên hoặc cung cấp studentId.")
-                    .suggestions(List.of("Cách lấy studentId", "Hỏi về GPA", "Hỏi về đăng ký môn"))
+                    .reply("Mình cần mã sinh viên để kiểm tra Early Warning. Hãy cung cấp mã sinh viên nhé.")
+                    .suggestions(List.of("Cách lấy studentId", "Hỏi về GPA"))
                     .build();
         }
 
         try {
             EarlyWarningResponse warning = earlyWarningService.evaluateStudent(request.getStudentId());
+
             String reply = String.format(
                     Locale.ROOT,
-                    "Kết quả Early Warning của bạn: mức %s, điểm rủi ro %.1f/100, chuyên cần %.0f%%, số môn nguy cơ trượt %d. Hành động ưu tiên: %s",
+                    "Kết quả Early Warning: mức %s, điểm rủi ro %.1f/100, chuyên cần %.0f%%. Hành động: %s",
                     warning.getRiskLevel(),
                     warning.getRiskScore(),
                     warning.getAttendanceRate() * 100,
-                    warning.getFailedCourseCount(),
-                    warning.getRecommendations().isEmpty() ? "Theo dõi tiến độ mỗi tuần." : warning.getRecommendations().get(0)
+                    warning.getRecommendations().isEmpty()
+                            ? "Theo dõi thêm."
+                            : warning.getRecommendations().get(0)
             );
 
             return ChatbotResponse.builder()
                     .intent("EARLY_WARNING")
                     .reply(reply)
-                    .suggestions(List.of("Xem toàn bộ gợi ý", "Lập kế hoạch học 4 tuần", "Tư vấn cải thiện GPA"))
+                    .suggestions(List.of("Xem chi tiết", "Cách cải thiện"))
                     .build();
 
         } catch (Exception ex) {
+            ex.printStackTrace();
             return ChatbotResponse.builder()
                     .intent("EARLY_WARNING")
-                    .reply("Mình chưa lấy được dữ liệu Early Warning lúc này. Bạn thử lại sau vài phút hoặc vào Dashboard để xem dữ liệu hiện có.")
-                    .suggestions(List.of("Về Dashboard", "Mẹo tăng GPA", "Kế hoạch học 4 tuần"))
+                    .reply("Lỗi lấy dữ liệu hệ thống. Thử lại sau!")
                     .build();
         }
     }
 
     private List<String> defaultSuggestions(String role) {
         if ("LECTURER".equalsIgnoreCase(role)) {
-            return List.of("Danh sách sinh viên nguy cơ cao", "Mẹo hỗ trợ sinh viên", "Cách theo dõi chuyên cần");
+            return List.of("Danh sách nguy cơ cao", "Thống kê chuyên cần");
         }
-        if ("ADMIN".equalsIgnoreCase(role)) {
-            return List.of("Thống kê risk toàn trường", "Top lớp cần hỗ trợ", "Giám sát Early Warning");
-        }
-        return List.of("Kiểm tra Early Warning", "Mẹo tăng GPA", "Kế hoạch học tập tuần này");
+        return List.of("Kiểm tra Early Warning", "Mẹo tăng GPA", "Kế hoạch học tập");
     }
 
     private boolean containsAny(String source, String... keywords) {
-        for (String keyword : keywords) {
-            if (source.contains(keyword)) return true;
+        for (String k : keywords) {
+            if (source.contains(k)) return true;
         }
         return false;
     }
