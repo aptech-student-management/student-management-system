@@ -30,7 +30,6 @@ export const createSemesterApi = async (payload: {
   academicYear: string;
   startDate: string;
   endDate: string;
-  status: Semester["status"];
 }): Promise<Semester> => {
   const res = await axiosClient.post<SemesterApi>("/semesters", payload);
   return toSemester(res.data);
@@ -43,7 +42,6 @@ export const updateSemesterApi = async (
     academicYear: string;
     startDate: string;
     endDate: string;
-    status: Semester["status"];
   }
 ): Promise<Semester> => {
   const res = await axiosClient.put<SemesterApi>(`/semesters/${id}`, payload);

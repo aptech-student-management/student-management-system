@@ -29,6 +29,5 @@ public class CourseSectionUpdateRequest {
 
     public Integer enrolledCount;
 
-    @NotNull
     public CourseSectionEntity.Status status;
 }

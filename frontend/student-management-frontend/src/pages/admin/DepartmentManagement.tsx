@@ -13,13 +13,11 @@ import { Layout } from '../../components/layout/Layout'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { Select } from '../../components/ui/Select'
 import { Modal } from '../../components/ui/Modal'
 import { Table } from '../../components/ui/Table'
 import { useToast } from '../../contexts/ToastContext'
-
-import { users } from '../../data/mockData'
-
-import type { Department } from '../../types'
+import type { Department, User } from '../../types'
 
 import {
   createDepartmentApi,
@@ -27,6 +25,7 @@ import {
   getDepartmentsApi,
   updateDepartmentApi
 } from '../../services/departmentService'
+import { getAdminUsersApi } from '../../services/adminUserService'
 
 export function DepartmentManagement() {
   const { showToast } = useToast()
@@ -37,10 +36,12 @@ export function DepartmentManagement() {
   const [deleteModal, setDeleteModal] = useState<Department | null>(null)
   const [editing, setEditing] = useState<Department | null>(null)
   const [loading, setLoading] = useState(false)
+  const [users, setUsers] = useState<User[]>([])
 
   const [form, setForm] = useState({
     name: '',
     code: '',
+    headLecturerId: '',
     description: ''
   })
 
@@ -58,8 +59,18 @@ export function DepartmentManagement() {
   }
 
   useEffect(() => {
-    fetchDepartments()
-  }, [])
+    const fetchData = async () => {
+      await fetchDepartments()
+      try {
+        const userData = await getAdminUsersApi()
+        setUsers(userData)
+      } catch {
+        showToast('Không thể tải danh sách giảng viên', 'error')
+      }
+    }
+
+    void fetchData()
+  }, [showToast])
 
   const filtered = useMemo(
     () =>
@@ -81,7 +92,7 @@ export function DepartmentManagement() {
 
   const openAdd = () => {
     setEditing(null)
-    setForm({ name: '', code: '', description: '' })
+    setForm({ name: '', code: '', headLecturerId: '', description: '' })
     setFormErrors({})
     setModalOpen(true)
   }
@@ -91,6 +102,7 @@ export function DepartmentManagement() {
     setForm({
       name: dept.name,
       code: dept.code,
+      headLecturerId: dept.headLecturerId ?? '',
       description: dept.description ?? ''
     })
     setFormErrors({})
@@ -117,6 +129,7 @@ export function DepartmentManagement() {
         await updateDepartmentApi(editing.id, {
           name: form.name,
           code: form.code,
+          headLecturerId: form.headLecturerId || undefined,
           description: form.description || undefined
         })
         showToast('Cập nhật khoa thành công!', 'success')
@@ -125,6 +138,7 @@ export function DepartmentManagement() {
           id: form.code,
           name: form.name,
           code: form.code,
+          headLecturerId: form.headLecturerId || undefined,
           description: form.description || undefined
         })
         showToast('Thêm khoa mới thành công!', 'success')
@@ -380,6 +394,22 @@ export function DepartmentManagement() {
             }
             error={formErrors.code}
             required
+          />
+
+          <Select
+            label="Trưởng khoa"
+            options={lecturers.map((l) => ({
+              value: l.id,
+              label: l.name
+            }))}
+            value={form.headLecturerId}
+            onChange={(e) =>
+              setForm((p) => ({
+                ...p,
+                headLecturerId: e.target.value
+              }))
+            }
+            placeholder="Chọn trưởng khoa"
           />
 
           <Input

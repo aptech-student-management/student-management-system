@@ -1,11 +1,15 @@
 package com.example.student_management.dto.chatbot;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChatMessageDto {
-    String role;
-    String content;
+    private String role;
+    private String content;
 }

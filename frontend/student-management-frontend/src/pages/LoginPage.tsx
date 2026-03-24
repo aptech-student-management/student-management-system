@@ -38,12 +38,14 @@ export function LoginPage() {
     const result = await login(email, password);
     if (result.success) {
       showToast('Đăng nhập thành công!', 'success');
-      const stored = localStorage.getItem('uni_auth_user');
+      const stored = localStorage.getItem('uni_user');
       if (stored) {
         const user = JSON.parse(stored);
         if (user.role === 'ADMIN') navigate('/admin');else
         if (user.role === 'LECTURER') navigate('/lecturer');else
         navigate('/student');
+      } else {
+        navigate('/');
       }
     } else {
       showToast(result.error ?? 'Đăng nhập thất bại', 'error');

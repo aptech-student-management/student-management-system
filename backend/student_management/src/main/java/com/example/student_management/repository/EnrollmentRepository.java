@@ -10,4 +10,6 @@ public interface EnrollmentRepository extends JpaRepository<EnrollmentEntity, St
     List<EnrollmentEntity> findByCourseSectionId(String courseSectionId);
     List<EnrollmentEntity> findByStudentIdAndStatus(String studentId, EnrollmentEntity.Status status);
     List<EnrollmentEntity> findByCourseSectionIdAndStatus(String courseSectionId, EnrollmentEntity.Status status);
+    boolean existsByStudentIdAndCourseSectionIdAndStatus(String studentId, String courseSectionId, EnrollmentEntity.Status status);
+    java.util.Optional<EnrollmentEntity> findByStudentIdAndCourseSectionId(String studentId, String courseSectionId);
 }

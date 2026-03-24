@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { MessageSquareIcon, SendIcon, SparklesIcon } from "lucide-react";
 
 import { Layout } from "../../components/layout/Layout";
@@ -31,16 +31,15 @@ export function ChatbotPage() {
   const [serverMode, setServerMode] = useState<"server" | "fallback">("server");
   const [lastError, setLastError] = useState<string>("");
 
-  const history = useMemo(
-    () => messages.map((m) => ({ role: m.role, content: m.content })),
-    [messages]
-  );
-
   const sendMessage = async (content: string) => {
     const trimmed = content.trim();
     if (!trimmed || !currentUser || isSending) return;
 
     const nextMessages = [...messages, { role: "user" as const, content: trimmed }];
+    const nextHistory = nextMessages.map((message) => ({
+      role: message.role,
+      content: message.content
+    }));
     setMessages(nextMessages);
     setInput("");
     setIsSending(true);
@@ -51,7 +50,7 @@ export function ChatbotPage() {
         role: currentUser.role,
         userName: currentUser.name,
         studentId: currentUser.studentId,
-        history
+        history: nextHistory
       });
 
       setMessages((prev) => [

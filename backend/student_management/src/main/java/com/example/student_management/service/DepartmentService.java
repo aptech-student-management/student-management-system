@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -45,6 +44,7 @@ public class DepartmentService {
                 .name(dept.getName())
                 .code(dept.getCode())
                 .headLecturerId(dept.getHeadLecturerId())
+                .description(dept.getDescription())
                 .studentCount(studentCount)
                 .subjectCount(subjectCount)
                 .build();
@@ -63,8 +63,10 @@ public class DepartmentService {
         // Tự động generate ID dạng D001, D002,...
         String newId = generateDepartmentId("D");
 
-        // Generate code (ví dụ: CNTT → CNTT1 nếu trùng)
-        String code = generateCodeUnique(request.getName());
+        String code = normalizeCode(request.getCode());
+        if (departmentRepository.existsByCode(code)) {
+            throw new BadRequestException("Mã khoa đã tồn tại");
+        }
 
         Department department = new Department();
         department.setId(newId);
@@ -91,7 +93,12 @@ public class DepartmentService {
             validateHeadLecturer(headLecturerId);
         }
 
-        String newCode = generateCodeUnique(request.getName());
+        String newCode = normalizeCode(request.getCode());
+        departmentRepository.findByCode(newCode).ifPresent(found -> {
+            if (!found.getId().equals(id)) {
+                throw new BadRequestException("Mã khoa đã tồn tại");
+            }
+        });
 
         existing.setName(request.getName().trim());
         existing.setCode(newCode);
@@ -149,24 +156,11 @@ public class DepartmentService {
     }
 
     // ================= UTIL =================
-    private String generateCode(String name) {
-        return Arrays.stream(name.trim().split("\\s+"))
-                .filter(word -> !word.isEmpty())
-                .map(word -> word.substring(0, 1).toUpperCase())
-                .reduce("", String::concat);
-    }
-
-    private String generateCodeUnique(String name) {
-        String base = generateCode(name);
-        String code = base;
-        int counter = 1;
-
-        while (departmentRepository.existsByCode(code)) {
-            code = base + counter;
-            counter++;
+    private String normalizeCode(String code) {
+        if (code == null || code.isBlank()) {
+            throw new BadRequestException("Mã khoa không được để trống");
         }
-
-        return code;
+        return code.trim().toUpperCase();
     }
 
     /**

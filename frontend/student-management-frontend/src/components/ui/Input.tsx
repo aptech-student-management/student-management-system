@@ -1,10 +1,9 @@
 import React from 'react';
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string;
   hint?: string;
-  icon?: ReactNode;
-  required?: boolean;
+  error?: string;
+  icon?: React.ReactNode;
 }
 export function Input({
   label,

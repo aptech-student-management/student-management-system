@@ -19,7 +19,7 @@ import {
   getEnrollmentsApi,
   updateEnrollmentApi
 } from '../../services/enrollmentService';
-import { getUsersApi } from '../../services/userService';
+import { getLecturersApi } from '../../services/userService';
 const formatVNDate = (date?: string) => {
   if (!date) return "—";
 
@@ -50,7 +50,7 @@ export function CourseRegistration() {
           getSubjectsApi(),
           getSemestersApi(),
           getEnrollmentsApi(),
-          getUsersApi()
+          getLecturersApi()
         ]);
 
         setCourseSections(sectionData);
@@ -74,7 +74,7 @@ export function CourseRegistration() {
   const myEnrollments = useMemo(
     () =>
     enrollmentList.filter(
-      (e) => e.studentId === currentUser?.id && e.status === 'ENROLLED'
+      (e) => e.studentId === currentUser?.studentId && e.status === 'ENROLLED'
     ),
     [enrollmentList, currentUser]
   );
@@ -118,7 +118,7 @@ export function CourseRegistration() {
     try {
       setLoading(sectionId);
       const saved = await createEnrollmentApi({
-        studentId: currentUser.id,
+        studentId: currentUser.studentId ?? '',
         courseSectionId: sectionId,
         enrolledAt: new Date().toISOString().split('T')[0],
         status: 'ENROLLED'
@@ -146,7 +146,7 @@ export function CourseRegistration() {
   const handleDrop = async (sectionId: string) => {
     const target = enrollmentList.find(
       (e) =>
-        e.studentId === currentUser?.id &&
+        e.studentId === currentUser?.studentId &&
         e.courseSectionId === sectionId &&
         e.status === 'ENROLLED'
     );

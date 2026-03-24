@@ -5,6 +5,7 @@ import com.example.student_management.dto.chatbot.ChatbotRequest;
 import com.example.student_management.dto.chatbot.ChatbotResponse;
 import com.example.student_management.service.ai.EarlyWarningService;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ class ChatbotServiceTest {
     @Test
     void reply_shouldReturnEmptyIntent_whenMessageBlank() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
-        ChatbotService chatbotService = new ChatbotService(earlyWarningService);
+        ChatbotService chatbotService = new ChatbotService(earlyWarningService, WebClient.builder());
 
         ChatbotRequest request = new ChatbotRequest();
         request.setMessage("   ");
@@ -30,7 +31,7 @@ class ChatbotServiceTest {
     @Test
     void reply_shouldReturnGreetingIntent_whenMessageIsGreeting() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
-        ChatbotService chatbotService = new ChatbotService(earlyWarningService);
+        ChatbotService chatbotService = new ChatbotService(earlyWarningService, WebClient.builder());
 
         ChatbotRequest request = new ChatbotRequest();
         request.setMessage("hello");
@@ -44,7 +45,7 @@ class ChatbotServiceTest {
     @Test
     void reply_shouldUseEarlyWarning_whenStudentIdProvided() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
-        ChatbotService chatbotService = new ChatbotService(earlyWarningService);
+        ChatbotService chatbotService = new ChatbotService(earlyWarningService, WebClient.builder());
 
         when(earlyWarningService.evaluateStudent("SV001")).thenReturn(
                 EarlyWarningResponse.builder()
@@ -72,7 +73,7 @@ class ChatbotServiceTest {
     @Test
     void reply_shouldReturnSafeResponse_whenEarlyWarningThrows() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
-        ChatbotService chatbotService = new ChatbotService(earlyWarningService);
+        ChatbotService chatbotService = new ChatbotService(earlyWarningService, WebClient.builder());
 
         when(earlyWarningService.evaluateStudent("SV002"))
                 .thenThrow(new RuntimeException("DB down"));
@@ -90,7 +91,7 @@ class ChatbotServiceTest {
     @Test
     void reply_shouldReturnGeneral_whenNoKnownIntent() {
         EarlyWarningService earlyWarningService = mock(EarlyWarningService.class);
-        ChatbotService chatbotService = new ChatbotService(earlyWarningService);
+        ChatbotService chatbotService = new ChatbotService(earlyWarningService, WebClient.builder());
 
         ChatbotRequest request = new ChatbotRequest();
         request.setMessage("cảm ơn");

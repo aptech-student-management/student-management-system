@@ -32,8 +32,43 @@ const toUser = (u: UserProfileResponse): User => ({
   status: u.status ?? "ACTIVE"
 });
 
+export const getStudentsApi = async (): Promise<User[]> => {
+  try {
+    const res = await axiosClient.get<{ success: boolean; message: string; data: UserProfileResponse[] }>("/users");
+
+    if (!res.data.success || !res.data.data) {
+      throw new Error(res.data.message || "Không thể lấy danh sách người dùng");
+    }
+    const students = res.data.data
+      .filter((u) => u.role === "STUDENT")
+      .map(toUser);
+
+    return students;
+  } catch (error) {
+    console.error("Lỗi lấy danh sách sinh viên:", error);
+    throw error;
+  }
+};
+
+export const getStudentsByClassApi = async (classId: string): Promise<User[]> => {
+  try {
+    const res = await axiosClient.get<{ success: boolean; data: UserProfileResponse[] }>(
+      `/classes/${classId}/students`
+    );
+    return res.data.data?.map(toUser) ?? [];
+  } catch (error) {
+    console.error("Lỗi lấy sinh viên theo lớp:", error);
+    throw error;
+  }
+};
+
 export const getUsersApi = async (): Promise<User[]> => {
   const res = await axiosClient.get<{ success: boolean; message: string; data: UserProfileResponse[] }>("/users");
+  return (res.data.data ?? []).map(toUser);
+};
+
+export const getLecturersApi = async (): Promise<User[]> => {
+  const res = await axiosClient.get<{ success: boolean; message: string; data: UserProfileResponse[] }>("/users/lecturers");
   return (res.data.data ?? []).map(toUser);
 };
 

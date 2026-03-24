@@ -142,20 +142,20 @@ export function GradeManagement() {
           e.courseSectionId === sectionId &&
           e.status === 'ENROLLED'
       )
-      .map((e) => users.find((u) => u.id === e.studentId))
+      .map((e) => users.find((u) => u.studentId === e.studentId))
       .filter(Boolean) as User[]
 
     const rows: GradeRow[] = students.map((student) => {
 
       const existing = grades.find(
         (g) =>
-          g.studentId === student.id &&
+          g.studentId === student.studentId &&
           g.courseSectionId === sectionId
       )
 
       const attRecords = attendanceRecords.filter(
         (a) =>
-          a.studentId === student.id &&
+          a.studentId === student.studentId &&
           a.courseSectionId === sectionId
       )
 
@@ -194,7 +194,7 @@ export function GradeManagement() {
       }
 
       return {
-        studentId: student.id,
+        studentId: student.studentId ?? '',
         name: student.name,
         studentCode: student.studentId ?? '',
         attendanceScore: attScore,

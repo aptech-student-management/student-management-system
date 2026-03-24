@@ -26,6 +26,7 @@ import {
 
 import { getDepartmentsApi } from "../../services/departmentService";
 import { getClassesApi } from "../../services/classService";
+import axiosClient from "../../api/axiosClient";
 
 import type { Class, Department, Role } from "../../types";
 
@@ -64,6 +65,7 @@ export function ProfilePage() {
   });
 
   const [passwordErrors, setPasswordErrors] = useState<Record<string,string>>({});
+  const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
@@ -107,6 +109,12 @@ export function ProfilePage() {
   const cls = classes.find(
     c => String(c.id) === String(currentUser?.classId)
   );
+  const assetBaseUrl = (axiosClient.defaults.baseURL ?? "").replace(/\/api\/?$/, "");
+  const avatarSrc = avatarPreview ?? (
+    currentUser?.avatar
+      ? (currentUser.avatar.startsWith("http") ? currentUser.avatar : `${assetBaseUrl}${currentUser.avatar}`)
+      : null
+  );
 
   const handleAvatarChange = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -114,6 +122,19 @@ export function ProfilePage() {
 
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    const maxFileSize = 2 * 1024 * 1024;
+
+    if (!allowedTypes.includes(file.type)) {
+      showToast("Chỉ hỗ trợ ảnh JPG, PNG hoặc WEBP", "error");
+      return;
+    }
+
+    if (file.size > maxFileSize) {
+      showToast("Ảnh đại diện phải nhỏ hơn 2MB", "error");
+      return;
+    }
 
     try {
 
@@ -123,35 +144,76 @@ export function ProfilePage() {
         typeof res.data === "string" ? res.data : "";
 
       if (avatarPath) {
-        setAvatarPreview(`http://localhost:8080${avatarPath}`);
+        setAvatarPreview(`${assetBaseUrl}${avatarPath}`);
       }
 
       await refreshProfile();
 
       showToast("Cập nhật avatar thành công!", "success");
 
-    } catch {
+    } catch (error: any) {
 
-      showToast("Upload avatar thất bại", "error");
+      showToast(
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Upload avatar thất bại",
+        "error"
+      );
 
     }
   };
 
+  const validateProfile = () => {
+    const errs: Record<string, string> = {};
+    const normalizedName = profileForm.name.trim();
+    const normalizedEmail = profileForm.email.trim();
+    const normalizedPhone = profileForm.phone.trim();
+
+    if (!normalizedName) {
+      errs.name = "Vui lòng nhập họ và tên";
+    } else if (normalizedName.length < 3) {
+      errs.name = "Họ và tên phải có ít nhất 3 ký tự";
+    }
+
+    if (!normalizedEmail) {
+      errs.email = "Vui lòng nhập email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      errs.email = "Email không hợp lệ";
+    }
+
+    if (normalizedPhone && !/^(0|\+84)[0-9]{8,9}$/.test(normalizedPhone)) {
+      errs.phone = "Số điện thoại không hợp lệ";
+    }
+
+    setProfileErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleSaveProfile = async () => {
+    if (!validateProfile()) return;
 
     try {
 
       setSaving(true);
 
-      await updateProfileApi(profileForm);
+      await updateProfileApi({
+        name: profileForm.name.trim(),
+        email: profileForm.email.trim(),
+        phone: profileForm.phone.trim() || undefined
+      });
 
       await refreshProfile();
 
       showToast("Cập nhật thông tin thành công!", "success");
 
-    } catch {
+    } catch (error: any) {
 
-      showToast("Cập nhật thất bại", "error");
+      showToast(
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Cập nhật thất bại",
+        "error"
+      );
 
     } finally {
 
@@ -171,8 +233,12 @@ export function ProfilePage() {
       errs.newPassword = "Vui lòng nhập mật khẩu mới";
     else if (passwordForm.newPassword.length < 6)
       errs.newPassword = "Tối thiểu 6 ký tự";
+    else if (!/^(?=.*[A-Za-z])(?=.*\d).+$/.test(passwordForm.newPassword))
+      errs.newPassword = "Mật khẩu phải chứa cả chữ và số";
 
-    if (passwordForm.newPassword !== passwordForm.confirmPassword)
+    if (!passwordForm.confirmPassword)
+      errs.confirmPassword = "Vui lòng nhập lại mật khẩu mới";
+    else if (passwordForm.newPassword !== passwordForm.confirmPassword)
       errs.confirmPassword = "Mật khẩu xác nhận không khớp";
 
     setPasswordErrors(errs);
@@ -201,9 +267,14 @@ export function ProfilePage() {
         confirmPassword: ""
       });
 
-    } catch {
+    } catch (error: any) {
 
-      showToast("Đổi mật khẩu thất bại", "error");
+      showToast(
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Đổi mật khẩu thất bại",
+        "error"
+      );
 
     } finally {
 
@@ -236,13 +307,10 @@ export function ProfilePage() {
                 overflow-hidden
               ">
 
-                {avatarPreview || currentUser.avatar ? (
+                {avatarSrc ? (
 
                   <img
-                    src={
-                      avatarPreview ??
-                      `http://localhost:8080${currentUser.avatar}`
-                    }
+                    src={avatarSrc}
                     alt="Avatar"
                     className="w-full h-full object-cover"
                   />
@@ -295,6 +363,12 @@ export function ProfilePage() {
               </p>
 
               <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-500">
+                {currentUser.studentId && (
+                  <span className="flex items-center gap-1">
+                    <UserIcon className="w-3 h-3"/>
+                    {currentUser.studentId}
+                  </span>
+                )}
 
                 {dept && (
                   <span className="flex items-center gap-1">
@@ -330,6 +404,12 @@ export function ProfilePage() {
               onChange={(e) =>
                 setProfileForm(p => ({ ...p, name: e.target.value }))
               }
+              onBlur={() => setProfileErrors((prev) => {
+                const next = { ...prev };
+                delete next.name;
+                return next;
+              })}
+              error={profileErrors.name}
               icon={<UserIcon className="w-4 h-4"/>}
             />
 
@@ -339,6 +419,12 @@ export function ProfilePage() {
               onChange={(e) =>
                 setProfileForm(p => ({ ...p, email: e.target.value }))
               }
+              onBlur={() => setProfileErrors((prev) => {
+                const next = { ...prev };
+                delete next.email;
+                return next;
+              })}
+              error={profileErrors.email}
               icon={<MailIcon className="w-4 h-4"/>}
             />
 
@@ -348,8 +434,29 @@ export function ProfilePage() {
               onChange={(e) =>
                 setProfileForm(p => ({ ...p, phone: e.target.value }))
               }
+              onBlur={() => setProfileErrors((prev) => {
+                const next = { ...prev };
+                delete next.phone;
+                return next;
+              })}
+              error={profileErrors.phone}
               icon={<PhoneIcon className="w-4 h-4"/>}
             />
+
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-xs text-slate-500">Mã người dùng</p>
+                <p className="text-sm font-medium text-slate-900">{currentUser.id}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-xs text-slate-500">Mã sinh viên</p>
+                <p className="text-sm font-medium text-slate-900">{currentUser.studentId || "—"}</p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <p className="text-xs text-slate-500">Lớp</p>
+                <p className="text-sm font-medium text-slate-900">{cls?.name || "—"}</p>
+              </div>
+            </div>
 
             <div className="flex justify-end pt-2">
 

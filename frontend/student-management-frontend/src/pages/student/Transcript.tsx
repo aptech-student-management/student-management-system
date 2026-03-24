@@ -19,6 +19,7 @@ import { getGradesApi } from '../../services/gradeService';
 import { getCourseSectionsApi } from '../../services/courseSectionService';
 import { getSubjectsApi } from '../../services/subjectService';
 import { getSemestersApi } from '../../services/semesterService';
+import { formatVNDate } from '../../utils/date';
 const TOTAL_CREDITS_REQUIRED = 120;
 export function Transcript() {
   const { currentUser } = useAuth();
@@ -33,7 +34,7 @@ export function Transcript() {
     const loadData = async () => {
       try {
         const [gradeData, sectionData, subjectData, semesterData] = await Promise.all([
-          getGradesApi({ studentId: currentUser?.id }),
+          getGradesApi({ studentId: currentUser?.studentId }),
           getCourseSectionsApi(),
           getSubjectsApi(),
           getSemestersApi()
@@ -51,14 +52,14 @@ export function Transcript() {
       }
     };
 
-    if (currentUser?.id) {
+    if (currentUser?.studentId) {
       void loadData();
     }
-  }, [currentUser?.id, showToast]);
+  }, [currentUser?.studentId, showToast]);
 
   const myGrades = useMemo(
-    () => grades.filter((g) => g.studentId === currentUser?.id),
-    [grades, currentUser]
+    () => grades.filter((g) => g.studentId === currentUser?.studentId),
+    [grades, currentUser?.studentId]
   );
   const gradesBySemester = useMemo(() => {
     const result: Record<string, typeof myGrades> = {};
@@ -70,7 +71,7 @@ export function Transcript() {
       if (semGrades.length > 0) result[sem.id] = semGrades;
     });
     return result;
-  }, [myGrades]);
+  }, [myGrades, courseSections, subjects]);
   const currentSemGrades = gradesBySemester[selectedSemester] ?? [];
   const calcSemGPA = (semGrades: typeof myGrades) => {
     if (semGrades.length === 0) return null;
@@ -106,7 +107,7 @@ export function Transcript() {
     return totalCredits > 0 ?
       Math.round(totalPoints / totalCredits * 100) / 100 :
       null;
-  }, [myGrades]);
+  }, [myGrades, courseSections, subjects]);
   const completedCredits = useMemo(() => {
     return myGrades.
       filter((g) => g.gpaPoint !== undefined && g.gpaPoint > 0).
@@ -133,7 +134,94 @@ export function Transcript() {
 
   };
   const handleExport = () => {
-    showToast('Đang xuất bảng điểm PDF... (Tính năng demo)', 'info');
+    if (!currentUser) return;
+
+    const selectedSemesterLabel = semesters.find((s) => s.id === selectedSemester);
+    const rowsHtml = currentSemGrades.map((g, index) => {
+      const cs = courseSections.find((c) => c.id === g.courseSectionId);
+      const subj = subjects.find((s) => s.id === cs?.subjectId);
+
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${subj?.code ?? '—'}</td>
+          <td>${subj?.name ?? '—'}</td>
+          <td>${subj?.credits ?? '—'}</td>
+          <td>${g.midterm ?? '—'}</td>
+          <td>${g.final ?? '—'}</td>
+          <td>${g.totalScore?.toFixed(2) ?? '—'}</td>
+          <td>${g.letterGrade ?? '—'}</td>
+          <td>${g.gpaPoint?.toFixed(1) ?? '—'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const html = `
+      <!doctype html>
+      <html lang="vi">
+      <head>
+        <meta charset="utf-8" />
+        <title>Bang diem - ${currentUser.studentId ?? currentUser.id}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 32px; color: #0f172a; }
+          h1, h2, p { margin: 0 0 8px; }
+          .meta { margin-bottom: 24px; }
+          .summary { margin: 16px 0 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+          .card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; }
+          table { width: 100%; border-collapse: collapse; font-size: 13px; }
+          th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+          th { background: #f8fafc; }
+          .muted { color: #475569; }
+        </style>
+      </head>
+      <body>
+        <h1>Bảng điểm sinh viên</h1>
+        <div class="meta">
+          <p><strong>Họ tên:</strong> ${currentUser.name}</p>
+          <p><strong>Mã sinh viên:</strong> ${currentUser.studentId ?? '—'}</p>
+          <p><strong>Email:</strong> ${currentUser.email}</p>
+          <p><strong>Học kỳ:</strong> ${selectedSemesterLabel ? `${selectedSemesterLabel.name} (${selectedSemesterLabel.year})` : 'Toàn bộ'}</p>
+          <p><strong>Ngày xuất:</strong> ${formatVNDate(new Date().toISOString())}</p>
+        </div>
+        <div class="summary">
+          <div class="card"><strong>GPA học kỳ</strong><p class="muted">${semGPA !== null ? semGPA.toFixed(2) : 'N/A'}</p></div>
+          <div class="card"><strong>GPA tích lũy</strong><p class="muted">${cumulativeGPA !== null ? cumulativeGPA.toFixed(2) : 'N/A'}</p></div>
+          <div class="card"><strong>Tín chỉ đạt</strong><p class="muted">${completedCredits}/${TOTAL_CREDITS_REQUIRED}</p></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Mã môn</th>
+              <th>Môn học</th>
+              <th>Tín chỉ</th>
+              <th>Giữa kỳ</th>
+              <th>Cuối kỳ</th>
+              <th>Tổng kết</th>
+              <th>Điểm chữ</th>
+              <th>GPA</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml || '<tr><td colspan="9">Không có dữ liệu điểm cho học kỳ này</td></tr>'}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank', 'width=1000,height=800');
+    if (!printWindow) {
+      showToast('Trình duyệt đang chặn cửa sổ xuất PDF', 'error');
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    showToast('Đã mở cửa sổ xuất bảng điểm. Bạn có thể chọn Save as PDF.', 'success');
   };
   const creditProgress = Math.min(
     completedCredits / TOTAL_CREDITS_REQUIRED * 100,

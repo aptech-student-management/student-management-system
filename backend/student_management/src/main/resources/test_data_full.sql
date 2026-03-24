@@ -1,0 +1,373 @@
+-- Student Management System
+-- Large MySQL seed dataset for end-to-end testing
+-- Database: studentmanagementsystem1
+--
+-- How to run in terminal:
+--   mysql -u root -p studentmanagementsystem1 < src/main/resources/test_data_full.sql
+--
+-- Notes:
+-- - Frontend now uses only API/DB data. The old FE mock file was removed.
+-- - Built-in admin from DataSeeder still exists: admin1 / admin1
+-- - Test accounts below use a valid bcrypt sample hash for DB integrity only.
+-- - Active semester and active course sections are aligned with week of 2026-03-23.
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+DELETE FROM attendance_records
+WHERE id IN (
+  'ATT001','ATT002','ATT003','ATT004','ATT005','ATT006','ATT007','ATT008','ATT009','ATT010',
+  'ATT011','ATT012','ATT013','ATT014','ATT015','ATT016','ATT017','ATT018','ATT019','ATT020',
+  'ATT021','ATT022','ATT023','ATT024','ATT025','ATT026','ATT027','ATT028','ATT029','ATT030',
+  'ATT031','ATT032','ATT033','ATT034','ATT035','ATT036','ATT037','ATT038','ATT039','ATT040',
+  'ATT041','ATT042','ATT043','ATT044','ATT045','ATT046','ATT047','ATT048','ATT049','ATT050',
+  'ATT051','ATT052','ATT053','ATT054','ATT055','ATT056','ATT057','ATT058','ATT059','ATT060',
+  'ATT061','ATT062','ATT063','ATT064','ATT065','ATT066','ATT067','ATT068','ATT069','ATT070',
+  'ATT071','ATT072','ATT073','ATT074','ATT075','ATT076','ATT077','ATT078','ATT079','ATT080'
+);
+
+DELETE FROM grades
+WHERE id IN (
+  'GR001','GR002','GR003','GR004','GR005','GR006','GR007','GR008','GR009','GR010',
+  'GR011','GR012','GR013','GR014','GR015','GR016','GR017','GR018','GR019','GR020',
+  'GR021','GR022','GR023','GR024','GR025','GR026','GR027','GR028','GR029','GR030',
+  'GR031','GR032','GR033','GR034','GR035','GR036','GR037','GR038','GR039','GR040'
+);
+
+DELETE FROM enrollments
+WHERE id IN (
+  'ENR001','ENR002','ENR003','ENR004','ENR005','ENR006','ENR007','ENR008','ENR009','ENR010',
+  'ENR011','ENR012','ENR013','ENR014','ENR015','ENR016','ENR017','ENR018','ENR019','ENR020',
+  'ENR021','ENR022','ENR023','ENR024','ENR025','ENR026','ENR027','ENR028','ENR029','ENR030',
+  'ENR031','ENR032','ENR033','ENR034','ENR035','ENR036','ENR037','ENR038','ENR039','ENR040',
+  'ENR041','ENR042','ENR043','ENR044','ENR045','ENR046','ENR047','ENR048'
+);
+
+DELETE FROM course_sections
+WHERE id IN (
+  'SEC001','SEC002','SEC003','SEC004','SEC005','SEC006','SEC007','SEC008',
+  'SEC009','SEC010','SEC011','SEC012'
+);
+
+DELETE FROM subjects
+WHERE id IN (
+  'SUB001','SUB002','SUB003','SUB004','SUB005','SUB006',
+  'SUB007','SUB008','SUB009','SUB010','SUB011','SUB012'
+);
+
+DELETE FROM semesters
+WHERE id IN ('SEM251','SEM252','SEM261','SEM262');
+
+DELETE FROM users
+WHERE id IN (
+  1001,
+  1101,1102,1103,1104,1105,
+  2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,
+  2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,
+  2021,2022,2023,2024,2025,2026,2027,2028,2029,2030,
+  2031,2032,2033,2034,2035,2036
+);
+
+DELETE FROM school_class
+WHERE id IN (
+  'CLCNTT01','CLCNTT02','CLCNTT03','CLCNTT04',
+  'CLKT01','CLKT02','CLQTKD01','CLNNA01'
+);
+
+DELETE FROM department
+WHERE id IN ('DP001','DP002','DP003','DP004','DP005');
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+INSERT INTO department (id, name, code, head_lecturer_id, description) VALUES
+('DP001', 'Công nghệ thông tin', 'CNTT', '1101', 'Khoa đào tạo phần mềm, dữ liệu, AI và hệ thống thông tin.'),
+('DP002', 'Kế toán', 'KT', '1103', 'Khoa đào tạo kế toán doanh nghiệp, kiểm toán và tài chính cơ bản.'),
+('DP003', 'Quản trị kinh doanh', 'QTKD', '1104', 'Khoa đào tạo quản trị, vận hành, marketing và chiến lược kinh doanh.'),
+('DP004', 'Ngôn ngữ Anh', 'NNA', '1105', 'Khoa đào tạo ngoại ngữ ứng dụng và kỹ năng giao tiếp học thuật.'),
+('DP005', 'Khoa học cơ bản', 'KHCB', NULL, 'Khoa phụ trách toán, thống kê và nền tảng đại cương.');
+
+INSERT INTO school_class (id, name, code, department_id, year, student_count) VALUES
+('CLCNTT01', 'CNTT K16 A', 'CNTT-K16-A', 'DP001', 2024, 5),
+('CLCNTT02', 'CNTT K16 B', 'CNTT-K16-B', 'DP001', 2024, 5),
+('CLCNTT03', 'CNTT K17 A', 'CNTT-K17-A', 'DP001', 2025, 5),
+('CLCNTT04', 'CNTT K17 B', 'CNTT-K17-B', 'DP001', 2025, 5),
+('CLKT01', 'Kế toán K16 A', 'KT-K16-A', 'DP002', 2024, 4),
+('CLKT02', 'Kế toán K17 A', 'KT-K17-A', 'DP002', 2025, 4),
+('CLQTKD01', 'QTKD K16 A', 'QTKD-K16-A', 'DP003', 2024, 4),
+('CLNNA01', 'NNA K16 A', 'NNA-K16-A', 'DP004', 2024, 4);
+
+INSERT INTO users (id, name, email, password, role, department_id, class_id, phone, student_id, created_at, avatar_url) VALUES
+(1001, 'Test Admin', 'admin.test@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'ADMIN', NULL, NULL, '0901000001', NULL, '2026-03-01 08:00:00', NULL),
+(1101, 'Nguyen Van Giang', 'giang.lecturer@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'LECTURER', 'DP001', NULL, '0901001101', NULL, '2026-03-01 08:00:00', NULL),
+(1102, 'Tran Thi Lan', 'lan.lecturer@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'LECTURER', 'DP001', NULL, '0901001102', NULL, '2026-03-01 08:00:00', NULL),
+(1103, 'Pham Minh Chau', 'chau.lecturer@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'LECTURER', 'DP002', NULL, '0901001103', NULL, '2026-03-01 08:00:00', NULL),
+(1104, 'Hoang Quoc Bao', 'bao.lecturer@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'LECTURER', 'DP003', NULL, '0901001104', NULL, '2026-03-01 08:00:00', NULL),
+(1105, 'Le Thu Huong', 'huong.lecturer@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'LECTURER', 'DP004', NULL, '0901001105', NULL, '2026-03-01 08:00:00', NULL),
+
+(2001, 'Le Anh Tuan', 'sv2001@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT01', '0902000001', 'SV2026001', '2026-03-01 08:00:00', NULL),
+(2002, 'Nguyen Bao Ngoc', 'sv2002@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT01', '0902000002', 'SV2026002', '2026-03-01 08:00:00', NULL),
+(2003, 'Tran Quoc Viet', 'sv2003@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT01', '0902000003', 'SV2026003', '2026-03-01 08:00:00', NULL),
+(2004, 'Pham Thu Ha', 'sv2004@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT01', '0902000004', 'SV2026004', '2026-03-01 08:00:00', NULL),
+(2005, 'Do Minh Khang', 'sv2005@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT01', '0902000005', 'SV2026005', '2026-03-01 08:00:00', NULL),
+
+(2006, 'Bui Nhat Linh', 'sv2006@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT02', '0902000006', 'SV2026006', '2026-03-01 08:00:00', NULL),
+(2007, 'Vo Gia Huy', 'sv2007@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT02', '0902000007', 'SV2026007', '2026-03-01 08:00:00', NULL),
+(2008, 'Dang Khanh Nhi', 'sv2008@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT02', '0902000008', 'SV2026008', '2026-03-01 08:00:00', NULL),
+(2009, 'Truong Hoai Nam', 'sv2009@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT02', '0902000009', 'SV2026009', '2026-03-01 08:00:00', NULL),
+(2010, 'Phan My Duyen', 'sv2010@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT02', '0902000010', 'SV2026010', '2026-03-01 08:00:00', NULL),
+
+(2011, 'Nguyen Duc Anh', 'sv2011@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT03', '0902000011', 'SV2026011', '2026-03-01 08:00:00', NULL),
+(2012, 'Le Thanh Truc', 'sv2012@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT03', '0902000012', 'SV2026012', '2026-03-01 08:00:00', NULL),
+(2013, 'Vu Ngoc Mai', 'sv2013@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT03', '0902000013', 'SV2026013', '2026-03-01 08:00:00', NULL),
+(2014, 'Nguyen Huu Nhan', 'sv2014@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT03', '0902000014', 'SV2026014', '2026-03-01 08:00:00', NULL),
+(2015, 'Duong Kim Oanh', 'sv2015@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT03', '0902000015', 'SV2026015', '2026-03-01 08:00:00', NULL),
+
+(2016, 'Huynh Gia Han', 'sv2016@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT04', '0902000016', 'SV2026016', '2026-03-01 08:00:00', NULL),
+(2017, 'Nguyen Thi Thom', 'sv2017@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT04', '0902000017', 'SV2026017', '2026-03-01 08:00:00', NULL),
+(2018, 'Tran Thanh Dat', 'sv2018@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT04', '0902000018', 'SV2026018', '2026-03-01 08:00:00', NULL),
+(2019, 'Le Bao Chau', 'sv2019@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT04', '0902000019', 'SV2026019', '2026-03-01 08:00:00', NULL),
+(2020, 'Pham Tuan Kiet', 'sv2020@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP001', 'CLCNTT04', '0902000020', 'SV2026020', '2026-03-01 08:00:00', NULL),
+
+(2021, 'Doan Minh Quan', 'sv2021@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP002', 'CLKT01', '0902000021', 'SV2026021', '2026-03-01 08:00:00', NULL),
+(2022, 'Ngo Thao Vy', 'sv2022@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP002', 'CLKT01', '0902000022', 'SV2026022', '2026-03-01 08:00:00', NULL),
+(2023, 'Mai Quoc Khanh', 'sv2023@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP002', 'CLKT01', '0902000023', 'SV2026023', '2026-03-01 08:00:00', NULL),
+(2024, 'Nguyen Bich Tram', 'sv2024@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP002', 'CLKT01', '0902000024', 'SV2026024', '2026-03-01 08:00:00', NULL),
+
+(2025, 'Vo Thi Hanh', 'sv2025@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP002', 'CLKT02', '0902000025', 'SV2026025', '2026-03-01 08:00:00', NULL),
+(2026, 'Tran Gia Bao', 'sv2026@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP002', 'CLKT02', '0902000026', 'SV2026026', '2026-03-01 08:00:00', NULL),
+(2027, 'Pham Minh Thu', 'sv2027@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP002', 'CLKT02', '0902000027', 'SV2026027', '2026-03-01 08:00:00', NULL),
+(2028, 'Do Huu Phuc', 'sv2028@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP002', 'CLKT02', '0902000028', 'SV2026028', '2026-03-01 08:00:00', NULL),
+
+(2029, 'Nguyen Bao Tram', 'sv2029@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP003', 'CLQTKD01', '0902000029', 'SV2026029', '2026-03-01 08:00:00', NULL),
+(2030, 'Le Dinh Long', 'sv2030@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP003', 'CLQTKD01', '0902000030', 'SV2026030', '2026-03-01 08:00:00', NULL),
+(2031, 'Tran Thu Uyen', 'sv2031@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP003', 'CLQTKD01', '0902000031', 'SV2026031', '2026-03-01 08:00:00', NULL),
+(2032, 'Hoang Minh Khoa', 'sv2032@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP003', 'CLQTKD01', '0902000032', 'SV2026032', '2026-03-01 08:00:00', NULL),
+
+(2033, 'Pham Gia Linh', 'sv2033@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP004', 'CLNNA01', '0902000033', 'SV2026033', '2026-03-01 08:00:00', NULL),
+(2034, 'Nguyen Quoc Hung', 'sv2034@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP004', 'CLNNA01', '0902000034', 'SV2026034', '2026-03-01 08:00:00', NULL),
+(2035, 'Le Hoang Yen', 'sv2035@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP004', 'CLNNA01', '0902000035', 'SV2026035', '2026-03-01 08:00:00', NULL),
+(2036, 'Tran Anh Vu', 'sv2036@uni.local', '$10$.t1XDayKYYwd9Zbb8Xtc8OULFqHizmWZfUw2CzaCtOcBgAUrTu2ES', 'STUDENT', 'DP004', 'CLNNA01', '0902000036', 'SV2026036', '2026-03-01 08:00:00', NULL);
+
+INSERT INTO subjects (id, name, code, credits, department_id, description) VALUES
+('SUB001', 'Lập trình Java', 'JAVA101', 3, 'DP001', 'Java core, OOP và xử lý hướng đối tượng.'),
+('SUB002', 'Cơ sở dữ liệu', 'DB201', 3, 'DP001', 'Thiết kế dữ liệu, SQL và chuẩn hóa.'),
+('SUB003', 'Cấu trúc dữ liệu', 'DS202', 3, 'DP001', 'Danh sách, cây, đồ thị và giải thuật.'),
+('SUB004', 'Phân tích thiết kế hệ thống', 'SAD301', 3, 'DP001', 'Mô hình hóa yêu cầu, UML và thiết kế hệ thống.'),
+('SUB005', 'Lập trình Web', 'WEB201', 3, 'DP001', 'Xây dựng ứng dụng web full stack cơ bản.'),
+('SUB006', 'Nguyên lý kế toán', 'ACC101', 3, 'DP002', 'Nền tảng kế toán tài chính.'),
+('SUB007', 'Kế toán quản trị', 'ACC202', 3, 'DP002', 'Chi phí, ngân sách và quyết định quản trị.'),
+('SUB008', 'Kiểm toán căn bản', 'AUD301', 3, 'DP002', 'Khái niệm và quy trình kiểm toán.'),
+('SUB009', 'Quản trị học', 'BUS101', 3, 'DP003', 'Lý thuyết quản trị doanh nghiệp hiện đại.'),
+('SUB010', 'Marketing căn bản', 'MKT201', 3, 'DP003', 'Nền tảng marketing và hành vi khách hàng.'),
+('SUB011', 'Academic English 1', 'ENG101', 2, 'DP004', 'Kỹ năng đọc viết học thuật cơ bản.'),
+('SUB012', 'Business English', 'ENG202', 2, 'DP004', 'Tiếng Anh giao tiếp trong môi trường doanh nghiệp.');
+
+INSERT INTO semesters (id, name, academic_year, start_date, end_date, status) VALUES
+('SEM251', 'Học kỳ 1', '2025-2026', '2025-09-01', '2025-12-31', 'CLOSED'),
+('SEM252', 'Học kỳ 2', '2025-2026', '2026-01-05', '2026-05-31', 'ACTIVE'),
+('SEM261', 'Học kỳ hè', '2025-2026', '2026-06-15', '2026-08-15', 'UPCOMING'),
+('SEM262', 'Học kỳ 1', '2026-2027', '2026-09-07', '2026-12-31', 'UPCOMING');
+
+INSERT INTO course_sections (id, subject_id, semester_id, lecturer_id, class_id, schedule, room, max_students, enrolled_count, status) VALUES
+('SEC001', 'SUB001', 'SEM252', '1101', 'CLCNTT01', '2026-03-23 07:00-09:30', 'A201', 45, 5, 'OPEN'),
+('SEC002', 'SUB002', 'SEM252', '1102', 'CLCNTT02', '2026-03-24 09:40-12:00', 'A202', 45, 5, 'OPEN'),
+('SEC003', 'SUB003', 'SEM252', '1101', 'CLCNTT03', '2026-03-25 07:00-09:30', 'A203', 45, 5, 'OPEN'),
+('SEC004', 'SUB004', 'SEM252', '1102', 'CLCNTT04', '2026-03-26 13:00-15:30', 'A204', 45, 5, 'OPEN'),
+('SEC005', 'SUB005', 'SEM252', '1101', 'CLCNTT01', '2026-03-24 13:00-15:30', 'A205', 45, 5, 'OPEN'),
+('SEC006', 'SUB006', 'SEM252', '1103', 'CLKT01', '2026-03-23 13:00-15:30', 'B201', 45, 4, 'OPEN'),
+('SEC007', 'SUB007', 'SEM252', '1103', 'CLKT02', '2026-03-25 09:40-12:00', 'B202', 45, 4, 'OPEN'),
+('SEC008', 'SUB008', 'SEM252', '1103', 'CLKT02', '2026-03-27 09:40-12:00', 'B203', 45, 4, 'OPEN'),
+('SEC009', 'SUB009', 'SEM252', '1104', 'CLQTKD01', '2026-03-27 07:00-09:30', 'C201', 45, 4, 'OPEN'),
+('SEC010', 'SUB010', 'SEM252', '1104', 'CLQTKD01', '2026-03-28 09:40-12:00', 'C202', 45, 4, 'OPEN'),
+('SEC011', 'SUB011', 'SEM252', '1105', 'CLNNA01', '2026-03-26 09:40-12:00', 'D201', 45, 4, 'OPEN'),
+('SEC012', 'SUB012', 'SEM252', '1105', 'CLNNA01', '2026-03-28 13:00-15:30', 'D202', 45, 3, 'OPEN');
+
+INSERT INTO enrollments (id, student_id, course_section_id, enrolled_at, status) VALUES
+('ENR001', 'SV2026001', 'SEC001', '2026-01-08', 'ENROLLED'),
+('ENR002', 'SV2026002', 'SEC001', '2026-01-08', 'ENROLLED'),
+('ENR003', 'SV2026003', 'SEC001', '2026-01-08', 'ENROLLED'),
+('ENR004', 'SV2026004', 'SEC001', '2026-01-08', 'ENROLLED'),
+('ENR005', 'SV2026005', 'SEC001', '2026-01-08', 'ENROLLED'),
+('ENR006', 'SV2026006', 'SEC002', '2026-01-08', 'ENROLLED'),
+('ENR007', 'SV2026007', 'SEC002', '2026-01-08', 'ENROLLED'),
+('ENR008', 'SV2026008', 'SEC002', '2026-01-08', 'ENROLLED'),
+('ENR009', 'SV2026009', 'SEC002', '2026-01-08', 'ENROLLED'),
+('ENR010', 'SV2026010', 'SEC002', '2026-01-08', 'ENROLLED'),
+('ENR011', 'SV2026011', 'SEC003', '2026-01-08', 'ENROLLED'),
+('ENR012', 'SV2026012', 'SEC003', '2026-01-08', 'ENROLLED'),
+('ENR013', 'SV2026013', 'SEC003', '2026-01-08', 'ENROLLED'),
+('ENR014', 'SV2026014', 'SEC003', '2026-01-08', 'ENROLLED'),
+('ENR015', 'SV2026015', 'SEC003', '2026-01-08', 'ENROLLED'),
+('ENR016', 'SV2026016', 'SEC004', '2026-01-08', 'ENROLLED'),
+('ENR017', 'SV2026017', 'SEC004', '2026-01-08', 'ENROLLED'),
+('ENR018', 'SV2026018', 'SEC004', '2026-01-08', 'ENROLLED'),
+('ENR019', 'SV2026019', 'SEC004', '2026-01-08', 'ENROLLED'),
+('ENR020', 'SV2026020', 'SEC004', '2026-01-08', 'ENROLLED'),
+('ENR021', 'SV2026001', 'SEC005', '2026-01-09', 'ENROLLED'),
+('ENR022', 'SV2026002', 'SEC005', '2026-01-09', 'ENROLLED'),
+('ENR023', 'SV2026003', 'SEC005', '2026-01-09', 'ENROLLED'),
+('ENR024', 'SV2026004', 'SEC005', '2026-01-09', 'ENROLLED'),
+('ENR025', 'SV2026005', 'SEC005', '2026-01-09', 'ENROLLED'),
+('ENR026', 'SV2026021', 'SEC006', '2026-01-08', 'ENROLLED'),
+('ENR027', 'SV2026022', 'SEC006', '2026-01-08', 'ENROLLED'),
+('ENR028', 'SV2026023', 'SEC006', '2026-01-08', 'ENROLLED'),
+('ENR029', 'SV2026024', 'SEC006', '2026-01-08', 'ENROLLED'),
+('ENR030', 'SV2026025', 'SEC007', '2026-01-08', 'ENROLLED'),
+('ENR031', 'SV2026026', 'SEC007', '2026-01-08', 'ENROLLED'),
+('ENR032', 'SV2026027', 'SEC007', '2026-01-08', 'ENROLLED'),
+('ENR033', 'SV2026028', 'SEC007', '2026-01-08', 'ENROLLED'),
+('ENR034', 'SV2026025', 'SEC008', '2026-01-09', 'ENROLLED'),
+('ENR035', 'SV2026026', 'SEC008', '2026-01-09', 'ENROLLED'),
+('ENR036', 'SV2026027', 'SEC008', '2026-01-09', 'ENROLLED'),
+('ENR037', 'SV2026028', 'SEC008', '2026-01-09', 'DROPPED'),
+('ENR038', 'SV2026029', 'SEC009', '2026-01-08', 'ENROLLED'),
+('ENR039', 'SV2026030', 'SEC009', '2026-01-08', 'ENROLLED'),
+('ENR040', 'SV2026031', 'SEC009', '2026-01-08', 'ENROLLED'),
+('ENR041', 'SV2026032', 'SEC009', '2026-01-08', 'ENROLLED'),
+('ENR042', 'SV2026029', 'SEC010', '2026-01-09', 'ENROLLED'),
+('ENR043', 'SV2026030', 'SEC010', '2026-01-09', 'ENROLLED'),
+('ENR044', 'SV2026031', 'SEC010', '2026-01-09', 'ENROLLED'),
+('ENR045', 'SV2026032', 'SEC010', '2026-01-09', 'ENROLLED'),
+('ENR046', 'SV2026033', 'SEC011', '2026-01-08', 'ENROLLED'),
+('ENR047', 'SV2026034', 'SEC011', '2026-01-08', 'ENROLLED'),
+('ENR048', 'SV2026035', 'SEC011', '2026-01-08', 'ENROLLED');
+
+INSERT INTO attendance_records (id, student_id, course_section_id, date, status) VALUES
+('ATT001', 'SV2026001', 'SEC001', '2026-03-16', 'PRESENT'),
+('ATT002', 'SV2026002', 'SEC001', '2026-03-16', 'PRESENT'),
+('ATT003', 'SV2026003', 'SEC001', '2026-03-16', 'ABSENT'),
+('ATT004', 'SV2026004', 'SEC001', '2026-03-16', 'LATE'),
+('ATT005', 'SV2026005', 'SEC001', '2026-03-16', 'PRESENT'),
+('ATT006', 'SV2026001', 'SEC001', '2026-03-23', 'PRESENT'),
+('ATT007', 'SV2026002', 'SEC001', '2026-03-23', 'PRESENT'),
+('ATT008', 'SV2026003', 'SEC001', '2026-03-23', 'PRESENT'),
+('ATT009', 'SV2026004', 'SEC001', '2026-03-23', 'LATE'),
+('ATT010', 'SV2026005', 'SEC001', '2026-03-23', 'PRESENT'),
+
+('ATT011', 'SV2026006', 'SEC002', '2026-03-17', 'PRESENT'),
+('ATT012', 'SV2026007', 'SEC002', '2026-03-17', 'PRESENT'),
+('ATT013', 'SV2026008', 'SEC002', '2026-03-17', 'ABSENT'),
+('ATT014', 'SV2026009', 'SEC002', '2026-03-17', 'LATE'),
+('ATT015', 'SV2026010', 'SEC002', '2026-03-17', 'PRESENT'),
+('ATT016', 'SV2026006', 'SEC002', '2026-03-24', 'PRESENT'),
+('ATT017', 'SV2026007', 'SEC002', '2026-03-24', 'PRESENT'),
+('ATT018', 'SV2026008', 'SEC002', '2026-03-24', 'PRESENT'),
+('ATT019', 'SV2026009', 'SEC002', '2026-03-24', 'PRESENT'),
+('ATT020', 'SV2026010', 'SEC002', '2026-03-24', 'ABSENT'),
+
+('ATT021', 'SV2026011', 'SEC003', '2026-03-18', 'PRESENT'),
+('ATT022', 'SV2026012', 'SEC003', '2026-03-18', 'PRESENT'),
+('ATT023', 'SV2026013', 'SEC003', '2026-03-18', 'LATE'),
+('ATT024', 'SV2026014', 'SEC003', '2026-03-18', 'ABSENT'),
+('ATT025', 'SV2026015', 'SEC003', '2026-03-18', 'PRESENT'),
+('ATT026', 'SV2026011', 'SEC003', '2026-03-25', 'PRESENT'),
+('ATT027', 'SV2026012', 'SEC003', '2026-03-25', 'PRESENT'),
+('ATT028', 'SV2026013', 'SEC003', '2026-03-25', 'PRESENT'),
+('ATT029', 'SV2026014', 'SEC003', '2026-03-25', 'PRESENT'),
+('ATT030', 'SV2026015', 'SEC003', '2026-03-25', 'PRESENT'),
+
+('ATT031', 'SV2026016', 'SEC004', '2026-03-19', 'PRESENT'),
+('ATT032', 'SV2026017', 'SEC004', '2026-03-19', 'ABSENT'),
+('ATT033', 'SV2026018', 'SEC004', '2026-03-19', 'PRESENT'),
+('ATT034', 'SV2026019', 'SEC004', '2026-03-19', 'PRESENT'),
+('ATT035', 'SV2026020', 'SEC004', '2026-03-19', 'LATE'),
+('ATT036', 'SV2026016', 'SEC004', '2026-03-26', 'PRESENT'),
+('ATT037', 'SV2026017', 'SEC004', '2026-03-26', 'PRESENT'),
+('ATT038', 'SV2026018', 'SEC004', '2026-03-26', 'PRESENT'),
+('ATT039', 'SV2026019', 'SEC004', '2026-03-26', 'PRESENT'),
+('ATT040', 'SV2026020', 'SEC004', '2026-03-26', 'PRESENT'),
+
+('ATT041', 'SV2026001', 'SEC005', '2026-03-10', 'PRESENT'),
+('ATT042', 'SV2026002', 'SEC005', '2026-03-10', 'PRESENT'),
+('ATT043', 'SV2026003', 'SEC005', '2026-03-10', 'ABSENT'),
+('ATT044', 'SV2026004', 'SEC005', '2026-03-10', 'PRESENT'),
+('ATT045', 'SV2026005', 'SEC005', '2026-03-10', 'PRESENT'),
+('ATT046', 'SV2026001', 'SEC005', '2026-03-24', 'PRESENT'),
+('ATT047', 'SV2026002', 'SEC005', '2026-03-24', 'LATE'),
+('ATT048', 'SV2026003', 'SEC005', '2026-03-24', 'PRESENT'),
+('ATT049', 'SV2026004', 'SEC005', '2026-03-24', 'PRESENT'),
+('ATT050', 'SV2026005', 'SEC005', '2026-03-24', 'PRESENT'),
+
+('ATT051', 'SV2026021', 'SEC006', '2026-03-16', 'PRESENT'),
+('ATT052', 'SV2026022', 'SEC006', '2026-03-16', 'PRESENT'),
+('ATT053', 'SV2026023', 'SEC006', '2026-03-16', 'ABSENT'),
+('ATT054', 'SV2026024', 'SEC006', '2026-03-16', 'PRESENT'),
+('ATT055', 'SV2026021', 'SEC006', '2026-03-23', 'PRESENT'),
+('ATT056', 'SV2026022', 'SEC006', '2026-03-23', 'LATE'),
+('ATT057', 'SV2026023', 'SEC006', '2026-03-23', 'PRESENT'),
+('ATT058', 'SV2026024', 'SEC006', '2026-03-23', 'PRESENT'),
+
+('ATT059', 'SV2026025', 'SEC007', '2026-03-18', 'PRESENT'),
+('ATT060', 'SV2026026', 'SEC007', '2026-03-18', 'PRESENT'),
+('ATT061', 'SV2026027', 'SEC007', '2026-03-18', 'PRESENT'),
+('ATT062', 'SV2026028', 'SEC007', '2026-03-18', 'ABSENT'),
+('ATT063', 'SV2026025', 'SEC007', '2026-03-25', 'PRESENT'),
+('ATT064', 'SV2026026', 'SEC007', '2026-03-25', 'PRESENT'),
+('ATT065', 'SV2026027', 'SEC007', '2026-03-25', 'LATE'),
+('ATT066', 'SV2026028', 'SEC007', '2026-03-25', 'PRESENT'),
+
+('ATT067', 'SV2026029', 'SEC009', '2026-03-20', 'PRESENT'),
+('ATT068', 'SV2026030', 'SEC009', '2026-03-20', 'PRESENT'),
+('ATT069', 'SV2026031', 'SEC009', '2026-03-20', 'PRESENT'),
+('ATT070', 'SV2026032', 'SEC009', '2026-03-20', 'ABSENT'),
+('ATT071', 'SV2026029', 'SEC009', '2026-03-27', 'PRESENT'),
+('ATT072', 'SV2026030', 'SEC009', '2026-03-27', 'PRESENT'),
+('ATT073', 'SV2026031', 'SEC009', '2026-03-27', 'LATE'),
+('ATT074', 'SV2026032', 'SEC009', '2026-03-27', 'PRESENT'),
+
+('ATT075', 'SV2026033', 'SEC011', '2026-03-19', 'PRESENT'),
+('ATT076', 'SV2026034', 'SEC011', '2026-03-19', 'PRESENT'),
+('ATT077', 'SV2026035', 'SEC011', '2026-03-19', 'ABSENT'),
+('ATT078', 'SV2026033', 'SEC011', '2026-03-26', 'PRESENT'),
+('ATT079', 'SV2026034', 'SEC011', '2026-03-26', 'LATE'),
+('ATT080', 'SV2026035', 'SEC011', '2026-03-26', 'PRESENT');
+
+INSERT INTO grades (id, student_id, course_section_id, midterm, final_score, attendance_score, total_score, letter_grade, gpa_point, updated_by, updated_at) VALUES
+('GR001', 'SV2026001', 'SEC001', 8.0, 8.5, 10.0, 8.6, 'A', 4.0, '1101', '2026-03-10 08:00:00'),
+('GR002', 'SV2026002', 'SEC001', 7.5, 7.0, 9.0, 7.6, 'B+', 3.5, '1101', '2026-03-10 08:00:00'),
+('GR003', 'SV2026003', 'SEC001', 5.0, 5.5, 6.0, 5.4, 'C', 2.0, '1101', '2026-03-10 08:00:00'),
+('GR004', 'SV2026004', 'SEC001', 6.5, 7.0, 8.0, 7.0, 'B', 3.0, '1101', '2026-03-10 08:00:00'),
+('GR005', 'SV2026005', 'SEC001', 9.0, 9.0, 10.0, 9.1, 'A', 4.0, '1101', '2026-03-10 08:00:00'),
+
+('GR006', 'SV2026006', 'SEC002', 8.5, 9.0, 10.0, 9.0, 'A', 4.0, '1102', '2026-03-10 08:00:00'),
+('GR007', 'SV2026007', 'SEC002', 7.0, 8.0, 9.0, 7.9, 'B+', 3.5, '1102', '2026-03-10 08:00:00'),
+('GR008', 'SV2026008', 'SEC002', 4.5, 5.0, 6.0, 5.1, 'D', 1.0, '1102', '2026-03-10 08:00:00'),
+('GR009', 'SV2026009', 'SEC002', 6.5, 6.0, 8.0, 6.6, 'B', 3.0, '1102', '2026-03-10 08:00:00'),
+('GR010', 'SV2026010', 'SEC002', 5.0, 5.5, 7.0, 5.8, 'C', 2.0, '1102', '2026-03-10 08:00:00'),
+
+('GR011', 'SV2026011', 'SEC003', 5.5, 5.0, 7.0, 5.6, 'C', 2.0, '1101', '2026-03-11 08:00:00'),
+('GR012', 'SV2026012', 'SEC003', 8.0, 8.0, 9.0, 8.2, 'A', 4.0, '1101', '2026-03-11 08:00:00'),
+('GR013', 'SV2026013', 'SEC003', 7.5, 8.0, 8.0, 7.9, 'B+', 3.5, '1101', '2026-03-11 08:00:00'),
+('GR014', 'SV2026014', 'SEC003', 6.0, 6.5, 8.0, 6.7, 'B', 3.0, '1101', '2026-03-11 08:00:00'),
+('GR015', 'SV2026015', 'SEC003', 8.5, 8.0, 9.0, 8.4, 'A', 4.0, '1101', '2026-03-11 08:00:00'),
+
+('GR016', 'SV2026016', 'SEC004', 6.5, 7.0, 9.0, 7.3, 'B', 3.0, '1102', '2026-03-11 08:00:00'),
+('GR017', 'SV2026017', 'SEC004', 4.5, 5.0, 6.0, 5.0, 'D', 1.0, '1102', '2026-03-11 08:00:00'),
+('GR018', 'SV2026018', 'SEC004', 7.0, 7.5, 9.0, 7.7, 'B+', 3.5, '1102', '2026-03-11 08:00:00'),
+('GR019', 'SV2026019', 'SEC004', 8.0, 8.0, 9.0, 8.1, 'A', 4.0, '1102', '2026-03-11 08:00:00'),
+('GR020', 'SV2026020', 'SEC004', 6.0, 6.5, 8.0, 6.7, 'B', 3.0, '1102', '2026-03-11 08:00:00'),
+
+('GR021', 'SV2026001', 'SEC005', 8.0, 8.5, 10.0, 8.6, 'A', 4.0, '1101', '2026-03-12 08:00:00'),
+('GR022', 'SV2026002', 'SEC005', 7.0, 7.5, 8.0, 7.4, 'B+', 3.5, '1101', '2026-03-12 08:00:00'),
+('GR023', 'SV2026003', 'SEC005', 5.5, 6.0, 7.0, 6.1, 'C', 2.0, '1101', '2026-03-12 08:00:00'),
+('GR024', 'SV2026004', 'SEC005', 6.5, 7.0, 8.0, 7.0, 'B', 3.0, '1101', '2026-03-12 08:00:00'),
+('GR025', 'SV2026005', 'SEC005', 8.5, 9.0, 10.0, 9.0, 'A', 4.0, '1101', '2026-03-12 08:00:00'),
+
+('GR026', 'SV2026021', 'SEC006', 8.0, 8.0, 9.0, 8.1, 'A', 4.0, '1103', '2026-03-13 08:00:00'),
+('GR027', 'SV2026022', 'SEC006', 7.0, 7.5, 8.0, 7.4, 'B+', 3.5, '1103', '2026-03-13 08:00:00'),
+('GR028', 'SV2026023', 'SEC006', 5.0, 5.5, 6.0, 5.4, 'C', 2.0, '1103', '2026-03-13 08:00:00'),
+('GR029', 'SV2026024', 'SEC006', 6.5, 7.0, 9.0, 7.3, 'B', 3.0, '1103', '2026-03-13 08:00:00'),
+
+('GR030', 'SV2026025', 'SEC007', 7.5, 8.0, 9.0, 8.0, 'B+', 3.5, '1103', '2026-03-13 08:00:00'),
+('GR031', 'SV2026026', 'SEC007', 6.5, 7.0, 8.0, 7.0, 'B', 3.0, '1103', '2026-03-13 08:00:00'),
+('GR032', 'SV2026027', 'SEC007', 8.0, 8.5, 9.0, 8.5, 'A', 4.0, '1103', '2026-03-13 08:00:00'),
+('GR033', 'SV2026028', 'SEC007', 4.5, 5.0, 6.0, 5.0, 'D', 1.0, '1103', '2026-03-13 08:00:00'),
+
+('GR034', 'SV2026029', 'SEC009', 8.0, 8.5, 9.0, 8.5, 'A', 4.0, '1104', '2026-03-14 08:00:00'),
+('GR035', 'SV2026030', 'SEC009', 7.0, 7.5, 8.0, 7.4, 'B+', 3.5, '1104', '2026-03-14 08:00:00'),
+('GR036', 'SV2026031', 'SEC009', 6.0, 6.5, 8.0, 6.8, 'B', 3.0, '1104', '2026-03-14 08:00:00'),
+('GR037', 'SV2026032', 'SEC009', 5.0, 5.5, 6.0, 5.4, 'C', 2.0, '1104', '2026-03-14 08:00:00'),
+
+('GR038', 'SV2026033', 'SEC011', 8.0, 8.0, 9.0, 8.1, 'A', 4.0, '1105', '2026-03-15 08:00:00'),
+('GR039', 'SV2026034', 'SEC011', 6.5, 7.0, 8.0, 7.0, 'B', 3.0, '1105', '2026-03-15 08:00:00'),
+('GR040', 'SV2026035', 'SEC011', 5.0, 5.5, 6.0, 5.4, 'C', 2.0, '1105', '2026-03-15 08:00:00');

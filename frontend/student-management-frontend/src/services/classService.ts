@@ -35,3 +35,9 @@ export const updateClassApi = async (
 export const deleteClassApi = async (id: string): Promise<void> => {
   await axiosClient.delete(`/classes/${id}`);
 };
+
+export const addStudentToClassApi = (classId: string, studentId: number) =>
+  axiosClient.put(`/classes/${classId}/students/${studentId}`)
+
+export const removeStudentFromClassApi = (classId: string, studentId: number) =>
+  axiosClient.delete(`/classes/${classId}/students/${studentId}`)
