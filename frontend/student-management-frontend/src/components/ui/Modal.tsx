@@ -48,22 +48,22 @@ export function Modal({
         onClick={onClose} />
 
       <div
-        className={`relative bg-white rounded-xl shadow-modal w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col animate-fade-in`}
+        className={`relative w-full max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-modal animate-fade-in dark:bg-slate-900 ${sizeClasses[size]}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
           <h2
             id="modal-title"
-            className="text-base font-semibold text-slate-900">
+            className="text-base font-semibold text-slate-900 dark:text-slate-100">
 
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-500 dark:hover:text-slate-200 dark:hover:bg-slate-800"
             aria-label="Đóng">
 
             <XIcon className="w-4 h-4" />
@@ -73,7 +73,7 @@ export function Modal({
         <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
         {/* Footer */}
         {footer &&
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 dark:border-slate-800">
             {footer}
           </div>
         }
