@@ -22,6 +22,7 @@ public interface DepartmentRepository extends JpaRepository<Department, String> 
             d.name,
             d.code,
             d.headLecturerId,
+            (SELECT u.name FROM User u WHERE CONCAT('', u.id) = d.headLecturerId),
             (SELECT COUNT(u.id) FROM User u 
              WHERE u.department.id = d.id 
              AND u.role = com.example.student_management.entity.Role.STUDENT),

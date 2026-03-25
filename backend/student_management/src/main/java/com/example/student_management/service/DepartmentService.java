@@ -45,6 +45,7 @@ public class DepartmentService {
                 .name(dept.getName())
                 .code(dept.getCode())
                 .headLecturerId(dept.getHeadLecturerId())
+                .headLecturerName(resolveHeadLecturerName(dept.getHeadLecturerId()))
                 .studentCount(studentCount)
                 .subjectCount(subjectCount)
                 .build();
@@ -194,5 +195,19 @@ public class DepartmentService {
 
     private String trim(String val) {
         return val == null ? null : val.trim();
+    }
+
+    private String resolveHeadLecturerName(String headLecturerId) {
+        if (headLecturerId == null || headLecturerId.isBlank()) {
+            return null;
+        }
+
+        try {
+            return userRepository.findById(Long.valueOf(headLecturerId))
+                    .map(User::getName)
+                    .orElse(null);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 }
