@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   PlusIcon,
   PencilIcon,
@@ -13,13 +13,11 @@ import { Layout } from '../../components/layout/Layout'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { Select } from '../../components/ui/Select'
 import { Modal } from '../../components/ui/Modal'
 import { Table } from '../../components/ui/Table'
 import { useToast } from '../../contexts/ToastContext'
-
-import { users } from '../../data/mockData'
-
-import type { Department } from '../../types'
+import type { Department, User } from '../../types'
 
 import {
   createDepartmentApi,
@@ -27,6 +25,42 @@ import {
   getDepartmentsApi,
   updateDepartmentApi
 } from '../../services/departmentService'
+import { getAdminUsersApi } from '../../services/adminUserService'
+
+function useCountUp(value: number, duration = 700) {
+  const [displayValue, setDisplayValue] = useState(0)
+
+  useEffect(() => {
+    const target = Math.max(0, value)
+    const start = performance.now()
+    let raf = 0
+
+    const animate = (currentTime: number) => {
+      const progress = Math.min((currentTime - start) / duration, 1)
+      setDisplayValue(Math.round(target * progress))
+
+      if (progress < 1) {
+        raf = requestAnimationFrame(animate)
+      }
+    }
+
+    raf = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(raf)
+  }, [value, duration])
+
+  return displayValue
+}
+
+function CountUpText({
+  value,
+  duration = 500
+}: {
+  value: number
+  duration?: number
+}) {
+  const animatedValue = useCountUp(value, duration)
+  return <>{animatedValue}</>
+}
 
 export function DepartmentManagement() {
   const { showToast } = useToast()
@@ -37,10 +71,12 @@ export function DepartmentManagement() {
   const [deleteModal, setDeleteModal] = useState<Department | null>(null)
   const [editing, setEditing] = useState<Department | null>(null)
   const [loading, setLoading] = useState(false)
+  const [users, setUsers] = useState<User[]>([])
 
   const [form, setForm] = useState({
     name: '',
     code: '',
+    headLecturerId: '',
     description: ''
   })
 
@@ -50,16 +86,32 @@ export function DepartmentManagement() {
 
   const fetchDepartments = async () => {
     try {
+      setLoading(true)
       const data = await getDepartmentsApi()
       setDepts(data)
-    } catch {
+    } catch (error) {
+      console.error(error)
       showToast('Không thể tải danh sách khoa', 'error')
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchDepartments()
-  }, [])
+    const fetchData = async () => {
+      await fetchDepartments()
+
+      try {
+        const userData = await getAdminUsersApi()
+        setUsers(userData)
+      } catch (error) {
+        console.error(error)
+        showToast('Không thể tải danh sách giảng viên', 'error')
+      }
+    }
+
+    void fetchData()
+  }, [showToast])
 
   const filtered = useMemo(
     () =>
@@ -74,14 +126,18 @@ export function DepartmentManagement() {
   const stats = useMemo(() => {
     return {
       totalDept: depts.length,
-      totalStudents: depts.reduce((s, d) => s + d.studentCount, 0),
-      totalSubjects: depts.reduce((s, d) => s + d.subjectCount, 0)
+      totalStudents: depts.reduce((s, d) => s + (d.studentCount || 0), 0),
+      totalSubjects: depts.reduce((s, d) => s + (d.subjectCount || 0), 0)
     }
   }, [depts])
 
+  const animatedTotalDept = useCountUp(stats.totalDept)
+  const animatedTotalStudents = useCountUp(stats.totalStudents)
+  const animatedTotalSubjects = useCountUp(stats.totalSubjects)
+
   const openAdd = () => {
     setEditing(null)
-    setForm({ name: '', code: '', description: '' })
+    setForm({ name: '', code: '', headLecturerId: '', description: '' })
     setFormErrors({})
     setModalOpen(true)
   }
@@ -91,6 +147,7 @@ export function DepartmentManagement() {
     setForm({
       name: dept.name,
       code: dept.code,
+      headLecturerId: dept.headLecturerId ?? '',
       description: dept.description ?? ''
     })
     setFormErrors({})
@@ -103,6 +160,16 @@ export function DepartmentManagement() {
     if (!form.name.trim()) errs.name = 'Vui lòng nhập tên khoa'
     if (!form.code.trim()) errs.code = 'Vui lòng nhập mã khoa'
 
+    const duplicatedCode = depts.find(
+      (d) =>
+        d.code.trim().toLowerCase() === form.code.trim().toLowerCase() &&
+        d.id !== editing?.id
+    )
+
+    if (duplicatedCode) {
+      errs.code = 'Mã khoa đã tồn tại'
+    }
+
     setFormErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -110,30 +177,34 @@ export function DepartmentManagement() {
   const handleSave = async () => {
     if (!validate()) return
 
-    setLoading(true)
-
     try {
-      if (editing) {
-        await updateDepartmentApi(editing.id, {
-          name: form.name,
-          code: form.code,
-          description: form.description || undefined
-        })
-        showToast('Cập nhật khoa thành công!', 'success')
-      } else {
-        await createDepartmentApi({
-          id: form.code,
-          name: form.name,
-          code: form.code,
-          description: form.description || undefined
-        })
-        showToast('Thêm khoa mới thành công!', 'success')
+      setLoading(true)
+
+      const payload = {
+        name: form.name.trim(),
+        code: form.code.trim(),
+        headLecturerId: form.headLecturerId || null,
+        description: form.description.trim()
       }
 
-      await fetchDepartments()
+      if (editing) {
+        await updateDepartmentApi(editing.id, payload)
+        showToast('Cập nhật khoa thành công', 'success')
+      } else {
+        await createDepartmentApi(payload)
+        showToast('Tạo khoa thành công', 'success')
+      }
+
       setModalOpen(false)
-    } catch {
-      showToast('Lưu khoa thất bại', 'error')
+      setEditing(null)
+      setForm({ name: '', code: '', headLecturerId: '', description: '' })
+      await fetchDepartments()
+    } catch (error) {
+      console.error(error)
+      showToast(
+        editing ? 'Không thể cập nhật khoa' : 'Không thể tạo khoa',
+        'error'
+      )
     } finally {
       setLoading(false)
     }
@@ -142,48 +213,39 @@ export function DepartmentManagement() {
   const handleDelete = async () => {
     if (!deleteModal) return
 
-    setLoading(true)
-
     try {
+      setLoading(true)
       await deleteDepartmentApi(deleteModal.id)
-      await fetchDepartments()
-
-      showToast('Đã xóa khoa thành công!', 'success')
-
+      showToast('Xóa khoa thành công', 'success')
       setDeleteModal(null)
-    } catch {
-      showToast('Xóa khoa thất bại', 'error')
+      await fetchDepartments()
+    } catch (error) {
+      console.error(error)
+      showToast('Không thể xóa khoa', 'error')
     } finally {
       setLoading(false)
     }
   }
 
-  const getLecturerName = (id?: string) => {
-    if (!id) return '—'
-    return lecturers.find((l) => l.id === id)?.name ?? '—'
+  const getLecturerName = (id?: string | null) => {
+    if (!id) return 'Chưa phân công'
+    return lecturers.find((u) => u.id === id)?.fullName || 'Không xác định'
   }
 
   const columns = [
     {
       key: 'name',
-      label: 'Khoa',
+      label: 'Tên khoa',
       render: (_: unknown, row: Department) => (
-        <div className="flex items-center gap-3">
-
-          <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
-            <BuildingIcon className="w-4 h-4 text-blue-600" />
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+            <BuildingIcon className="w-5 h-5 text-blue-600" />
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-slate-900">
-              {row.name}
-            </p>
-
-            <p className="text-xs text-slate-500">
-              {row.description}
-            </p>
+            <p className="font-semibold text-slate-900">{row.name}</p>
+            <p className="text-xs text-slate-500">{row.description}</p>
           </div>
-
         </div>
       )
     },
@@ -203,7 +265,7 @@ export function DepartmentManagement() {
       label: 'Trưởng khoa',
       render: (_: unknown, row: Department) => (
         <span className="text-sm text-slate-700">
-          {getLecturerName(row.headLecturerId)}
+          {row.headLecturerName || getLecturerName(row.headLecturerId)}
         </span>
       )
     },
@@ -214,7 +276,7 @@ export function DepartmentManagement() {
       render: (_: unknown, row: Department) => (
         <span className="flex items-center gap-1 text-sm font-medium text-slate-800">
           <UsersIcon className="w-3.5 h-3.5 text-slate-400" />
-          {row.studentCount}
+          <CountUpText value={row.studentCount || 0} />
         </span>
       )
     },
@@ -225,7 +287,7 @@ export function DepartmentManagement() {
       render: (_: unknown, row: Department) => (
         <span className="flex items-center gap-1 text-sm font-medium text-slate-800">
           <BookOpenIcon className="w-3.5 h-3.5 text-slate-400" />
-          {row.subjectCount}
+          <CountUpText value={row.subjectCount || 0} />
         </span>
       )
     },
@@ -235,7 +297,6 @@ export function DepartmentManagement() {
       label: 'Thao tác',
       render: (_: unknown, row: Department) => (
         <div className="flex items-center gap-2">
-
           <Button
             variant="ghost"
             size="sm"
@@ -254,7 +315,6 @@ export function DepartmentManagement() {
           >
             Xóa
           </Button>
-
         </div>
       )
     }
@@ -262,13 +322,8 @@ export function DepartmentManagement() {
 
   return (
     <Layout title="Quản lý Khoa">
-
       <div className="space-y-6 max-w-[1300px] mx-auto">
-
-        {/* PAGE HEADER */}
-
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-
           <Button
             variant="primary"
             icon={<PlusIcon className="w-4 h-4" />}
@@ -276,36 +331,33 @@ export function DepartmentManagement() {
           >
             Thêm khoa
           </Button>
-
         </div>
 
-        {/* STATS */}
-
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
           <Card>
             <p className="text-xs text-slate-500">Tổng khoa</p>
-            <p className="text-xl font-bold text-slate-900">{stats.totalDept}</p>
+            <p className="text-xl font-bold text-slate-900">
+              {animatedTotalDept}
+            </p>
           </Card>
 
           <Card>
             <p className="text-xs text-slate-500">Sinh viên</p>
-            <p className="text-xl font-bold text-slate-900">{stats.totalStudents}</p>
+            <p className="text-xl font-bold text-slate-900">
+              {animatedTotalStudents}
+            </p>
           </Card>
 
           <Card>
             <p className="text-xs text-slate-500">Môn học</p>
-            <p className="text-xl font-bold text-slate-900">{stats.totalSubjects}</p>
+            <p className="text-xl font-bold text-slate-900">
+              {animatedTotalSubjects}
+            </p>
           </Card>
-
         </div>
 
-        {/* SEARCH */}
-
         <Card>
-
           <div className="flex items-center gap-4">
-
             <div className="flex-1 max-w-md">
               <Input
                 placeholder="Tìm kiếm khoa..."
@@ -314,115 +366,111 @@ export function DepartmentManagement() {
                 icon={<SearchIcon className="w-4 h-4" />}
               />
             </div>
-
           </div>
-
         </Card>
 
-        {/* TABLE */}
-
-        <Card padding={false}>
-
+        <Card>
           <Table
-            columns={columns as Parameters<typeof Table>[0]['columns']}
-            data={filtered as Record<string, unknown>[]}
-            emptyMessage="Không tìm thấy khoa nào"
-            keyExtractor={(row) => (row as Department).id}
+            data={filtered}
+            columns={columns}
+            loading={loading}
+            emptyText="Không có khoa nào"
           />
-
         </Card>
 
+        <Modal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          title={editing ? 'Cập nhật khoa' : 'Thêm khoa'}
+        >
+          <div className="space-y-4">
+            <Input
+              label="Tên khoa"
+              value={form.name}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, name: e.target.value }))
+              }
+              error={formErrors.name}
+              placeholder="Nhập tên khoa"
+            />
+
+            <Input
+              label="Mã khoa"
+              value={form.code}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, code: e.target.value }))
+              }
+              error={formErrors.code}
+              placeholder="Ví dụ: CNTT"
+            />
+
+            <Select
+              label="Trưởng khoa"
+              value={form.headLecturerId}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  headLecturerId: e.target.value
+                }))
+              }
+              options={[
+                { label: 'Chọn trưởng khoa', value: '' },
+                ...lecturers.map((u) => ({
+                  label: u.fullName,
+                  value: u.id
+                }))
+              ]}
+            />
+
+            <Input
+              label="Mô tả"
+              value={form.description}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, description: e.target.value }))
+              }
+              placeholder="Mô tả ngắn về khoa"
+            />
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="ghost" onClick={() => setModalOpen(false)}>
+                Hủy
+              </Button>
+              <Button variant="primary" onClick={handleSave} loading={loading}>
+                {editing ? 'Cập nhật' : 'Tạo mới'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={!!deleteModal}
+          onClose={() => setDeleteModal(null)}
+          title="Xác nhận xóa"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-slate-600">
+              Bạn có chắc chắn muốn xóa khoa{' '}
+              <span className="font-semibold text-slate-900">
+                {deleteModal?.name}
+              </span>{' '}
+              không?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setDeleteModal(null)}>
+                Hủy
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDelete}
+                loading={loading}
+              >
+                Xóa
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
-
-      {/* MODALS giữ nguyên */}
-
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editing ? 'Chỉnh sửa Khoa' : 'Thêm Khoa mới'}
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
-              Hủy
-            </Button>
-            <Button variant="primary" loading={loading} onClick={handleSave}>
-              {editing ? 'Cập nhật' : 'Thêm mới'}
-            </Button>
-          </>
-        }
-      >
-
-        <div className="space-y-4">
-
-          <Input
-            label="Tên khoa"
-            placeholder="VD: Khoa Công nghệ Thông tin"
-            value={form.name}
-            onChange={(e) =>
-              setForm((p) => ({
-                ...p,
-                name: e.target.value
-              }))
-            }
-            error={formErrors.name}
-            required
-          />
-
-          <Input
-            label="Mã khoa"
-            placeholder="VD: CNTT"
-            value={form.code}
-            onChange={(e) =>
-              setForm((p) => ({
-                ...p,
-                code: e.target.value.toUpperCase()
-              }))
-            }
-            error={formErrors.code}
-            required
-          />
-
-          <Input
-            label="Mô tả"
-            placeholder="Mô tả ngắn về khoa"
-            value={form.description}
-            onChange={(e) =>
-              setForm((p) => ({
-                ...p,
-                description: e.target.value
-              }))
-            }
-          />
-
-        </div>
-
-      </Modal>
-
-      <Modal
-        isOpen={!!deleteModal}
-        onClose={() => setDeleteModal(null)}
-        title="Xác nhận xóa"
-        size="sm"
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setDeleteModal(null)}>
-              Hủy
-            </Button>
-            <Button variant="danger" loading={loading} onClick={handleDelete}>
-              Xóa
-            </Button>
-          </>
-        }
-      >
-
-        <p className="text-sm text-slate-600">
-          Bạn có chắc muốn xóa khoa{' '}
-          <strong className="text-slate-900">{deleteModal?.name}</strong>? Hành
-          động này không thể hoàn tác.
-        </p>
-
-      </Modal>
-
     </Layout>
   )
 }
