@@ -18,4 +18,5 @@ public interface UserRepository
     Optional<User> findByStudentId(String studentId);
 
     Long countByDepartment_IdAndRole(String departmentId, Role role);
+    Long countBySchoolClass_IdAndRole(String classId, Role role);
 }

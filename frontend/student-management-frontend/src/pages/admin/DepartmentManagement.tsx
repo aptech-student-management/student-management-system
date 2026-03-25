@@ -85,8 +85,8 @@ export function DepartmentManagement() {
   const stats = useMemo(() => {
     return {
       totalDept: depts.length,
-      totalStudents: depts.reduce((s, d) => s + d.studentCount, 0),
-      totalSubjects: depts.reduce((s, d) => s + d.subjectCount, 0)
+      totalStudents: depts.reduce((s, d) => s + Number(d.studentCount ?? 0), 0),
+      totalSubjects: depts.reduce((s, d) => s + Number(d.subjectCount ?? 0), 0)
     }
   }, [depts])
 
@@ -135,7 +135,6 @@ export function DepartmentManagement() {
         showToast('Cập nhật khoa thành công!', 'success')
       } else {
         await createDepartmentApi({
-          id: form.code,
           name: form.name,
           code: form.code,
           headLecturerId: form.headLecturerId || undefined,

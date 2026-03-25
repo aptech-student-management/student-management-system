@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -60,8 +62,8 @@ public class DepartmentService {
             validateHeadLecturer(headLecturerId);  // String
         }
 
-        // Tự động generate ID dạng D001, D002,...
-        String newId = generateDepartmentId("D");
+        // Tự động generate ID dạng DP001, DP002,...
+        String newId = generateDepartmentId("DP");
 
         String code = normalizeCode(request.getCode());
         if (departmentRepository.existsByCode(code)) {
@@ -163,27 +165,21 @@ public class DepartmentService {
         return code.trim().toUpperCase();
     }
 
-    /**
-     * Sinh ID dạng D001, D002, D003... (prefix + 3 chữ số)
-     * An toàn hơn bằng cách dùng max ID hiện tại
-     */
     private String generateDepartmentId(String prefix) {
-        // Tìm ID lớn nhất bắt đầu bằng prefix (ví dụ D%)
-        String maxId = departmentRepository.findMaxIdByPrefix(prefix + "%");
+        String maxId = departmentRepository.findMaxIdByPrefix(prefix);
 
         if (maxId == null) {
             return prefix + "001";
         }
 
-        // Lấy phần số ở cuối (giả sử format prefix + 3 chữ số)
-        String numberPart = maxId.substring(prefix.length());
-        try {
-            int nextNumber = Integer.parseInt(numberPart) + 1;
-            return prefix + String.format("%03d", nextNumber);  // D001 → D002
-        } catch (NumberFormatException e) {
-            // Nếu format sai, fallback về prefix + 001
-            return prefix + "001";
+        Matcher matcher = Pattern.compile("^" + Pattern.quote(prefix) + "(\\d+)$")
+                .matcher(maxId);
+        if (!matcher.matches()) {
+            throw new BadRequestException("ID khoa hiện tại không đúng định dạng: " + maxId);
         }
+
+        int nextNumber = Integer.parseInt(matcher.group(1)) + 1;
+        return prefix + String.format("%03d", nextNumber);
     }
 
     private String trim(String val) {

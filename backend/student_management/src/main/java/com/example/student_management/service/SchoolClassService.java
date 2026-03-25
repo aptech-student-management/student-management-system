@@ -4,11 +4,13 @@ import com.example.student_management.dto.schoolclass.SchoolClassCreateRequest;
 import com.example.student_management.dto.schoolclass.SchoolClassResponse;
 import com.example.student_management.dto.schoolclass.SchoolClassUpdateRequest;
 import com.example.student_management.entity.Department;
+import com.example.student_management.entity.Role;
 import com.example.student_management.entity.SchoolClass;
 import com.example.student_management.exception.BadRequestException;
 import com.example.student_management.exception.NotFoundException;
 import com.example.student_management.repository.DepartmentRepository;
 import com.example.student_management.repository.SchoolClassRepository;
+import com.example.student_management.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +23,18 @@ public class SchoolClassService {
     private final SchoolClassRepository classRepo;
     private final DepartmentRepository deptRepo;
     private final DepartmentRepository departmentRepository;
+    private final UserRepository userRepository;
 
-    public SchoolClassService(SchoolClassRepository classRepo, DepartmentRepository deptRepo, DepartmentRepository departmentRepository) {
+    public SchoolClassService(
+            SchoolClassRepository classRepo,
+            DepartmentRepository deptRepo,
+            DepartmentRepository departmentRepository,
+            UserRepository userRepository
+    ) {
         this.classRepo = classRepo;
         this.deptRepo = deptRepo;
         this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
     }
 
     public List<SchoolClassResponse> getAll() {
@@ -60,7 +69,7 @@ public class SchoolClassService {
                 .code(req.code)
                 .department(department)
                 .year(req.year)
-                .studentCount(req.studentCount == null ? 0 : req.studentCount)
+                .studentCount(0)
                 .build();
         return toResponse(classRepo.save(c));
     }
@@ -88,7 +97,7 @@ public class SchoolClassService {
         existing.setCode(req.code);
         existing.setDepartment(department);
         existing.setYear(req.year);
-        existing.setStudentCount(req.studentCount == null ? existing.getStudentCount() : req.studentCount);
+        existing.setStudentCount(resolveStudentCount(existing.getId()).intValue());
 
         return toResponse(classRepo.save(existing));
     }
@@ -110,7 +119,11 @@ public class SchoolClassService {
                 ? c.getDepartment().getId()
                 : null;
         r.year = c.getYear();
-        r.studentCount = c.getStudentCount();
+        r.studentCount = resolveStudentCount(c.getId()).intValue();
         return r;
+    }
+
+    private Long resolveStudentCount(String classId) {
+        return userRepository.countBySchoolClass_IdAndRole(classId, Role.STUDENT);
     }
 }
