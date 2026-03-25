@@ -2,9 +2,9 @@ package com.example.student_management.controller;
 
 import com.example.student_management.entity.SemesterEntity;
 import com.example.student_management.repository.SemesterRepository;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -19,12 +19,15 @@ public class SemesterController {
 
     @GetMapping
     public List<SemesterEntity> getAll() {
-        return repo.findAll();
+        return repo.findAll().stream()
+                .map(this::applyResolvedStatus)
+                .toList();
     }
 
     @GetMapping("/{id}")
     public SemesterEntity getById(@PathVariable String id) {
         return repo.findById(id)
+                .map(this::applyResolvedStatus)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy học kỳ: " + id));
     }
 
@@ -37,6 +40,7 @@ public class SemesterController {
         if (repo.existsById(req.getId())) {
             throw new IllegalArgumentException("ID học kỳ đã tồn tại: " + req.getId());
         }
+        req.setStatus(resolveSemesterStatus(req));
         return repo.save(req);
     }
 
@@ -63,7 +67,7 @@ public class SemesterController {
         existing.setAcademicYear(req.getAcademicYear());
         existing.setStartDate(req.getStartDate());
         existing.setEndDate(req.getEndDate());
-        existing.setStatus(req.getStatus());
+        existing.setStatus(resolveSemesterStatus(existing));
         return repo.save(existing);
     }
 
@@ -71,5 +75,30 @@ public class SemesterController {
     public void delete(@PathVariable String id) {
         if (!repo.existsById(id)) throw new IllegalArgumentException("Không tìm thấy học kỳ: " + id);
         repo.deleteById(id);
+    }
+
+    private SemesterEntity applyResolvedStatus(SemesterEntity semester) {
+        semester.setStatus(resolveSemesterStatus(semester));
+        return semester;
+    }
+
+    private SemesterEntity.SemesterStatus resolveSemesterStatus(SemesterEntity semester) {
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = semester.getStartDate() == null ? null : semester.getStartDate().toLocalDate();
+        LocalDate endDate = semester.getEndDate() == null ? null : semester.getEndDate().toLocalDate();
+
+        if (startDate == null || endDate == null) {
+            return semester.getStatus() == null ? SemesterEntity.SemesterStatus.UPCOMING : semester.getStatus();
+        }
+
+        if (today.isBefore(startDate)) {
+            return SemesterEntity.SemesterStatus.UPCOMING;
+        }
+
+        if (today.isAfter(endDate)) {
+            return SemesterEntity.SemesterStatus.CLOSED;
+        }
+
+        return SemesterEntity.SemesterStatus.ACTIVE;
     }
 }

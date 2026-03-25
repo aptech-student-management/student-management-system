@@ -32,6 +32,5 @@ public class CourseSectionCreateRequest {
 
     public Integer enrolledCount;
 
-    @NotNull
     public CourseSectionEntity.Status status;
 }

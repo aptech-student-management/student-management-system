@@ -91,6 +91,7 @@ export function UserManagement() {
     email: '',
     role: 'STUDENT' as Role,
     departmentId: '',
+    studentId: '',
     phone: '',
     password: ''
   });
@@ -128,7 +129,8 @@ export function UserManagement() {
     result = result.filter(
       (u) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
+      u.email.toLowerCase().includes(search.toLowerCase()) ||
+      u.studentId?.toLowerCase().includes(search.toLowerCase())
     );
     return result;
   }, [userList, activeTab, search]);
@@ -143,6 +145,7 @@ export function UserManagement() {
       email: '',
       role: 'STUDENT',
       departmentId: '',
+      studentId: '',
       phone: '',
       password: ''
     });
@@ -156,6 +159,7 @@ export function UserManagement() {
       email: u.email,
       role: u.role,
       departmentId: u.departmentId ?? '',
+      studentId: u.studentId ?? '',
       phone: u.phone ?? '',
       password: ''
     });
@@ -168,6 +172,9 @@ export function UserManagement() {
     if (!form.email.trim()) errs.email = 'Vui lòng nhập email';else
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
     errs.email = 'Email không hợp lệ';
+    if (form.role === 'STUDENT' && !form.studentId.trim()) {
+      errs.studentId = 'Vui lòng nhập mã sinh viên';
+    }
     if (!editing && !form.password) errs.password = 'Vui lòng nhập mật khẩu';
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
@@ -183,6 +190,7 @@ export function UserManagement() {
           email: form.email,
           role: form.role,
           departmentId: form.departmentId || undefined,
+          studentId: form.role === 'STUDENT' ? form.studentId.trim() : undefined,
           phone: form.phone || undefined,
           password: form.password || undefined
         });
@@ -194,6 +202,7 @@ export function UserManagement() {
           email: form.email,
           role: form.role,
           departmentId: form.departmentId || undefined,
+          studentId: form.role === 'STUDENT' ? form.studentId.trim() : undefined,
           phone: form.phone || undefined,
           password: form.password
         });
@@ -468,6 +477,21 @@ export function UserManagement() {
             }))
             }
             placeholder="Chọn khoa (nếu có)" />
+
+          {form.role === 'STUDENT' &&
+          <Input
+            label="Mã sinh viên"
+            placeholder="VD: SV2024001"
+            value={form.studentId}
+            onChange={(e) =>
+            setForm((p) => ({
+              ...p,
+              studentId: e.target.value
+            }))
+            }
+            error={formErrors.studentId}
+            required />
+          }
 
           <Input
             label="Số điện thoại"

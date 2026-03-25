@@ -5,16 +5,16 @@ import {
 'lucide-react';
 import { Layout } from '../../components/layout/Layout';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { getEnrollmentsApi } from '../../services/enrollmentService';
 import { getCourseSectionsApi } from '../../services/courseSectionService';
 import { getSubjectsApi } from '../../services/subjectService';
-import { getUsersApi } from '../../services/userService';
+import { getLecturersApi } from '../../services/userService';
 import { getSemestersApi } from '../../services/semesterService';
 import type { CourseSection, Enrollment, Semester, Subject, User } from '../../types';
-const DAYS = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-const PERIODS = ['1-3', '4-6', '7-9', '10-12'];
+import { formatVNDate } from '../../utils/date';
+import { SCHEDULE_DAYS, TIME_SLOTS, parseScheduleValue } from '../../utils/schedule';
+const PERIODS = TIME_SLOTS.map((item) => item.period);
 const SUBJECT_COLORS = [
 'bg-sky-100 border-sky-300 text-sky-800',
 'bg-teal-100 border-teal-300 text-teal-800',
@@ -22,6 +22,13 @@ const SUBJECT_COLORS = [
 'bg-amber-100 border-amber-300 text-amber-800',
 'bg-rose-100 border-rose-300 text-rose-800',
 'bg-indigo-100 border-indigo-300 text-indigo-800'];
+
+const toDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export function Schedule() {
   const { currentUser } = useAuth();
@@ -39,7 +46,7 @@ export function Schedule() {
           getEnrollmentsApi(),
           getCourseSectionsApi(),
           getSubjectsApi(),
-          getUsersApi(),
+          getLecturersApi(),
           getSemestersApi()
         ]);
         setEnrollments(enrollmentData);
@@ -56,41 +63,117 @@ export function Schedule() {
   }, []);
 
   const activeSemester = semesters.find((s) => s.status === 'ACTIVE');
+  const currentWeekDays = useMemo(() => {
+    const today = new Date();
+    const currentDay = today.getDay();
+    const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+    const monday = new Date(today);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(today.getDate() + distanceToMonday);
+
+    return SCHEDULE_DAYS.map((item, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return {
+        ...item,
+        date,
+        dateLabel: formatVNDate(`${toDateKey(date)}T00:00:00`)
+      };
+    });
+  }, []);
+
+  const semesterStart = activeSemester?.startDate ? new Date(activeSemester.startDate) : null;
+  const semesterEnd = activeSemester?.endDate ? new Date(activeSemester.endDate) : null;
+
+  const isDateInActiveSemester = (date: Date) => {
+    if (!semesterStart || !semesterEnd) return true;
+
+    const value = new Date(date);
+    value.setHours(0, 0, 0, 0);
+
+    const start = new Date(semesterStart);
+    const end = new Date(semesterEnd);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    return value >= start && value <= end;
+  };
+
   const myCourseSections = useMemo(() => {
     const myEnrollments = enrollments.filter(
-      (e) => e.studentId === currentUser?.id && e.status === 'ENROLLED'
+      (e) => e.studentId === currentUser?.studentId && e.status === 'ENROLLED'
     );
     return myEnrollments
       .map((e) => courseSections.find((cs) => cs.id === e.courseSectionId))
       .filter((cs) => cs?.semesterId === activeSemester?.id)
       .filter(Boolean) as CourseSection[];
-  }, [currentUser, activeSemester, enrollments, courseSections]);
-  // Build schedule grid
+  }, [currentUser?.studentId, activeSemester, enrollments, courseSections]);
+
   const scheduleGrid = useMemo(() => {
     const grid: Record<
       string,
       Record<string, (typeof myCourseSections)[0]>> =
     {};
-    DAYS.forEach((day) => {
-      grid[day] = {};
+    currentWeekDays.forEach((day) => {
+      grid[day.label] = {};
     });
-    myCourseSections.forEach((cs, idx) => {
+
+    myCourseSections.forEach((cs) => {
       if (!cs) return;
-      const schedule = cs.schedule;
-      // Parse "Thứ 2 (Tiết 1-3)" format
-      const dayMatch = schedule.match(/Thứ (\d)/);
-      const periodMatch = schedule.match(/Tiết (\d+-\d+)/);
-      if (dayMatch && periodMatch) {
-        const dayNum = parseInt(dayMatch[1]);
-        const dayName = `Thứ ${dayNum}`;
-        const period = periodMatch[1];
-        if (grid[dayName]) {
-          grid[dayName][period] = cs;
-        }
+      const parsed = parseScheduleValue(cs.schedule);
+      if (!parsed.scheduleDate) {
+        return;
+      }
+
+      const matchedDay = currentWeekDays.find(
+        (item) => toDateKey(item.date) === parsed.scheduleDate
+      );
+
+      if (!matchedDay || !isDateInActiveSemester(matchedDay.date)) {
+        return;
+      }
+
+      if (grid[parsed.day] && PERIODS.includes(parsed.periodLabel)) {
+        grid[parsed.day][parsed.periodLabel] = cs;
       }
     });
+
     return grid;
-  }, [myCourseSections]);
+  }, [currentWeekDays, myCourseSections]);
+
+  const listSections = useMemo(() => {
+    return [...myCourseSections]
+      .map((section) => {
+        const parsed = parseScheduleValue(section.schedule);
+        const matchedDay = parsed.scheduleDate ?
+        currentWeekDays.find((item) => toDateKey(item.date) === parsed.scheduleDate) :
+        undefined;
+
+        return {
+          section,
+          parsed,
+          actualDate: matchedDay?.date ?? null
+        };
+      })
+      .filter((item) => item.actualDate && isDateInActiveSemester(item.actualDate))
+      .sort((a, b) => {
+      const dateA = a.actualDate ? a.actualDate.getTime() : Number.MAX_SAFE_INTEGER;
+      const dateB = b.actualDate ? b.actualDate.getTime() : Number.MAX_SAFE_INTEGER;
+
+      if (dateA !== dateB) {
+        return dateA - dateB;
+      }
+
+      const periodIndexA = PERIODS.indexOf(a.parsed?.periodLabel ?? '');
+      const periodIndexB = PERIODS.indexOf(b.parsed?.periodLabel ?? '');
+      const normalizedPeriodA = periodIndexA === -1 ? 99 : periodIndexA;
+      const normalizedPeriodB = periodIndexB === -1 ? 99 : periodIndexB;
+
+      return normalizedPeriodA - normalizedPeriodB;
+      })
+      .map((item) => item.section);
+  }, [currentWeekDays, myCourseSections]);
+
   const getSubjectColor = (subjectId: string) => {
     const idx = myCourseSections.findIndex((cs) => cs?.subjectId === subjectId);
     return SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
@@ -106,6 +189,9 @@ export function Schedule() {
             <p className="text-sm text-slate-500">{activeSemester?.name}</p>
             <p className="text-xs text-slate-400">
               {myCourseSections.length} môn học đã đăng ký
+            </p>
+            <p className="text-xs text-slate-400">
+              Tuần hiện tại: {currentWeekDays[0]?.dateLabel} - {currentWeekDays[currentWeekDays.length - 1]?.dateLabel}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -135,12 +221,15 @@ export function Schedule() {
                     <th className="px-3 py-3 text-left font-semibold text-slate-500 w-20">
                       Tiết
                     </th>
-                    {DAYS.map((day) =>
+                    {currentWeekDays.map((day) =>
                   <th
-                    key={day}
+                    key={day.label}
                     className="px-3 py-3 text-center font-semibold text-slate-600 min-w-[120px]">
 
-                        {day}
+                        <div className="space-y-1">
+                          <p>{day.label}</p>
+                          <p className="text-[11px] font-normal text-slate-400">{day.dateLabel}</p>
+                        </div>
                       </th>
                   )}
                   </tr>
@@ -155,20 +244,23 @@ export function Schedule() {
                           </p>
                         </div>
                       </td>
-                      {DAYS.map((day) => {
-                    const cs = scheduleGrid[day]?.[period];
+                      {currentWeekDays.map((day) => {
+                    const cs = isDateInActiveSemester(day.date)
+                      ? scheduleGrid[day.label]?.[period]
+                      : undefined;
                     if (!cs)
                     return (
                       <td
-                        key={day}
+                        key={day.label}
                         className="px-2 py-2 border-l border-slate-100" />);
 
 
                     const subj = subjects.find((s) => s.id === cs.subjectId);
                     const colorClass = getSubjectColor(cs.subjectId);
+                    const parsed = parseScheduleValue(cs.schedule);
                     return (
                       <td
-                        key={day}
+                        key={day.label}
                         className="px-2 py-2 border-l border-slate-100">
 
                             <div
@@ -180,11 +272,11 @@ export function Schedule() {
                               <p className="text-xs opacity-75">
                                 Phòng {cs.room}
                               </p>
+                              <p className="text-xs opacity-60">
+                                {parsed?.timeLabel}
+                              </p>
                               <p className="text-xs opacity-60 truncate">
-                                {getLecturerName(cs.lecturerId).
-                            split('.').
-                            pop()?.
-                            trim()}
+                                {getLecturerName(cs.lecturerId)}
                               </p>
                             </div>
                           </td>);
@@ -198,10 +290,14 @@ export function Schedule() {
           </Card> :
 
         <div className="space-y-3">
-            {myCourseSections.map((cs, idx) => {
+            {listSections.map((cs, idx) => {
             if (!cs) return null;
             const subj = subjects.find((s) => s.id === cs.subjectId);
             const colorClass = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
+            const parsed = parseScheduleValue(cs.schedule);
+            const actualDate = parsed.scheduleDate ?
+              currentWeekDays.find((item) => toDateKey(item.date) === parsed.scheduleDate)?.date :
+              undefined;
             return (
               <div
                 key={cs.id}
@@ -215,12 +311,16 @@ export function Schedule() {
                       </p>
                     </div>
                     <span className="text-xs font-medium opacity-75 bg-white/50 px-2 py-1 rounded-full">
-                      {cs.schedule}
+                      {parsed?.dayLabel && parsed?.dateLabel && parsed?.timeLabel
+                        ? `${parsed.dayLabel} · ${parsed.dateLabel} · ${parsed.timeLabel}`
+                        : parsed?.day && parsed?.timeLabel
+                        ? `${parsed.day} · ${actualDate ? formatVNDate(`${toDateKey(actualDate)}T00:00:00`) : ''} · ${parsed.timeLabel}`
+                        : cs.schedule}
                     </span>
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs opacity-75">
-                    <span>📍 Phòng {cs.room}</span>
-                    <span>👨‍🏫 {getLecturerName(cs.lecturerId)}</span>
+                    <span>Phòng {cs.room}</span>
+                    <span>Giảng viên: {getLecturerName(cs.lecturerId)}</span>
                   </div>
                 </div>);
 

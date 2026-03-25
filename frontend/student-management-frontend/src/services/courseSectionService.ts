@@ -22,7 +22,6 @@ export const createCourseSectionApi = async (payload: {
   room: string;
   maxStudents: number;
   enrolledCount?: number;
-  status: CourseSection["status"];
 }): Promise<CourseSection> => {
   const res = await axiosClient.post<ApiResponse<CourseSection>>("/course-sections", payload);
   return res.data.data;
@@ -39,7 +38,6 @@ export const updateCourseSectionApi = async (
     room: string;
     maxStudents: number;
     enrolledCount?: number;
-    status: CourseSection["status"];
   }
 ): Promise<CourseSection> => {
   const res = await axiosClient.put<ApiResponse<CourseSection>>(`/course-sections/${id}`, payload);

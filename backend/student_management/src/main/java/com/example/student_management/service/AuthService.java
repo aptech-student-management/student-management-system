@@ -1,8 +1,11 @@
 package com.example.student_management.service;
 
 import com.example.student_management.dto.*;
+import com.example.student_management.entity.Department;
 import com.example.student_management.entity.RefreshToken;
+import com.example.student_management.entity.Role;
 import com.example.student_management.entity.User;
+import com.example.student_management.repository.DepartmentRepository;
 import com.example.student_management.repository.UserRepository;
 import com.example.student_management.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
@@ -41,6 +45,7 @@ public class AuthService {
     public void register(RegisterRequest request) {
 
         String email = request.getEmail().trim().toLowerCase();
+        String studentId = safeTrim(request.getStudentId());
 
         if (userRepository.existsByEmail(email)) {
             throw new ResponseStatusException(
@@ -49,11 +54,30 @@ public class AuthService {
             );
         }
 
+        if (request.getRole() == Role.STUDENT) {
+            if (studentId == null || studentId.isBlank()) {
+                throw badRequest("Mã sinh viên không được để trống");
+            }
+
+            if (userRepository.existsByStudentId(studentId)) {
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "Mã sinh viên đã tồn tại"
+                );
+            }
+        }
+
+        Department department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> badRequest("Khoa không tồn tại"));
+
         User user = User.builder()
                 .name(request.getName().trim())
                 .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
+                .department(department)
+                .phone(safeTrim(request.getPhone()))
+                .studentId(request.getRole() == Role.STUDENT ? studentId : null)
                 .build();
 
         userRepository.save(user);

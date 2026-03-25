@@ -36,14 +36,6 @@ import { getSemestersApi } from "../../services/semesterService";
 import { getEarlyWarningApi } from "../../services/earlyWarningService";
 import type { EarlyWarning } from "../../types";
 
-import {
-  enrollments,
-  courseSections,
-  subjects,
-  grades,
-  semesters
-} from "../../data/mockData";
-
 const TOTAL_CREDITS_REQUIRED = 120;
 
 export function StudentDashboard() {
@@ -65,7 +57,7 @@ export function StudentDashboard() {
           getEnrollmentsApi(),
           getCourseSectionsApi(),
           getSubjectsApi(),
-          getGradesApi({ studentId: currentUser?.id }),
+          getGradesApi({ studentId: currentUser?.studentId }),
           getSemestersApi()
         ]);
 
@@ -79,18 +71,18 @@ export function StudentDashboard() {
       }
     };
 
-    if (currentUser?.id) {
+    if (currentUser?.studentId) {
       void loadData();
     }
-  }, [currentUser?.id, showToast]);
+  }, [currentUser?.studentId, showToast]);
   const [earlyWarning, setEarlyWarning] = useState<EarlyWarning | null>(null);
 
   const myEnrollments = useMemo(
     () =>
       enrollments.filter(
-        (e) => e.studentId === currentUser?.id && e.status === "ENROLLED"
+        (e) => e.studentId === currentUser?.studentId && e.status === "ENROLLED"
       ),
-    [currentUser]
+    [enrollments, currentUser?.studentId]
   );
 
   const activeSemester = semesters.find((s) => s.status === "ACTIVE") ?? semesters[0];
@@ -107,8 +99,8 @@ export function StudentDashboard() {
   );
 
   const myGrades = useMemo(
-    () => grades.filter((g) => g.studentId === currentUser?.id),
-    [currentUser]
+    () => grades.filter((g) => g.studentId === currentUser?.studentId),
+    [grades, currentUser?.studentId]
   );
 
   const completedCredits = useMemo(() => {

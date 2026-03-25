@@ -101,7 +101,7 @@ export const askChatbotApi = async (payload: {
     const res = await axiosClient.post<ApiResponse<ChatbotReplyApi>>(
       "/ai/chatbot",
       payload,
-      { timeout: 12000 }
+      { timeout: 30000 }
     );
 
     const data = res.data?.data;

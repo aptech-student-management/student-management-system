@@ -15,9 +15,10 @@ public class UserResponse {
     private String phone;
     private String studentId;
     private String departmentId;
+    private String classId;
     private String avatarUrl;
 
-    public UserResponse(Long id, String name, String email, Role role, String phone, String studentId, String departmentId, String avatarUrl) {
+    public UserResponse(Long id, String name, String email, Role role, String phone, String studentId, String departmentId, String classId, String avatarUrl) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -25,6 +26,7 @@ public class UserResponse {
         this.phone = phone;
         this.studentId = studentId;
         this.departmentId = departmentId;
+        this.classId = classId;
         this.avatarUrl = avatarUrl;
     }
 }

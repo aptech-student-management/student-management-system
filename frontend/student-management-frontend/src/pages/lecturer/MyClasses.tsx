@@ -113,7 +113,7 @@ export function MyClasses() {
       .filter(
         (e) => e.courseSectionId === selectedSection && e.status === 'ENROLLED'
       )
-      .map((e) => users.find((u) => u.id === e.studentId))
+      .map((e) => users.find((u) => u.studentId === e.studentId))
       .filter(Boolean) as User[]
   }, [selectedSection, enrollments, users])
 

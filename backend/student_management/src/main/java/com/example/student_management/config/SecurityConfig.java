@@ -6,6 +6,7 @@ import com.example.student_management.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -59,9 +60,24 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth ->
                         auth
+                                .requestMatchers("/uploads/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/departments/**", "/api/classes/**", "/api/subjects/**", "/api/semesters/**", "/api/course-sections/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/departments/**", "/api/classes/**", "/api/subjects/**", "/api/semesters/**", "/api/course-sections/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/departments/**", "/api/classes/**", "/api/subjects/**", "/api/semesters/**", "/api/course-sections/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/attendance/**", "/api/grades/**").hasAnyRole("LECTURER", "ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/attendance/**", "/api/grades/**").hasAnyRole("LECTURER", "ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/attendance/**", "/api/grades/**").hasAnyRole("LECTURER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/attendance/**", "/api/grades/**").hasAnyRole("STUDENT", "LECTURER", "ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/enrollments/**").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/enrollments/**").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/enrollments/**").hasAnyRole("STUDENT", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/enrollments/**").hasAnyRole("STUDENT", "LECTURER", "ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("ADMIN", "LECTURER")
+                                .requestMatchers("/api/users/lecturers").authenticated()
                                 .requestMatchers("/api/users/**").authenticated()
-                                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )

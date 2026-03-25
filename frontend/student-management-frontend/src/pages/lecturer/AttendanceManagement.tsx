@@ -106,7 +106,7 @@ export function AttendanceManagement() {
           e.courseSectionId === selectedSection &&
           e.status === 'ENROLLED'
       )
-      .map((e) => users.find((u) => u.id === e.studentId))
+      .map((e) => users.find((u) => u.studentId === e.studentId))
       .filter(Boolean) as User[]
 
   }, [selectedSection, enrollments, users])
@@ -156,7 +156,9 @@ export function AttendanceManagement() {
     const newMap: Record<string, AttendanceStatus> = {}
 
     sectionStudents.forEach((s) => {
-      newMap[s.id] = status
+      if (s.studentId) {
+        newMap[s.studentId] = status
+      }
     })
 
     setAttendanceMap(newMap)
@@ -176,12 +178,13 @@ export function AttendanceManagement() {
       const newRecords: Attendance[] = []
 
       for (const s of sectionStudents) {
+        if (!s.studentId) continue
 
         const saved = await upsertAttendanceApi({
-          studentId: s.id,
+          studentId: s.studentId,
           courseSectionId: selectedSection,
           date: selectedDate,
-          status: attendanceMap[s.id] ?? 'ABSENT'
+          status: attendanceMap[s.studentId] ?? 'ABSENT'
         })
 
         newRecords.push(saved)
@@ -357,7 +360,7 @@ export function AttendanceManagement() {
                   {sectionStudents.map((student, idx) => {
 
                     const status =
-                      attendanceMap[student.id] ?? 'ABSENT'
+                      attendanceMap[student.studentId ?? ''] ?? 'ABSENT'
 
                     return (
 
@@ -404,7 +407,7 @@ export function AttendanceManagement() {
                               onClick={() =>
                                 setAttendanceMap((prev) => ({
                                   ...prev,
-                                  [student.id]: s
+                                  [student.studentId ?? '']: s
                                 }))
                               }
                               className={`

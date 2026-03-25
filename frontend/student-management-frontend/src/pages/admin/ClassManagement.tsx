@@ -5,10 +5,8 @@ import {
   TrashIcon,
   SearchIcon,
   UsersIcon,
-  EyeIcon,
-  GraduationCapIcon,
-  MailIcon,
-  PhoneIcon,
+  UserMinusIcon,
+  UserPlusIcon,
 } from 'lucide-react'
 
 import { Layout } from '../../components/layout/Layout'
@@ -20,8 +18,6 @@ import { Modal } from '../../components/ui/Modal'
 import { Table } from '../../components/ui/Table'
 import { Pagination } from '../../components/ui/Pagination'
 import { useToast } from '../../contexts/ToastContext'
-import { Badge } from '../../components/ui/Badge'
-import { StatCard } from '../../components/ui/StatCard'
 
 import type { Class, Department, User } from '../../types'
 
@@ -29,11 +25,13 @@ import {
   createClassApi,
   deleteClassApi,
   getClassesApi,
-  updateClassApi
+  updateClassApi,
+  addStudentToClassApi,
+  removeStudentFromClassApi,
 } from '../../services/classService'
 
 import { getDepartmentsApi } from '../../services/departmentService'
-import { users } from '../../data/mockData'
+import { getStudentsApi } from '../../services/userService'
 
 const PAGE_SIZE = 8
 
@@ -42,7 +40,9 @@ export function ClassManagement() {
 
   const [classList, setClassList] = useState<Class[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
+  const [students, setStudents] = useState<User[]>([]) // ← từ DB
 
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterDept, setFilterDept] = useState('')
   const [page, setPage] = useState(1)
@@ -51,108 +51,144 @@ export function ClassManagement() {
   const [deleteModal, setDeleteModal] = useState<Class | null>(null)
   const [editing, setEditing] = useState<Class | null>(null)
 
-  const [loading, setLoading] = useState(false)
-
-  const [viewStudentsClass, setViewStudentsClass] = useState<Class | null>(null)
+  // Student Management Modals
+  const [viewStudentsModal, setViewStudentsModal] = useState<Class | null>(null)
+  const [addStudentModal, setAddStudentModal] = useState<Class | null>(null)
   const [studentSearch, setStudentSearch] = useState('')
+  const [addStudentSearch, setAddStudentSearch] = useState('')
+  const [loadingAction, setLoadingAction] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
     code: '',
     departmentId: '',
-    year: new Date().getFullYear().toString()
+    year: new Date().getFullYear().toString(),
   })
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
-  /* FETCH DATA */
-
-  const fetchClasses = async () => {
-    try {
-      const data = await getClassesApi()
-      setClassList(data)
-    } catch {
-      showToast('Không thể tải danh sách lớp', 'error')
-    }
+  const refreshClassAndStudentData = async () => {
+    const [classesData, studentsData] = await Promise.all([
+      getClassesApi(),
+      getStudentsApi(),
+    ])
+    setClassList(classesData)
+    setStudents(studentsData)
+    return classesData
   }
 
-  const fetchDepartments = async () => {
-    try {
-      const data = await getDepartmentsApi()
-      setDepartments(data)
-    } catch {
-      showToast('Không thể tải danh sách khoa', 'error')
-    }
-  }
-
+  // Fetch dữ liệu từ DB
   useEffect(() => {
-    fetchClasses()
-    fetchDepartments()
-  }, [])
-
-   // Get actual students for a class from users data
-  const getStudentsByClass = (classId: string): User[] => {
-    return users.filter((u) => u.role === 'STUDENT' && u.classId === classId)
-  }
-
-  // Students for the currently viewed class
-  const viewedStudents = useMemo(() => {
-    if (!viewStudentsClass) return []
-    let students = getStudentsByClass(viewStudentsClass.id)
-    if (studentSearch) {
-      students = students.filter(
-        (s) =>
-          s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
-          (s.studentId ?? '').toLowerCase().includes(studentSearch.toLowerCase()) ||
-          s.email.toLowerCase().includes(studentSearch.toLowerCase()),
-      )
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        const [classesData, departmentsData, studentsData] = await Promise.all([
+          getClassesApi(),
+          getDepartmentsApi(),
+          getStudentsApi(),
+        ])
+        setClassList(classesData)
+        setDepartments(departmentsData)
+        setStudents(studentsData)
+      } catch (error) {
+        console.error(error)
+        showToast('Không thể tải dữ liệu từ server', 'error')
+      } finally {
+        setLoading(false)
+      }
     }
-    return students
-  }, [viewStudentsClass, studentSearch])
 
-  // Stats
-  const totalStudents = useMemo(
-    () => users.filter((u) => u.role === 'STUDENT').length,
-    [],
-  )
-
-
-  /* FILTER */
+    fetchData()
+  }, [])
 
   const filtered = useMemo(() => {
     let result = classList
-
     if (search)
       result = result.filter(
         (c) =>
           c.name.toLowerCase().includes(search.toLowerCase()) ||
-          c.code.toLowerCase().includes(search.toLowerCase())
+          c.code.toLowerCase().includes(search.toLowerCase()),
       )
-
-    if (filterDept)
-      result = result.filter((c) => c.departmentId === filterDept)
-
+    if (filterDept) result = result.filter((c) => c.departmentId === filterDept)
     return result
   }, [classList, search, filterDept])
 
-  const paginated = filtered.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE
-  )
-
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
-
-  const stats = useMemo(() => {
-    return {
-      totalClasses: classList.length,
-      totalStudents: classList.reduce((s, c) => s + c.studentCount, 0)
-    }
-  }, [classList])
 
   const getDeptName = (id: string) =>
     departments.find((d) => d.id === id)?.name ?? '—'
 
-  /* MODAL */
+  // Danh sách HS trong lớp đang xem
+  const classStudents = useMemo(() => {
+    if (!viewStudentsModal) return []
+    return students.filter((s) => s.classId === viewStudentsModal.id)
+  }, [students, viewStudentsModal])
+
+  const filteredClassStudents = useMemo(() => {
+    if (!studentSearch) return classStudents
+    return classStudents.filter(
+      (s) =>
+        s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
+        s.studentId?.toLowerCase().includes(studentSearch.toLowerCase()),
+    )
+  }, [classStudents, studentSearch])
+
+  // Danh sách HS có thể thêm vào lớp này (chưa thuộc lớp nào)
+  const availableStudents = useMemo(() => {
+    if (!addStudentModal) return []
+    return students.filter((s) => !s.classId)
+  }, [students, addStudentModal])
+
+  const filteredAvailableStudents = useMemo(() => {
+    if (!addStudentSearch) return availableStudents
+    return availableStudents.filter(
+      (s) =>
+        s.name.toLowerCase().includes(addStudentSearch.toLowerCase()) ||
+        s.studentId?.toLowerCase().includes(addStudentSearch.toLowerCase()),
+    )
+  }, [availableStudents, addStudentSearch])
+
+  const handleRemoveStudent = async (student: User) => {
+    if (!viewStudentsModal) return
+
+    setLoadingAction(true)
+    try {
+      const classId = viewStudentsModal.id
+      await removeStudentFromClassApi(classId, Number(student.id))
+      const updatedClasses = await refreshClassAndStudentData()
+      const refreshedClass =
+        updatedClasses.find((cls) => cls.id === classId) ?? null
+      setViewStudentsModal(refreshedClass)
+
+      showToast(`Đã loại ${student.name} khỏi lớp`, 'success')
+    } catch (error) {
+      showToast('Loại sinh viên thất bại', 'error')
+    } finally {
+      setLoadingAction(false)
+    }
+  }
+
+  const handleAddStudent = async (student: User) => {
+    if (!addStudentModal) return
+
+    setLoadingAction(true)
+    try {
+      const classId = addStudentModal.id
+      await addStudentToClassApi(classId, Number(student.id))
+      const updatedClasses = await refreshClassAndStudentData()
+      const refreshedClass =
+        updatedClasses.find((cls) => cls.id === classId) ?? null
+      setAddStudentModal(null)
+      setViewStudentsModal(refreshedClass)
+
+      showToast(`Đã thêm ${student.name} vào lớp`, 'success')
+    } catch (error) {
+      showToast('Thêm sinh viên thất bại', 'error')
+    } finally {
+      setLoadingAction(false)
+    }
+  }
 
   const openAdd = () => {
     setEditing(null)
@@ -160,7 +196,7 @@ export function ClassManagement() {
       name: '',
       code: '',
       departmentId: '',
-      year: new Date().getFullYear().toString()
+      year: new Date().getFullYear().toString(),
     })
     setFormErrors({})
     setModalOpen(true)
@@ -168,35 +204,28 @@ export function ClassManagement() {
 
   const openEdit = (cls: Class) => {
     setEditing(cls)
-
     setForm({
       name: cls.name,
       code: cls.code,
       departmentId: cls.departmentId,
-      year: cls.year.toString()
+      year: cls.year.toString(),
     })
-
     setFormErrors({})
     setModalOpen(true)
   }
 
   const validate = () => {
     const errs: Record<string, string> = {}
-
     if (!form.name.trim()) errs.name = 'Vui lòng nhập tên lớp'
     if (!form.code.trim()) errs.code = 'Vui lòng nhập mã lớp'
     if (!form.departmentId) errs.departmentId = 'Vui lòng chọn khoa'
-
     setFormErrors(errs)
-
     return Object.keys(errs).length === 0
   }
 
   const handleSave = async () => {
     if (!validate()) return
-
     setLoading(true)
-
     try {
       if (editing) {
         await updateClassApi(editing.id, {
@@ -204,9 +233,8 @@ export function ClassManagement() {
           code: form.code,
           departmentId: form.departmentId,
           year: parseInt(form.year),
-          studentCount: editing.studentCount
+          studentCount: editing.studentCount,
         })
-
         showToast('Cập nhật lớp thành công!', 'success')
       } else {
         await createClassApi({
@@ -215,13 +243,12 @@ export function ClassManagement() {
           code: form.code,
           departmentId: form.departmentId,
           year: parseInt(form.year),
-          studentCount: 0
+          studentCount: 0,
         })
-
         showToast('Thêm lớp mới thành công!', 'success')
       }
-
-      await fetchClasses()
+      const updatedClasses = await getClassesApi()
+      setClassList(updatedClasses)
       setModalOpen(false)
     } catch {
       showToast('Lưu lớp thất bại', 'error')
@@ -232,15 +259,12 @@ export function ClassManagement() {
 
   const handleDelete = async () => {
     if (!deleteModal) return
-
     setLoading(true)
-
     try {
       await deleteClassApi(deleteModal.id)
-      await fetchClasses()
-
+      const updatedClasses = await getClassesApi()
+      setClassList(updatedClasses)
       showToast('Đã xóa lớp thành công!', 'success')
-
       setDeleteModal(null)
     } catch {
       showToast('Xóa lớp thất bại', 'error')
@@ -249,22 +273,21 @@ export function ClassManagement() {
     }
   }
 
-  /* TABLE */
-
   const columns = [
     {
       key: 'name',
       label: 'Tên lớp',
       render: (_: unknown, row: Class) => (
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-            <GraduationCapIcon className="w-4 h-4 text-blue-600" />
-          </div>
-          <div>
-            <p className="font-medium text-slate-900">{row.name}</p>
-            <p className="text-xs text-slate-500 font-mono">{row.code}</p>
-          </div>
-        </div>
+        <span className="font-medium text-slate-900">{row.name}</span>
+      ),
+    },
+    {
+      key: 'code',
+      label: 'Mã lớp',
+      render: (_: unknown, row: Class) => (
+        <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded font-semibold text-slate-700">
+          {row.code}
+        </span>
       ),
     },
     {
@@ -280,40 +303,34 @@ export function ClassManagement() {
       key: 'year',
       label: 'Năm học',
       render: (_: unknown, row: Class) => (
-        <Badge variant="neutral">{row.year}</Badge>
+        <span className="text-sm">{row.year}</span>
       ),
     },
     {
       key: 'studentCount',
-      label: 'Số sinh viên',
-      render: (_: unknown, row: Class) => {
-        const actualCount = getStudentsByClass(row.id).length
-        return (
-          <div className="flex items-center gap-2">
-            <UsersIcon className="w-4 h-4 text-slate-400" />
-            <span className="font-semibold text-slate-800">
-              {actualCount > 0 ? actualCount : row.studentCount}
-            </span>
-          </div>
-        )
-      },
+      label: 'Số SV',
+      render: (_: unknown, row: Class) => (
+        <span className="font-semibold text-slate-800">
+          {row.studentCount}
+        </span>
+      ),
     },
     {
       key: 'actions',
       label: 'Thao tác',
       render: (_: unknown, row: Class) => (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
-            icon={<EyeIcon className="w-3.5 h-3.5" />}
-            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+            icon={<UsersIcon className="w-3.5 h-3.5" />}
             onClick={() => {
-              setViewStudentsClass(row)
+              setViewStudentsModal(row)
               setStudentSearch('')
             }}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
           >
-            Xem SV
+            Sinh viên
           </Button>
           <Button
             variant="ghost"
@@ -336,21 +353,26 @@ export function ClassManagement() {
       ),
     },
   ]
+
   const studentColumns = [
     {
-      key: 'name',
-      label: 'Sinh viên',
+      key: 'studentId',
+      label: 'MSSV',
       render: (_: unknown, row: User) => (
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700 flex-shrink-0">
+        <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded font-semibold text-slate-700">
+          {row.studentId || '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'name',
+      label: 'Họ và tên',
+      render: (_: unknown, row: User) => (
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700 flex-shrink-0">
             {row.name.charAt(0)}
           </div>
-          <div>
-            <p className="font-medium text-slate-900 text-sm">{row.name}</p>
-            <p className="text-xs text-slate-500 font-mono">
-              {row.studentId ?? '—'}
-            </p>
-          </div>
+          <span className="font-medium text-slate-900 text-sm">{row.name}</span>
         </div>
       ),
     },
@@ -358,58 +380,75 @@ export function ClassManagement() {
       key: 'email',
       label: 'Email',
       render: (_: unknown, row: User) => (
-        <span className="text-sm text-slate-600">{row.email}</span>
+        <span className="text-sm text-slate-500">{row.email}</span>
       ),
     },
     {
-      key: 'phone',
-      label: 'Điện thoại',
+      key: 'actions',
+      label: 'Thao tác',
       render: (_: unknown, row: User) => (
-        <span className="text-sm text-slate-600">{row.phone ?? '—'}</span>
-      ),
-    },
-    {
-      key: 'status',
-      label: 'Trạng thái',
-      render: (_: unknown, row: User) => (
-        <Badge variant={row.status === 'ACTIVE' ? 'success' : 'error'} dot>
-          {row.status === 'ACTIVE' ? 'Đang học' : 'Nghỉ học'}
-        </Badge>
+        <Button
+          variant="ghost"
+          size="sm"
+          icon={<UserMinusIcon className="w-3.5 h-3.5" />}
+          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+          onClick={() => handleRemoveStudent(row)}
+          disabled={loadingAction}
+        >
+          Loại
+        </Button>
       ),
     },
   ]
+
+  const addStudentColumns = [
+    {
+      key: 'studentId',
+      label: 'MSSV',
+      render: (_: unknown, row: User) => (
+        <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded font-semibold text-slate-700">
+          {row.studentId || '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'name',
+      label: 'Họ và tên',
+      render: (_: unknown, row: User) => (
+        <span className="font-medium text-slate-900 text-sm">{row.name}</span>
+      ),
+    },
+    {
+      key: 'classId',
+      label: 'Lớp hiện tại',
+      render: (_: unknown, row: User) => (
+        <span className="text-sm text-slate-500">
+          {row.classId
+            ? classList.find((c) => c.id === row.classId)?.name || '—'
+            : 'Chưa có lớp'}
+        </span>
+      ),
+    },
+    {
+      key: 'actions',
+      label: 'Thao tác',
+      render: (_: unknown, row: User) => (
+        <Button
+          variant="outline"
+          size="sm"
+          icon={<UserPlusIcon className="w-3.5 h-3.5" />}
+          onClick={() => handleAddStudent(row)}
+          disabled={loadingAction}
+        >
+          Thêm
+        </Button>
+      ),
+    },
+  ]
+
   return (
     <Layout title="Quản lý Lớp học">
       <div className="space-y-4">
-        {/* Summary stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard
-            title="Tổng lớp học"
-            value={classList.length}
-            icon={<GraduationCapIcon className="w-5 h-5" />}
-            color="blue"
-            subtitle={`${departments.length} khoa`}
-          />
-          <StatCard
-            title="Tổng sinh viên"
-            value={totalStudents}
-            icon={<UsersIcon className="w-5 h-5" />}
-            color="emerald"
-            subtitle="Tất cả các lớp"
-          />
-          <StatCard
-            title="TB SV/Lớp"
-            value={
-              classList.length > 0
-                ? Math.round(totalStudents / classList.length)
-                : 0
-            }
-            icon={<UsersIcon className="w-5 h-5" />}
-            color="amber"
-            subtitle="Trung bình"
-          />
-        </div>
-
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex-1 min-w-[200px] max-w-sm">
             <Input
@@ -447,10 +486,10 @@ export function ClassManagement() {
 
         <Card padding={false}>
           <Table
-            columns={columns as Parameters<typeof Table>[0]['columns']}
-            data={paginated as Record<string, unknown>[]}
+            columns={columns}
+            data={paginated}
             emptyMessage="Không tìm thấy lớp nào"
-            keyExtractor={(row) => (row as Class).id}
+            keyExtractor={(row) => row.id}
           />
           {totalPages > 1 && (
             <Pagination
@@ -464,6 +503,7 @@ export function ClassManagement() {
         </Card>
       </div>
 
+      {/* Add/Edit Class Modal */}
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -538,6 +578,7 @@ export function ClassManagement() {
         </div>
       </Modal>
 
+      {/* Delete Class Modal */}
       <Modal
         isOpen={!!deleteModal}
         onClose={() => setDeleteModal(null)}
@@ -562,69 +603,68 @@ export function ClassManagement() {
 
       {/* View Students Modal */}
       <Modal
-        isOpen={!!viewStudentsClass}
-        onClose={() => setViewStudentsClass(null)}
-        title={`Danh sách sinh viên — ${viewStudentsClass?.name ?? ''}`}
+        isOpen={!!viewStudentsModal}
+        onClose={() => setViewStudentsModal(null)}
+        title={`Danh sách sinh viên - ${viewStudentsModal?.name}`}
         size="xl"
       >
-        {viewStudentsClass && (
-          <div className="space-y-4">
-            {/* Class info header */}
-            <div className="flex items-center justify-between bg-blue-50 rounded-lg p-4 border border-blue-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <GraduationCapIcon className="w-5 h-5 text-blue-700" />
-                </div>
-                <div>
-                  <p className="font-semibold text-blue-900">
-                    {viewStudentsClass.name}
-                  </p>
-                  <p className="text-xs text-blue-700">
-                    {getDeptName(viewStudentsClass.departmentId)} · Khóa{' '}
-                    {viewStudentsClass.year}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-blue-900">
-                  {viewedStudents.length}
-                </p>
-                <p className="text-xs text-blue-600">sinh viên</p>
-              </div>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 max-w-sm">
+              <Input
+                placeholder="Tìm MSSV, họ tên..."
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                icon={<SearchIcon className="w-4 h-4" />}
+              />
             </div>
+            <Button
+              variant="primary"
+              icon={<UserPlusIcon className="w-4 h-4" />}
+              onClick={() => {
+                setAddStudentModal(viewStudentsModal)
+                setAddStudentSearch('')
+              }}
+            >
+              Thêm sinh viên
+            </Button>
+          </div>
+          <div className="border border-slate-200 rounded-xl overflow-hidden max-h-[60vh] overflow-y-auto">
+            <Table
+              columns={studentColumns}
+              data={filteredClassStudents}
+              emptyMessage="Lớp chưa có sinh viên nào"
+              keyExtractor={(row) => row.id}
+            />
+          </div>
+        </div>
+      </Modal>
 
-            {/* Search */}
+      {/* Add Student Modal */}
+      <Modal
+        isOpen={!!addStudentModal}
+        onClose={() => setAddStudentModal(null)}
+        title={`Thêm sinh viên vào lớp - ${addStudentModal?.name}`}
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="max-w-sm">
             <Input
-              placeholder="Tìm theo tên, mã SV, email..."
-              value={studentSearch}
-              onChange={(e) => setStudentSearch(e.target.value)}
+              placeholder="Tìm MSSV, họ tên..."
+              value={addStudentSearch}
+              onChange={(e) => setAddStudentSearch(e.target.value)}
               icon={<SearchIcon className="w-4 h-4" />}
             />
-
-            {/* Student list */}
-            {viewedStudents.length === 0 ? (
-              <div className="text-center py-10 text-slate-400">
-                <UsersIcon className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">
-                  {studentSearch
-                    ? 'Không tìm thấy sinh viên phù hợp'
-                    : 'Chưa có sinh viên nào trong lớp này'}
-                </p>
-              </div>
-            ) : (
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
-                <Table
-                  columns={
-                    studentColumns as Parameters<typeof Table>[0]['columns']
-                  }
-                  data={viewedStudents as Record<string, unknown>[]}
-                  emptyMessage="Không có sinh viên"
-                  keyExtractor={(row) => (row as User).id}
-                />
-              </div>
-            )}
           </div>
-        )}
+          <div className="border border-slate-200 rounded-xl overflow-hidden max-h-[50vh] overflow-y-auto">
+            <Table
+              columns={addStudentColumns}
+              data={filteredAvailableStudents}
+              emptyMessage="Không tìm thấy sinh viên phù hợp"
+              keyExtractor={(row) => row.id}
+            />
+          </div>
+        </div>
       </Modal>
     </Layout>
   )

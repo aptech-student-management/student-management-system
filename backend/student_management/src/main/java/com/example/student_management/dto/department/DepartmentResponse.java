@@ -11,19 +11,16 @@ public class DepartmentResponse {
     private String name;
     private String code;
     private String headLecturerId;
-    private String headLecturerName;
     private Long studentCount;
     private Long subjectCount;
 
     public DepartmentResponse(String id, String name, String code,
                               String headLecturerId,
-                              String headLecturerName,
                               Long studentCount, Long subjectCount) {
         this.id = id;
         this.name = name;
         this.code = code;
         this.headLecturerId = headLecturerId;
-        this.headLecturerName = headLecturerName;
         this.studentCount = studentCount;
         this.subjectCount = subjectCount;
     }
