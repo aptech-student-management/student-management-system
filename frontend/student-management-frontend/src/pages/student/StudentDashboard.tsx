@@ -272,7 +272,7 @@ export function StudentDashboard() {
                 ? "up"
                 : "down"
             }
-            icon={<TrendingUpIcon className="w-5 h-5"/>}
+            icon={<TrendingUpIcon className="w-5 h-5" />}
             color="sky"
             subtitle={activeSemester?.name}
           />
@@ -281,7 +281,7 @@ export function StudentDashboard() {
             title="GPA tích lũy"
             value={cumulativeGPA?.toFixed(2) ?? "N/A"}
             subtitle="Toàn khóa"
-            icon={<AwardIcon className="w-5 h-5"/>}
+            icon={<AwardIcon className="w-5 h-5" />}
             color="blue"
           />
 
@@ -289,7 +289,7 @@ export function StudentDashboard() {
             title="Tín chỉ"
             value={`${completedCredits}/${TOTAL_CREDITS_REQUIRED}`}
             subtitle={`Còn ${TOTAL_CREDITS_REQUIRED - completedCredits}`}
-            icon={<TargetIcon className="w-5 h-5"/>}
+            icon={<TargetIcon className="w-5 h-5" />}
             color="emerald"
           />
 
@@ -297,7 +297,7 @@ export function StudentDashboard() {
             title="Môn học"
             value={currentCourses.length}
             subtitle={activeSemester?.name}
-            icon={<BookOpenIcon className="w-5 h-5"/>}
+            icon={<BookOpenIcon className="w-5 h-5" />}
             color="amber"
           />
 
@@ -426,7 +426,7 @@ export function StudentDashboard() {
                     >
 
                       <div className="w-9 h-9 rounded-lg bg-sky-50 flex items-center justify-center">
-                        <BookOpenIcon className="w-4 h-4 text-sky-600"/>
+                        <BookOpenIcon className="w-4 h-4 text-sky-600" />
                       </div>
 
                       <div className="flex-1">
@@ -460,29 +460,29 @@ export function StudentDashboard() {
             {gpaHistory.length === 0 ? (
               <p className="text-sm text-slate-400 text-center py-10">Chưa có dữ liệu GPA theo học kỳ</p>
             ) : (
-            <ResponsiveContainer width="100%" height={220}>
+              <ResponsiveContainer width="100%" height={220}>
 
-              <LineChart data={gpaHistory}>
+                <LineChart data={gpaHistory}>
 
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9"/>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
 
-                <XAxis dataKey="name"/>
+                  <XAxis dataKey="name" />
 
-                <YAxis domain={[2.5,4]}/>
+                  <YAxis domain={[2.5, 4]} />
 
-                <Tooltip formatter={(v)=>[v,"GPA"]}/>
+                  <Tooltip formatter={(v) => [v, "GPA"]} />
 
-                <Line
-                  type="monotone"
-                  dataKey="GPA"
-                  strokeWidth={2.5}
-                  stroke="#0284c7"
-                  dot={{ r:5 }}
-                />
+                  <Line
+                    type="monotone"
+                    dataKey="GPA"
+                    strokeWidth={2.5}
+                    stroke="#0284c7"
+                    dot={{ r: 5 }}
+                  />
 
-              </LineChart>
+                </LineChart>
 
-            </ResponsiveContainer>
+              </ResponsiveContainer>
             )}
 
           </Card>
@@ -493,12 +493,12 @@ export function StudentDashboard() {
 
         <Card
           title="Lịch học hôm nay"
-          icon={<ClockIcon className="w-4 h-4"/>}
+          icon={<ClockIcon className="w-4 h-4" />}
           action={
             <Button
               variant="ghost"
               size="sm"
-              onClick={()=>navigate("/student/schedule")}
+              onClick={() => navigate("/student/schedule")}
             >
               Xem TKB →
             </Button>
@@ -507,7 +507,7 @@ export function StudentDashboard() {
 
           <div className="space-y-3">
 
-            {currentCourses.slice(0,2).map((cs)=>{
+            {currentCourses.slice(0, 2).map((cs) => {
 
               const subj = subjects.find(
                 s => s.id === cs?.subjectId
