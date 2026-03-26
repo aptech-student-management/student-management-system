@@ -21,6 +21,30 @@ type GradeApi = {
   updatedAt?: string;
 };
 
+export type GradeImportRow = {
+  rowNumber: number;
+  studentId: string;
+  studentName?: string;
+  attendanceScore?: number;
+  midterm?: number;
+  finalScore?: number;
+  totalScore?: number;
+  letterGrade?: string;
+  gpaPoint?: number;
+  operation: "CREATE" | "UPDATE";
+  ready: boolean;
+  issues: string[];
+};
+
+export type GradeImportPreview = {
+  courseSectionId: string;
+  rows: GradeImportRow[];
+  totalRows: number;
+  readyRows: number;
+  createCount: number;
+  updateCount: number;
+};
+
 const toGrade = (g: GradeApi): Grade => ({
   id: g.id,
   studentId: g.studentId,
@@ -56,4 +80,57 @@ export const upsertGradeApi = async (payload: {
 }): Promise<Grade> => {
   const res = await axiosClient.post<ApiResponse<GradeApi>>("/grades", payload);
   return toGrade(res.data.data);
+};
+
+export const previewGradeImportApi = async (
+  file: File,
+  courseSectionId: string
+): Promise<GradeImportPreview> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("courseSectionId", courseSectionId);
+
+  const res = await axiosClient.post<ApiResponse<GradeImportPreview>>(
+    "/grades/imports/preview",
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000
+    }
+  );
+
+  return {
+    ...res.data.data,
+    rows: (res.data.data?.rows ?? []).map((row) => ({
+      rowNumber: row.rowNumber,
+      studentId: row.studentId ?? "",
+      studentName: row.studentName ?? undefined,
+      attendanceScore: row.attendanceScore ?? undefined,
+      midterm: row.midterm ?? undefined,
+      finalScore: row.finalScore ?? undefined,
+      totalScore: row.totalScore ?? undefined,
+      letterGrade: row.letterGrade ?? undefined,
+      gpaPoint: row.gpaPoint ?? undefined,
+      operation: row.operation,
+      ready: row.ready,
+      issues: row.issues ?? []
+    }))
+  };
+};
+
+export const applyGradeImportApi = async (payload: {
+  courseSectionId: string;
+  rows: GradeImportRow[];
+}): Promise<{
+  createdCount: number;
+  updatedCount: number;
+  totalCount: number;
+}> => {
+  const res = await axiosClient.post<ApiResponse<{
+    createdCount: number;
+    updatedCount: number;
+    totalCount: number;
+  }>>("/grades/imports/apply", payload);
+
+  return res.data.data;
 };

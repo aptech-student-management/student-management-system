@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table
+@Table(name = "department")
 public class Department {
     @Id
     @Column(name = "id", length = 10)
@@ -33,6 +33,6 @@ public class Department {
     private List<SubjectEntity> subjects;
 
     @OneToMany(mappedBy = "department")
-    private List<SubjectEntity> schoolClass;
+    private List<SchoolClass> schoolClasses;
 
 }

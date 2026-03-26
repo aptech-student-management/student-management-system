@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { ThemeToggle } from '../components/ui/ThemeToggle';
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,12 +59,12 @@ export function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left panel */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-12 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-12 relative overflow-hidden dark:from-[#05070b] dark:via-[#0c1117] dark:to-[#171d26]">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/5 rounded-full" />
-          <div className="absolute -bottom-32 -left-20 w-96 h-96 bg-white/5 rounded-full" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-white/3 rounded-full" />
+          <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/5 dark:bg-white/4" />
+          <div className="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-white/5 dark:bg-white/3" />
+          <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/3 dark:bg-white/[0.02]" />
         </div>
 
         <div className="relative z-10">
@@ -83,7 +84,7 @@ export function LoginPage() {
             <h2 className="text-4xl font-bold text-white leading-tight">
               Nền tảng quản lý
               <br />
-              <span className="text-blue-300">đào tạo đại học</span>
+              <span className="text-blue-300 dark:text-slate-300">đào tạo đại học</span>
               <br />
               hiện đại
             </h2>
@@ -114,7 +115,7 @@ export function LoginPage() {
           map((stat) =>
           <div
             key={stat.label}
-            className={`${stat.color} rounded-xl p-4 backdrop-blur-sm`}>
+            className={`${stat.color} rounded-xl p-4 backdrop-blur-sm dark:border dark:border-white/5 dark:bg-white/[0.04]`}>
 
               <p className="text-2xl font-bold text-white">{stat.value}</p>
               <p className="text-white/60 text-xs mt-1">{stat.label}</p>
@@ -124,23 +125,26 @@ export function LoginPage() {
       </div>
 
       {/* Right panel - Login form */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-slate-50">
+      <div className="relative flex-1 flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
+        <div className="absolute right-6 top-6">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-blue-700 flex items-center justify-center">
-              <GraduationCapIcon className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-blue-700 dark:bg-slate-100 flex items-center justify-center">
+              <GraduationCapIcon className="w-6 h-6 text-white dark:text-slate-950" />
             </div>
             <div>
-              <p className="font-bold text-slate-900 text-lg">UniEdu</p>
-              <p className="text-slate-500 text-xs">Hệ thống Quản lý Đào tạo</p>
+              <p className="font-bold text-slate-900 dark:text-slate-100 text-lg">UniEdu</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs">Hệ thống Quản lý Đào tạo</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-card p-8">
+          <div className="bg-white/90 rounded-[28px] border border-slate-200 shadow-card p-8 backdrop-blur-sm dark:bg-slate-900/80 dark:border-slate-800">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-900">Đăng nhập</h1>
-              <p className="text-slate-500 text-sm mt-1">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Đăng nhập</h1>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                 Vui lòng đăng nhập bằng tài khoản được cấp bởi quản trị viên.
               </p>
             </div>
@@ -165,11 +169,11 @@ export function LoginPage() {
 
 
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
                   Mật khẩu <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
                     <LockIcon className="w-4 h-4" />
                   </div>
                   <input
@@ -184,12 +188,12 @@ export function LoginPage() {
                       }));
                     }}
                     autoComplete="current-password"
-                    className={`w-full pl-10 pr-10 py-2 text-sm rounded-lg border bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.password ? 'border-red-400' : 'border-slate-300 hover:border-slate-400'}`} />
+                    className={`w-full pl-10 pr-10 py-2 text-sm rounded-lg border bg-white text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-slate-400 ${errors.password ? 'border-red-400 dark:border-red-500/70' : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600'}`} />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors dark:text-slate-500 dark:hover:text-slate-300">
 
                     {showPassword ?
                     <EyeOffIcon className="w-4 h-4" /> :
@@ -199,7 +203,7 @@ export function LoginPage() {
                   </button>
                 </div>
                 {errors.password &&
-                <p className="text-xs text-red-600">{errors.password}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>
                 }
               </div>
 

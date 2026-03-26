@@ -29,6 +29,7 @@ public interface DepartmentRepository extends JpaRepository<Department, String> 
              WHERE s.department.id = d.id)
         )
         FROM Department d
+        ORDER BY d.code
         """)
     List<DepartmentResponse> findAllWithStats();
 

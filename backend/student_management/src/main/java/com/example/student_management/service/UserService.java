@@ -319,11 +319,20 @@ public class UserService {
         SchoolClass schoolClass = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
+        if (student.getRole() != Role.STUDENT) {
+            throw new BadRequestException("Chỉ có thể thêm tài khoản sinh viên vào lớp");
+        }
+
+        if (schoolClass.getDepartment() == null) {
+            throw new BadRequestException("Lớp chưa được gán khoa nên không thể thêm sinh viên");
+        }
+
         if (student.getSchoolClass() != null) {
             student.getSchoolClass().removeStudent(student);
         }
 
         schoolClass.addStudent(student);
+        student.setDepartment(schoolClass.getDepartment());
     }
 
     @Transactional

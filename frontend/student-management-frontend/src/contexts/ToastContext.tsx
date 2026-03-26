@@ -32,28 +32,28 @@ export function ToastProvider({ children }: {children: ReactNode;}) {
   };
   const toastConfig = {
     success: {
-      bg: 'bg-emerald-50 border-emerald-200',
-      text: 'text-emerald-800',
+      bg: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20',
+      text: 'text-emerald-800 dark:text-emerald-200',
       icon:
-      <CheckCircleIcon className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+      <CheckCircleIcon className="w-5 h-5 text-emerald-500 dark:text-emerald-300 flex-shrink-0" />
 
     },
     error: {
-      bg: 'bg-red-50 border-red-200',
-      text: 'text-red-800',
-      icon: <XCircleIcon className="w-5 h-5 text-red-500 flex-shrink-0" />
+      bg: 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20',
+      text: 'text-red-800 dark:text-red-200',
+      icon: <XCircleIcon className="w-5 h-5 text-red-500 dark:text-red-300 flex-shrink-0" />
     },
     warning: {
-      bg: 'bg-amber-50 border-amber-200',
-      text: 'text-amber-800',
+      bg: 'bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20',
+      text: 'text-amber-800 dark:text-amber-200',
       icon:
-      <AlertTriangleIcon className="w-5 h-5 text-amber-500 flex-shrink-0" />
+      <AlertTriangleIcon className="w-5 h-5 text-amber-500 dark:text-amber-300 flex-shrink-0" />
 
     },
     info: {
-      bg: 'bg-blue-50 border-blue-200',
-      text: 'text-blue-800',
-      icon: <InfoIcon className="w-5 h-5 text-blue-500 flex-shrink-0" />
+      bg: 'bg-blue-50 border-blue-200 dark:bg-slate-800 dark:border-slate-700',
+      text: 'text-blue-800 dark:text-slate-100',
+      icon: <InfoIcon className="w-5 h-5 text-blue-500 dark:text-slate-300 flex-shrink-0" />
     }
   };
   return (
@@ -69,7 +69,7 @@ export function ToastProvider({ children }: {children: ReactNode;}) {
           return (
             <div
               key={toast.id}
-              className={`toast-item flex items-start gap-3 px-4 py-3 rounded-lg border shadow-lg max-w-sm ${cfg.bg}`}>
+              className={`toast-item max-w-sm rounded-2xl border px-4 py-3 shadow-lg backdrop-blur-md flex items-start gap-3 ${cfg.bg}`}>
 
               {cfg.icon}
               <p className={`text-sm font-medium flex-1 ${cfg.text}`}>

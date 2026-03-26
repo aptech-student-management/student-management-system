@@ -26,11 +26,11 @@ export function Table<T extends Record<string, unknown>>({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50">
+              <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/70">
                 {columns.map((col) =>
                 <th
                   key={col.key}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider dark:text-slate-400">
 
                     {col.label}
                   </th>
@@ -39,10 +39,10 @@ export function Table<T extends Record<string, unknown>>({
             </thead>
             <tbody>
               {[...Array(5)].map((_, i) =>
-              <tr key={i} className="border-b border-slate-100">
+              <tr key={i} className="border-b border-slate-100 dark:border-slate-800/70">
                   {columns.map((col) =>
                 <td key={col.key} className="px-4 py-3">
-                      <div className="h-4 bg-slate-200 rounded animate-pulse" />
+                      <div className="h-4 bg-slate-200 rounded animate-pulse dark:bg-slate-800" />
                     </td>
                 )}
                 </tr>
@@ -57,11 +57,11 @@ export function Table<T extends Record<string, unknown>>({
     <div className="w-full overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50">
+          <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/70">
             {columns.map((col) =>
             <th
               key={col.key}
-              className={`px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap ${col.className ?? ''}`}>
+              className={`px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap dark:text-slate-400 ${col.className ?? ''}`}>
 
                 {col.label}
               </th>
@@ -72,7 +72,7 @@ export function Table<T extends Record<string, unknown>>({
           {data.length === 0 ?
           <tr>
               <td colSpan={columns.length} className="px-4 py-12 text-center">
-                <div className="flex flex-col items-center gap-2 text-slate-400">
+                <div className="flex flex-col items-center gap-2 text-slate-400 dark:text-slate-500">
                   <InboxIcon className="w-8 h-8" />
                   <p className="text-sm">{emptyMessage}</p>
                 </div>
@@ -82,12 +82,12 @@ export function Table<T extends Record<string, unknown>>({
           data.map((row, rowIdx) =>
           <tr
             key={keyExtractor ? keyExtractor(row) : rowIdx}
-            className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+            className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors dark:border-slate-800/70 dark:hover:bg-slate-800/40">
 
                 {columns.map((col) =>
             <td
               key={col.key}
-              className={`px-4 py-3 text-slate-700 ${col.className ?? ''}`}>
+              className={`px-4 py-3 text-slate-700 dark:text-slate-200 ${col.className ?? ''}`}>
 
                     {col.render ?
               col.render(row[col.key], row) :

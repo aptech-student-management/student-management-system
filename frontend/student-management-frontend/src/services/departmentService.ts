@@ -13,7 +13,6 @@ export const getDepartmentsApi = async (): Promise<Department[]> => {
 };
 
 export const createDepartmentApi = async (payload: {
-  id: string;
   name: string;
   code: string;
   description?: string;

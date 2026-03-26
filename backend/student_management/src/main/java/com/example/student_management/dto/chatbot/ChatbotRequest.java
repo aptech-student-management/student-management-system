@@ -11,5 +11,6 @@ public class ChatbotRequest {
     private String userName;
     private String role;
     private String studentId;
+    private String userId;
     private List<ChatMessageDto> history = new ArrayList<>();
 }
