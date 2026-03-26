@@ -179,11 +179,11 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   };
   const SidebarContent = () =>
   <div
-    className={`h-full flex flex-col bg-gradient-to-b ${config.gradient} text-white`}>
+    className={`h-full flex flex-col bg-gradient-to-b ${config.gradient} text-white dark:from-[#020202] dark:via-[#090d12] dark:to-[#11161d]`}>
 
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10 dark:border-white/5">
+        <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 dark:bg-white/5 dark:ring-1 dark:ring-white/10">
           <GraduationCapIcon className="w-5 h-5 text-white" />
         </div>
         <div className="min-w-0">
@@ -192,7 +192,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         </div>
         <button
         onClick={onMobileClose}
-        className="ml-auto lg:hidden p-1 rounded text-white/60 hover:text-white">
+        className="ml-auto lg:hidden p-1 rounded text-white/60 hover:text-white dark:hover:bg-white/5">
 
           <XIcon className="w-4 h-4" />
         </button>
@@ -201,7 +201,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* Role badge */}
       <div className="px-4 py-3">
         <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${config.accent}`}>
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${config.accent} dark:bg-white/5 dark:text-white dark:ring-1 dark:ring-white/10`}>
 
           <BarChart3Icon className="w-3 h-3" />
           {config.label}
@@ -214,7 +214,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       <button
         key={item.path}
         onClick={() => handleNav(item.path)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${isActive(item.path) ? 'bg-white/20 text-white' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${isActive(item.path) ? 'bg-white/20 text-white shadow-lg shadow-black/10 dark:bg-white/6 dark:ring-1 dark:ring-white/10' : 'text-white/70 hover:text-white hover:bg-white/10 dark:hover:bg-white/4'}`}>
 
             <span
           className={`flex-shrink-0 ${isActive(item.path) ? 'text-white' : 'text-white/60 group-hover:text-white/90'}`}>
@@ -230,7 +230,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       </nav>
 
       {/* User section */}
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/10 dark:border-white/5">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-sm font-bold text-white">
             {(currentUser?.name ?? "").charAt(0)}
@@ -246,7 +246,7 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         </div>
         <button
         onClick={handleLogout}
-        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors">
+        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors dark:hover:bg-white/4">
 
           <LogOutIcon className="w-4 h-4" />
           Đăng xuất

@@ -23,7 +23,7 @@ export function Select({
   return (
     <div className="flex flex-col gap-1">
       {label &&
-      <label className="text-sm font-medium text-slate-700">
+      <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -31,11 +31,11 @@ export function Select({
       <div className="relative">
         <select
           className={`
-            w-full px-3 py-2 text-sm rounded-lg border bg-white appearance-none pr-9
+            w-full px-3 py-2 text-sm rounded-lg border bg-white text-slate-900 appearance-none pr-9
             transition-colors duration-150
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-            disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed
-            ${error ? 'border-red-400' : 'border-slate-300 hover:border-slate-400'}
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-900/80 dark:text-slate-100 dark:focus:ring-slate-400
+            disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed dark:disabled:bg-slate-900/60 dark:disabled:text-slate-500
+            ${error ? 'border-red-400 dark:border-red-500/70' : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600'}
             ${className}
           `}
           {...rest}>
@@ -47,9 +47,9 @@ export function Select({
             </option>
           )}
         </select>
-        <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+        <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none dark:text-slate-500" />
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>);
 
 }

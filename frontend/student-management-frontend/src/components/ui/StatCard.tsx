@@ -57,19 +57,19 @@ export function StatCard({
 }: StatCardProps) {
   const colors = colorClasses[color];
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-card p-5">
+    <div className="rounded-2xl border border-slate-200 bg-white/90 shadow-card p-5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/75">
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">
             {title}
           </p>
-          <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+          <p className="text-2xl font-bold text-slate-900 mt-1 dark:text-slate-100">{value}</p>
           {subtitle &&
-          <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+          <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{subtitle}</p>
           }
           {change &&
           <div
-            className={`flex items-center gap-1 mt-2 text-xs font-medium ${changeType === 'up' ? 'text-emerald-600' : changeType === 'down' ? 'text-red-500' : 'text-slate-500'}`}>
+            className={`flex items-center gap-1 mt-2 text-xs font-medium ${changeType === 'up' ? 'text-emerald-600 dark:text-emerald-300' : changeType === 'down' ? 'text-red-500 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}>
 
               {changeType === 'up' && <TrendingUpIcon className="w-3 h-3" />}
               {changeType === 'down' &&
@@ -79,7 +79,7 @@ export function StatCard({
             </div>
           }
         </div>
-        <div className={`p-3 rounded-xl ${colors.bg} ${colors.border} border`}>
+        <div className={`p-3 rounded-xl ${colors.bg} ${colors.border} border dark:bg-slate-800/90 dark:border-slate-700`}>
           <div className={colors.icon}>{icon}</div>
         </div>
       </div>

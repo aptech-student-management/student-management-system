@@ -33,34 +33,34 @@ export function Pagination({
     pages.push(totalPages);
   }
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
-      <p className="text-sm text-slate-500">
+    <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+      <p className="text-sm text-slate-500 dark:text-slate-400">
         Hiển thị{' '}
-        <span className="font-medium text-slate-700">
+        <span className="font-medium text-slate-700 dark:text-slate-200">
           {start}–{end}
         </span>{' '}
-        trong <span className="font-medium text-slate-700">{totalItems}</span>{' '}
+        trong <span className="font-medium text-slate-700 dark:text-slate-200">{totalItems}</span>{' '}
         kết quả
       </p>
       <div className="flex items-center gap-1">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors dark:text-slate-400 dark:hover:bg-slate-800"
           aria-label="Trang trước">
 
           <ChevronLeftIcon className="w-4 h-4" />
         </button>
         {pages.map((page, i) =>
         page === '...' ?
-        <span key={`dots-${i}`} className="px-2 text-slate-400 text-sm">
+        <span key={`dots-${i}`} className="px-2 text-slate-400 text-sm dark:text-slate-500">
               …
             </span> :
 
         <button
           key={page}
           onClick={() => onPageChange(page as number)}
-          className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page ? 'bg-blue-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
+            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === page ? 'bg-blue-700 text-white dark:bg-slate-100 dark:text-slate-950' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}`}>
 
               {page}
             </button>
@@ -69,7 +69,7 @@ export function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors dark:text-slate-400 dark:hover:bg-slate-800"
           aria-label="Trang sau">
 
           <ChevronRightIcon className="w-4 h-4" />

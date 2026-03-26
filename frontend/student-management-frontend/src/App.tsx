@@ -7,6 +7,7 @@ import {
   useLocation } from
 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './contexts/ToastContext';
 import type { Role } from './types';
 import { LoginPage } from './pages/LoginPage';
@@ -36,10 +37,10 @@ function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const location = useLocation();
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Đang tải...</p>
+          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin dark:border-slate-700 dark:border-t-slate-100" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">Đang tải...</p>
         </div>
       </div>);
 
@@ -68,8 +69,8 @@ function RoleRedirect() {
   const { currentUser, isLoading } = useAuth();
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin dark:border-slate-700 dark:border-t-slate-100" />
       </div>);
 
   }
@@ -246,13 +247,13 @@ function AppRoutes() {
       <Route
         path="*"
         element={
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
             <div className="text-center">
-              <p className="text-6xl font-bold text-slate-200 mb-4">404</p>
-              <p className="text-slate-600 mb-6">Trang không tồn tại</p>
+              <p className="text-6xl font-bold text-slate-200 mb-4 dark:text-slate-800">404</p>
+              <p className="text-slate-600 mb-6 dark:text-slate-400">Trang không tồn tại</p>
               <a
               href="/"
-              className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors">
+              className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-medium hover:bg-blue-800 transition-colors shadow-lg shadow-blue-700/20 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white dark:shadow-[0_12px_30px_-14px_rgba(255,255,255,0.35)]">
 
                 Về trang chủ
               </a>
@@ -266,11 +267,13 @@ function AppRoutes() {
 export function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <AppRoutes />
-        </ToastProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <AppRoutes />
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>);
 
 }
