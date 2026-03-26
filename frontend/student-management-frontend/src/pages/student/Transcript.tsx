@@ -57,6 +57,17 @@ export function Transcript() {
     }
   }, [currentUser?.studentId, showToast]);
 
+  const uniqueSemesters = useMemo(() => {
+  const map = new Map();
+  semesters.forEach((sem) => {
+    const key = `${sem.name}-${sem.year}`;
+    if (!map.has(key)) {
+      map.set(key, sem);
+    }
+  });
+  return Array.from(map.values());
+}, [semesters]);
+
   const myGrades = useMemo(
     () => grades.filter((g) => g.studentId === currentUser?.studentId),
     [grades, currentUser?.studentId]
@@ -301,13 +312,13 @@ export function Transcript() {
 
           {/* Semester tabs */}
           <div className="flex items-center gap-1 px-4 pt-4 pb-0 overflow-x-auto">
-            {semesters.map((sem) =>
+            {uniqueSemesters.map((sem) =>
               <button
                 key={sem.id}
                 onClick={() => setSelectedSemester(sem.id)}
                 className={`px-4 py-2 rounded-t-lg text-sm font-medium whitespace-nowrap transition-all border-b-2 ${selectedSemester === sem.id ? 'text-sky-700 border-sky-600 bg-sky-50' : 'text-slate-500 border-transparent hover:text-slate-700 hover:bg-slate-50'}`}>
 
-                {sem.name}
+                {sem.name} - Năm {sem.year}
                 {gradesBySemester[sem.id] &&
                   <span className="ml-1.5 text-xs bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full">
                     {gradesBySemester[sem.id].length}
