@@ -15,14 +15,16 @@ import {
   createSemesterApi,
   deleteSemesterApi,
   getSemestersApi,
-  updateSemesterApi } from
-'../../services/semesterService';
+  updateSemesterApi
+} from
+  '../../services/semesterService';
 import {
   createCourseSectionApi,
   deleteCourseSectionApi,
   getCourseSectionsApi,
-  updateCourseSectionApi } from
-'../../services/courseSectionService';
+  updateCourseSectionApi
+} from
+  '../../services/courseSectionService';
 import { getSubjectsApi } from '../../services/subjectService';
 import { getClassesApi } from '../../services/classService';
 import { getAdminUsersApi } from '../../services/adminUserService';
@@ -120,11 +122,11 @@ export function SemesterManagement() {
   const fetchSemesterData = async () => {
     try {
       const [semesters, sections, subjects, classes, users] = await Promise.all([
-      getSemestersApi(),
-      getCourseSectionsApi(),
-      getSubjectsApi(),
-      getClassesApi(),
-      getAdminUsersApi()]
+        getSemestersApi(),
+        getCourseSectionsApi(),
+        getSubjectsApi(),
+        getClassesApi(),
+        getAdminUsersApi()]
       );
 
       setSemesterList(semesters);
@@ -141,27 +143,27 @@ export function SemesterManagement() {
     fetchSemesterData();
   }, []);
   const getSubjectName = (id: string) =>
-  subjectList.find((s) => s.id === id)?.name ?? '—';
+    subjectList.find((s) => s.id === id)?.name ?? '—';
   const getLecturerName = (id: string) =>
-  lecturerList.find((u) => u.id === id)?.name ?? '—';
+    lecturerList.find((u) => u.id === id)?.name ?? '—';
   const getClassName = (id: string) =>
-  classList.find((c) => c.id === id)?.name ?? '—';
+    classList.find((c) => c.id === id)?.name ?? '—';
   const getSemesterName = (id: string) =>
-  semesterList.find((s) => s.id === id)?.name ?? '—';
+    semesterList.find((s) => s.id === id)?.name ?? '—';
   const filteredSemesters = useMemo(() => {
     const keyword = semesterFilters.keyword.trim().toLowerCase();
 
     return semesterList.filter((semester) => {
       const matchesKeyword =
-      !keyword ||
-      semester.name.toLowerCase().includes(keyword) ||
-      semester.year.toLowerCase().includes(keyword);
+        !keyword ||
+        semester.name.toLowerCase().includes(keyword) ||
+        semester.year.toLowerCase().includes(keyword);
       const matchesYear =
-      !semesterFilters.year ||
-      semester.year === semesterFilters.year;
+        !semesterFilters.year ||
+        semester.year === semesterFilters.year;
       const matchesStatus =
-      !semesterFilters.status ||
-      semester.status === semesterFilters.status;
+        !semesterFilters.status ||
+        semester.status === semesterFilters.status;
 
       return matchesKeyword && matchesYear && matchesStatus;
     });
@@ -175,30 +177,30 @@ export function SemesterManagement() {
       const lecturerName = getLecturerName(section.lecturerId).toLowerCase();
       const scheduleText = section.schedule.toLowerCase();
       const matchesKeyword =
-      !keyword ||
-      subjectName.includes(keyword) ||
-      className.includes(keyword) ||
-      lecturerName.includes(keyword) ||
-      scheduleText.includes(keyword) ||
-      section.room.toLowerCase().includes(keyword);
+        !keyword ||
+        subjectName.includes(keyword) ||
+        className.includes(keyword) ||
+        lecturerName.includes(keyword) ||
+        scheduleText.includes(keyword) ||
+        section.room.toLowerCase().includes(keyword);
       const matchesSemester =
-      !sectionFilters.semesterId ||
-      section.semesterId === sectionFilters.semesterId;
+        !sectionFilters.semesterId ||
+        section.semesterId === sectionFilters.semesterId;
       const matchesStatus =
-      !sectionFilters.status ||
-      section.status === sectionFilters.status;
+        !sectionFilters.status ||
+        section.status === sectionFilters.status;
 
       return matchesKeyword && matchesSemester && matchesStatus;
     });
   }, [getClassName, getLecturerName, getSubjectName, sectionFilters, sectionList]);
   const semesterYearOptions = useMemo(
     () =>
-    [...new Set(semesterList.map((semester) => semester.year))].
-    filter(Boolean).
-    map((year) => ({
-      value: year,
-      label: year
-    })),
+      [...new Set(semesterList.map((semester) => semester.year))].
+        filter(Boolean).
+        map((year) => ({
+          value: year,
+          label: year
+        })),
     [semesterList]
   );
   const openAddSem = () => {
@@ -341,205 +343,227 @@ export function SemesterManagement() {
     }
   };
   const semColumns = [
-  {
-    key: 'name',
-    label: 'Tên học kỳ',
-    render: (_: unknown, row: Semester) =>
-    <span className="font-medium text-slate-900">{row.name}</span>
+    {
+      key: 'name',
+      label: 'Tên học kỳ',
+      render: (_: unknown, row: Semester) =>
+        <span className="font-medium text-slate-900">{row.name}</span>
 
-  },
-  {
-    key: 'year',
-    label: 'Năm học',
-    render: (_: unknown, row: Semester) =>
-    <span className="text-sm text-slate-600">{row.year}</span>
+    },
+    {
+      key: 'year',
+      label: 'Năm học',
+      render: (_: unknown, row: Semester) =>
+        <span className="text-sm text-slate-600">{row.year}</span>
 
-  },
-  {
-  key: 'startDate',
-  label: 'Bắt đầu',
-  render: (_: unknown, row: Semester) =>
-    <span className="text-sm">{formatVNDate(row.startDate)}</span>
-  },
-  {
-    key: 'endDate',
-    label: 'Kết thúc',
-    render: (_: unknown, row: Semester) =>
-    <span className="text-sm">{formatVNDate(row.endDate)}</span>
+    },
+    {
+      key: 'startDate',
+      label: 'Bắt đầu',
+      render: (_: unknown, row: Semester) =>
+        <span className="text-sm">{formatVNDate(row.startDate)}</span>
+    },
+    {
+      key: 'endDate',
+      label: 'Kết thúc',
+      render: (_: unknown, row: Semester) =>
+        <span className="text-sm">{formatVNDate(row.endDate)}</span>
 
-  },
-  {
-    key: 'status',
-    label: 'Trạng thái',
-    render: (_: unknown, row: Semester) => semesterStatusBadge(row.status)
-  },
-  {
-    key: 'actions',
-    label: 'Thao tác',
-    render: (_: unknown, row: Semester) =>
-    <div className="flex items-center gap-2">
+    },
+    {
+      key: 'status',
+      label: 'Trạng thái',
+      render: (_: unknown, row: Semester) => semesterStatusBadge(row.status)
+    },
+    {
+      key: 'actions',
+      label: 'Thao tác',
+      render: (_: unknown, row: Semester) =>
+        <div className="flex items-center gap-2">
           <Button
-        variant="ghost"
-        size="sm"
-        icon={<PencilIcon className="w-3.5 h-3.5" />}
-        onClick={() => openEditSem(row)}>
+            variant="ghost"
+            size="sm"
+            icon={<PencilIcon className="w-3.5 h-3.5" />}
+            onClick={() => openEditSem(row)}>
 
             Sửa
           </Button>
           <Button
-        variant="ghost"
-        size="sm"
-        icon={<TrashIcon className="w-3.5 h-3.5" />}
-        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-        onClick={() =>
-        setDeleteModal({
-          type: 'sem',
-          item: row
-        })
-        }>
+            variant="ghost"
+            size="sm"
+            icon={<TrashIcon className="w-3.5 h-3.5" />}
+            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            onClick={() =>
+              setDeleteModal({
+                type: 'sem',
+                item: row
+              })
+            }>
 
             Xóa
           </Button>
         </div>
 
-  }];
+    }];
 
   const secColumns = [
-  {
-    key: 'subjectId',
-    label: 'Môn học',
-    render: (_: unknown, row: CourseSection) =>
-    <span className="font-medium text-slate-900 text-sm">
+    {
+      key: 'subjectId',
+      label: 'Môn học',
+      render: (_: unknown, row: CourseSection) =>
+        <span className="font-medium text-slate-900 text-sm">
           {getSubjectName(row.subjectId)}
         </span>
 
-  },
-  {
-    key: 'semesterId',
-    label: 'Học kỳ',
-    render: (_: unknown, row: CourseSection) =>
-    <span className="text-xs text-slate-600">
+    },
+    {
+      key: 'semesterId',
+      label: 'Học kỳ',
+      render: (_: unknown, row: CourseSection) =>
+        <span className="text-xs text-slate-600">
           {getSemesterName(row.semesterId)}
         </span>
 
-  },
-  {
-    key: 'lecturerId',
-    label: 'Giảng viên',
-    render: (_: unknown, row: CourseSection) =>
-    <span className="text-sm text-slate-700">
+    },
+    {
+      key: 'lecturerId',
+      label: 'Giảng viên',
+      render: (_: unknown, row: CourseSection) =>
+        <span className="text-sm text-slate-700">
           {getLecturerName(row.lecturerId)}
         </span>
 
-  },
-  {
-    key: 'classId',
-    label: 'Lớp',
-    render: (_: unknown, row: CourseSection) =>
-    <span className="text-sm">{getClassName(row.classId)}</span>
+    },
+    {
+      key: 'classId',
+      label: 'Lớp',
+      render: (_: unknown, row: CourseSection) =>
+        <span className="text-sm">{getClassName(row.classId)}</span>
 
-  },
-  {
-    key: 'schedule',
-    label: 'Lịch học',
-    render: (_: unknown, row: CourseSection) => {
-      const parsed = parseScheduleValue(row.schedule);
-      return (
-        <span className="text-xs text-slate-600">
-          {parsed.dateLabel && parsed.timeLabel
-            ? `${parsed.dayLabel} · ${parsed.dateLabel} · ${parsed.timeLabel}`
-            : parsed.dayLabel && parsed.timeLabel
-            ? `${parsed.dayLabel} · ${parsed.timeLabel}`
-            : row.schedule}
-        </span>
-      );
-    }
+    },
+    {
+      key: 'schedule',
+      label: 'Lịch học',
+      render: (_: unknown, row: CourseSection) => {
+        const parsed = parseScheduleValue(row.schedule);
+        return (
+          <span className="text-xs text-slate-600">
+            {parsed.dateLabel && parsed.timeLabel
+              ? `${parsed.dayLabel} · ${parsed.dateLabel} · ${parsed.timeLabel}`
+              : parsed.dayLabel && parsed.timeLabel
+                ? `${parsed.dayLabel} · ${parsed.timeLabel}`
+                : row.schedule}
+          </span>
+        );
+      }
 
-  },
-  {
-    key: 'room',
-    label: 'Phòng',
-    render: (_: unknown, row: CourseSection) =>
-    <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
+    },
+    {
+      key: 'room',
+      label: 'Phòng',
+      render: (_: unknown, row: CourseSection) =>
+        <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
           {row.room}
         </span>
 
-  },
-  {
-    key: 'enrolledCount',
-    label: 'Sĩ số',
-    render: (_: unknown, row: CourseSection) =>
-    <span className="text-sm font-medium">
+    },
+    {
+      key: 'enrolledCount',
+      label: 'Sĩ số',
+      render: (_: unknown, row: CourseSection) =>
+        <span className="text-sm font-medium">
           {row.enrolledCount}/{row.maxStudents}
         </span>
 
-  },
-  {
-    key: 'status',
-    label: 'Trạng thái',
-    render: (_: unknown, row: CourseSection) =>
-    sectionStatusBadge(row.status)
-  },
-  {
-    key: 'actions',
-    label: 'Thao tác',
-    render: (_: unknown, row: CourseSection) =>
-    <div className="flex items-center gap-2">
+    },
+    {
+      key: 'status',
+      label: 'Trạng thái',
+      render: (_: unknown, row: CourseSection) =>
+        sectionStatusBadge(row.status)
+    },
+    {
+      key: 'actions',
+      label: 'Thao tác',
+      render: (_: unknown, row: CourseSection) =>
+        <div className="flex items-center gap-2">
           <Button
-        variant="ghost"
-        size="sm"
-        icon={<PencilIcon className="w-3.5 h-3.5" />}
-        onClick={() => openEditSec(row)}>
+            variant="ghost"
+            size="sm"
+            icon={<PencilIcon className="w-3.5 h-3.5" />}
+            onClick={() => openEditSec(row)}>
 
             Sửa
           </Button>
           <Button
-        variant="ghost"
-        size="sm"
-        icon={<TrashIcon className="w-3.5 h-3.5" />}
-        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-        onClick={() =>
-        setDeleteModal({
-          type: 'sec',
-          item: row
-        })
-        }>
+            variant="ghost"
+            size="sm"
+            icon={<TrashIcon className="w-3.5 h-3.5" />}
+            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+            onClick={() =>
+              setDeleteModal({
+                type: 'sec',
+                item: row
+              })
+            }>
 
             Xóa
           </Button>
         </div>
 
-  }];
+    }];
 
   return (
     <Layout title="Học kỳ & Lớp học phần">
       <div className="space-y-4">
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-fit">
-          <button
-            onClick={() => setActiveTab('semesters')}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'semesters' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+       <div className="flex items-center justify-between mb-2">
+          {/* Tabs */}
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+            <button
+              onClick={() => setActiveTab('semesters')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'semesters'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+                }`}
+            >
+              Học kỳ ({semesterList.length})
+            </button>
 
-            Học kỳ ({semesterList.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('sections')}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'sections' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+            <button
+              onClick={() => setActiveTab('sections')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === 'sections'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+                }`}
+            >
+              Lớp học phần ({sectionList.length})
+            </button>
+          </div>
 
-            Lớp học phần ({sectionList.length})
-          </button>
+          {/* Button nằm ngang */}
+          {activeTab === 'semesters' && (
+            <Button
+              variant="primary"
+              icon={<PlusIcon className="w-4 h-4" />}
+              onClick={openAddSem}
+            >
+              Thêm học kỳ
+            </Button>
+          )}
+
+          {activeTab === 'sections' && (
+            <Button
+              variant="primary"
+              icon={<PlusIcon className="w-4 h-4" />}
+              onClick={openAddSec}
+            >
+              Mở lớp học phần
+            </Button>
+          )}
         </div>
 
         {activeTab === 'semesters' &&
-        <>
-            <div className="flex justify-end">
-              <Button
-              variant="primary"
-              icon={<PlusIcon className="w-4 h-4" />}
-              onClick={openAddSem}>
-
-                Thêm học kỳ
-              </Button>
-            </div>
+          <>
             <Card>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <Input
@@ -547,68 +571,59 @@ export function SemesterManagement() {
                   placeholder="Tên học kỳ hoặc năm học"
                   value={semesterFilters.keyword}
                   onChange={(e) =>
-                  setSemesterFilters((prev) => ({
-                    ...prev,
-                    keyword: e.target.value
-                  }))
+                    setSemesterFilters((prev) => ({
+                      ...prev,
+                      keyword: e.target.value
+                    }))
                   } />
                 <Select
                   label="Năm học"
                   options={semesterYearOptions}
                   value={semesterFilters.year}
                   onChange={(e) =>
-                  setSemesterFilters((prev) => ({
-                    ...prev,
-                    year: e.target.value
-                  }))
+                    setSemesterFilters((prev) => ({
+                      ...prev,
+                      year: e.target.value
+                    }))
                   }
                   placeholder="Tất cả năm học" />
                 <Select
                   label="Trạng thái"
                   options={[
-                  {
-                    value: 'UPCOMING',
-                    label: 'Sắp tới'
-                  },
-                  {
-                    value: 'ACTIVE',
-                    label: 'Đang diễn ra'
-                  },
-                  {
-                    value: 'CLOSED',
-                    label: 'Đã kết thúc'
-                  }]}
+                    {
+                      value: 'UPCOMING',
+                      label: 'Sắp tới'
+                    },
+                    {
+                      value: 'ACTIVE',
+                      label: 'Đang diễn ra'
+                    },
+                    {
+                      value: 'CLOSED',
+                      label: 'Đã kết thúc'
+                    }]}
                   value={semesterFilters.status}
                   onChange={(e) =>
-                  setSemesterFilters((prev) => ({
-                    ...prev,
-                    status: e.target.value
-                  }))
+                    setSemesterFilters((prev) => ({
+                      ...prev,
+                      status: e.target.value
+                    }))
                   }
                   placeholder="Tất cả trạng thái" />
               </div>
             </Card>
             <Card padding={false}>
               <Table
-              columns={semColumns as Parameters<typeof Table>[0]['columns']}
-              data={filteredSemesters as Record<string, unknown>[]}
-              keyExtractor={(row) => (row as Semester).id} />
+                columns={semColumns as unknown as Parameters<typeof Table>[0]['columns']}
+                data={filteredSemesters as unknown as Record<string, unknown>[]}
+                keyExtractor={(row) => (row as unknown as Semester).id} />
 
             </Card>
           </>
         }
 
         {activeTab === 'sections' &&
-        <>
-            <div className="flex justify-end">
-              <Button
-              variant="primary"
-              icon={<PlusIcon className="w-4 h-4" />}
-              onClick={openAddSec}>
-
-                Mở lớp học phần
-              </Button>
-            </div>
+          <>
             <Card>
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <Input
@@ -616,10 +631,10 @@ export function SemesterManagement() {
                   placeholder="Môn học, lớp, giảng viên, phòng"
                   value={sectionFilters.keyword}
                   onChange={(e) =>
-                  setSectionFilters((prev) => ({
-                    ...prev,
-                    keyword: e.target.value
-                  }))
+                    setSectionFilters((prev) => ({
+                      ...prev,
+                      keyword: e.target.value
+                    }))
                   } />
                 <Select
                   label="Học kỳ"
@@ -629,44 +644,44 @@ export function SemesterManagement() {
                   }))}
                   value={sectionFilters.semesterId}
                   onChange={(e) =>
-                  setSectionFilters((prev) => ({
-                    ...prev,
-                    semesterId: e.target.value
-                  }))
+                    setSectionFilters((prev) => ({
+                      ...prev,
+                      semesterId: e.target.value
+                    }))
                   }
                   placeholder="Tất cả học kỳ" />
                 <Select
                   label="Trạng thái"
                   options={[
-                  {
-                    value: 'OPEN',
-                    label: 'Mở'
-                  },
-                  {
-                    value: 'FULL',
-                    label: 'Đầy'
-                  },
-                  {
-                    value: 'CLOSED',
-                    label: 'Đóng'
-                  }]}
+                    {
+                      value: 'OPEN',
+                      label: 'Mở'
+                    },
+                    {
+                      value: 'FULL',
+                      label: 'Đầy'
+                    },
+                    {
+                      value: 'CLOSED',
+                      label: 'Đóng'
+                    }]}
                   value={sectionFilters.status}
                   onChange={(e) =>
-                  setSectionFilters((prev) => ({
-                    ...prev,
-                    status: e.target.value
-                  }))
+                    setSectionFilters((prev) => ({
+                      ...prev,
+                      status: e.target.value
+                    }))
                   }
                   placeholder="Tất cả trạng thái" />
               </div>
             </Card>
             <Card padding={false}>
               <Table
-              columns={secColumns as Parameters<typeof Table>[0]['columns']}
-              data={filteredSections as Record<string, unknown>[]}
-              keyExtractor={(row) => (row as CourseSection).id} />
+                columns={secColumns as unknown as Parameters<typeof Table>[0]['columns']}
+                data={filteredSections as unknown as Record<string, unknown>[]}
+                keyExtractor={(row) => (row as unknown as CourseSection).id} />
 
-            </Card>
+            </Card> 
           </>
         }
       </div>
@@ -677,7 +692,7 @@ export function SemesterManagement() {
         onClose={() => setSemModal(false)}
         title={editingSem ? 'Chỉnh sửa Học kỳ' : 'Thêm Học kỳ mới'}
         footer={
-        <>
+          <>
             <Button variant="outline" onClick={() => setSemModal(false)}>
               Hủy
             </Button>
@@ -693,10 +708,10 @@ export function SemesterManagement() {
             placeholder="VD: Học kỳ 1 2024-2025"
             value={semForm.name}
             onChange={(e) =>
-            setSemForm((p) => ({
-              ...p,
-              name: e.target.value
-            }))
+              setSemForm((p) => ({
+                ...p,
+                name: e.target.value
+              }))
             }
             required />
 
@@ -705,10 +720,10 @@ export function SemesterManagement() {
             placeholder="VD: 2024-2025"
             value={semForm.year}
             onChange={(e) =>
-            setSemForm((p) => ({
-              ...p,
-              year: e.target.value
-            }))
+              setSemForm((p) => ({
+                ...p,
+                year: e.target.value
+              }))
             }
             required />
 
@@ -717,10 +732,10 @@ export function SemesterManagement() {
             type="date"
             value={semForm.startDate}
             onChange={(e) =>
-            setSemForm((p) => ({
-              ...p,
-              startDate: e.target.value
-            }))
+              setSemForm((p) => ({
+                ...p,
+                startDate: e.target.value
+              }))
             }
             required />
 
@@ -729,10 +744,10 @@ export function SemesterManagement() {
             type="date"
             value={semForm.endDate}
             onChange={(e) =>
-            setSemForm((p) => ({
-              ...p,
-              endDate: e.target.value
-            }))
+              setSemForm((p) => ({
+                ...p,
+                endDate: e.target.value
+              }))
             }
             required />
 
@@ -750,7 +765,7 @@ export function SemesterManagement() {
         title={editingSec ? 'Chỉnh sửa Lớp học phần' : 'Mở Lớp học phần mới'}
         size="lg"
         footer={
-        <>
+          <>
             <Button variant="outline" onClick={() => setSecModal(false)}>
               Hủy
             </Button>
@@ -770,10 +785,10 @@ export function SemesterManagement() {
               }))}
               value={secForm.subjectId}
               onChange={(e) =>
-              setSecForm((p) => ({
-                ...p,
-                subjectId: e.target.value
-              }))
+                setSecForm((p) => ({
+                  ...p,
+                  subjectId: e.target.value
+                }))
               }
               placeholder="Chọn môn học"
               required />
@@ -787,10 +802,10 @@ export function SemesterManagement() {
             }))}
             value={secForm.semesterId}
             onChange={(e) =>
-            setSecForm((p) => ({
-              ...p,
-              semesterId: e.target.value
-            }))
+              setSecForm((p) => ({
+                ...p,
+                semesterId: e.target.value
+              }))
             }
             placeholder="Chọn học kỳ"
             required />
@@ -803,10 +818,10 @@ export function SemesterManagement() {
             }))}
             value={secForm.lecturerId}
             onChange={(e) =>
-            setSecForm((p) => ({
-              ...p,
-              lecturerId: e.target.value
-            }))
+              setSecForm((p) => ({
+                ...p,
+                lecturerId: e.target.value
+              }))
             }
             placeholder="Chọn giảng viên"
             required />
@@ -819,10 +834,10 @@ export function SemesterManagement() {
             }))}
             value={secForm.classId}
             onChange={(e) =>
-            setSecForm((p) => ({
-              ...p,
-              classId: e.target.value
-            }))
+              setSecForm((p) => ({
+                ...p,
+                classId: e.target.value
+              }))
             }
             placeholder="Chọn lớp"
             required />
@@ -832,10 +847,10 @@ export function SemesterManagement() {
             placeholder="VD: A101"
             value={secForm.room}
             onChange={(e) =>
-            setSecForm((p) => ({
-              ...p,
-              room: e.target.value
-            }))
+              setSecForm((p) => ({
+                ...p,
+                room: e.target.value
+              }))
             }
             required />
 
@@ -844,10 +859,10 @@ export function SemesterManagement() {
             type="date"
             value={secForm.scheduleDate}
             onChange={(e) =>
-            setSecForm((p) => ({
-              ...p,
-              scheduleDate: e.target.value
-            }))
+              setSecForm((p) => ({
+                ...p,
+                scheduleDate: e.target.value
+              }))
             }
             required />
 
@@ -859,10 +874,10 @@ export function SemesterManagement() {
             }))}
             value={secForm.timeRange}
             onChange={(e) =>
-            setSecForm((p) => ({
-              ...p,
-              timeRange: e.target.value
-            }))
+              setSecForm((p) => ({
+                ...p,
+                timeRange: e.target.value
+              }))
             }
             placeholder="Chọn ca học"
             required />
@@ -872,10 +887,10 @@ export function SemesterManagement() {
             type="number"
             value={secForm.maxStudents}
             onChange={(e) =>
-            setSecForm((p) => ({
-              ...p,
-              maxStudents: e.target.value
-            }))
+              setSecForm((p) => ({
+                ...p,
+                maxStudents: e.target.value
+              }))
             }
             required />
 
@@ -901,7 +916,7 @@ export function SemesterManagement() {
         title="Xác nhận xóa"
         size="sm"
         footer={
-        <>
+          <>
             <Button variant="outline" onClick={() => setDeleteModal(null)}>
               Hủy
             </Button>
