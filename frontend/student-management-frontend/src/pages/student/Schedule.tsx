@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   CalendarIcon,
-  ListIcon } from
-'lucide-react';
+  ListIcon
+} from
+  'lucide-react';
 import { Layout } from '../../components/layout/Layout';
 import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,12 +17,12 @@ import { formatVNDate } from '../../utils/date';
 import { SCHEDULE_DAYS, TIME_SLOTS, parseScheduleValue } from '../../utils/schedule';
 const PERIODS = TIME_SLOTS.map((item) => item.period);
 const SUBJECT_COLORS = [
-'bg-sky-100 border-sky-300 text-sky-800',
-'bg-teal-100 border-teal-300 text-teal-800',
-'bg-purple-100 border-purple-300 text-purple-800',
-'bg-amber-100 border-amber-300 text-amber-800',
-'bg-rose-100 border-rose-300 text-rose-800',
-'bg-indigo-100 border-indigo-300 text-indigo-800'];
+  'bg-sky-100 border-sky-300 text-sky-800',
+  'bg-teal-100 border-teal-300 text-teal-800',
+  'bg-purple-100 border-purple-300 text-purple-800',
+  'bg-amber-100 border-amber-300 text-amber-800',
+  'bg-rose-100 border-rose-300 text-rose-800',
+  'bg-indigo-100 border-indigo-300 text-indigo-800'];
 
 const toDateKey = (date: Date) => {
   const year = date.getFullYear();
@@ -113,7 +114,7 @@ export function Schedule() {
     const grid: Record<
       string,
       Record<string, (typeof myCourseSections)[0]>> =
-    {};
+      {};
     currentWeekDays.forEach((day) => {
       grid[day.label] = {};
     });
@@ -146,8 +147,8 @@ export function Schedule() {
       .map((section) => {
         const parsed = parseScheduleValue(section.schedule);
         const matchedDay = parsed.scheduleDate ?
-        currentWeekDays.find((item) => toDateKey(item.date) === parsed.scheduleDate) :
-        undefined;
+          currentWeekDays.find((item) => toDateKey(item.date) === parsed.scheduleDate) :
+          undefined;
 
         return {
           section,
@@ -157,19 +158,19 @@ export function Schedule() {
       })
       .filter((item) => item.actualDate && isDateInActiveSemester(item.actualDate))
       .sort((a, b) => {
-      const dateA = a.actualDate ? a.actualDate.getTime() : Number.MAX_SAFE_INTEGER;
-      const dateB = b.actualDate ? b.actualDate.getTime() : Number.MAX_SAFE_INTEGER;
+        const dateA = a.actualDate ? a.actualDate.getTime() : Number.MAX_SAFE_INTEGER;
+        const dateB = b.actualDate ? b.actualDate.getTime() : Number.MAX_SAFE_INTEGER;
 
-      if (dateA !== dateB) {
-        return dateA - dateB;
-      }
+        if (dateA !== dateB) {
+          return dateA - dateB;
+        }
 
-      const periodIndexA = PERIODS.indexOf(a.parsed?.periodLabel ?? '');
-      const periodIndexB = PERIODS.indexOf(b.parsed?.periodLabel ?? '');
-      const normalizedPeriodA = periodIndexA === -1 ? 99 : periodIndexA;
-      const normalizedPeriodB = periodIndexB === -1 ? 99 : periodIndexB;
+        const periodIndexA = PERIODS.indexOf(a.parsed?.periodLabel ?? '');
+        const periodIndexB = PERIODS.indexOf(b.parsed?.periodLabel ?? '');
+        const normalizedPeriodA = periodIndexA === -1 ? 99 : periodIndexA;
+        const normalizedPeriodB = periodIndexB === -1 ? 99 : periodIndexB;
 
-      return normalizedPeriodA - normalizedPeriodB;
+        return normalizedPeriodA - normalizedPeriodB;
       })
       .map((item) => item.section);
   }, [currentWeekDays, myCourseSections]);
@@ -179,7 +180,7 @@ export function Schedule() {
     return SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
   };
   const getLecturerName = (id: string) =>
-  users.find((u) => u.id === id)?.name ?? '—';
+    users.find((u) => u.id === id)?.name ?? '—';
   return (
     <Layout title="Thời khóa biểu">
       <div className="space-y-4">
@@ -213,7 +214,7 @@ export function Schedule() {
         </div>
 
         {viewMode === 'grid' ?
-        <Card padding={false}>
+          <Card padding={false}>
             <div className="overflow-x-auto">
               <table className="w-full text-xs min-w-[700px]">
                 <thead>
@@ -222,21 +223,21 @@ export function Schedule() {
                       Tiết
                     </th>
                     {currentWeekDays.map((day) =>
-                  <th
-                    key={day.label}
-                    className="px-3 py-3 text-center font-semibold text-slate-600 min-w-[120px]">
+                      <th
+                        key={day.label}
+                        className="px-3 py-3 text-center font-semibold text-slate-600 min-w-[120px]">
 
                         <div className="space-y-1">
                           <p>{day.label}</p>
                           <p className="text-[11px] font-normal text-slate-400">{day.dateLabel}</p>
                         </div>
                       </th>
-                  )}
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {PERIODS.map((period) =>
-                <tr key={period} className="border-b border-slate-100">
+                    <tr key={period} className="border-b border-slate-100">
                       <td className="px-3 py-4 text-slate-500 font-medium text-center bg-slate-50">
                         <div>
                           <p className="font-semibold text-slate-700">
@@ -245,26 +246,26 @@ export function Schedule() {
                         </div>
                       </td>
                       {currentWeekDays.map((day) => {
-                    const cs = isDateInActiveSemester(day.date)
-                      ? scheduleGrid[day.label]?.[period]
-                      : undefined;
-                    if (!cs)
-                    return (
-                      <td
-                        key={day.label}
-                        className="px-2 py-2 border-l border-slate-100" />);
+                        const cs = isDateInActiveSemester(day.date)
+                          ? scheduleGrid[day.label]?.[period]
+                          : undefined;
+                        if (!cs)
+                          return (
+                            <td
+                              key={day.label}
+                              className="px-2 py-2 border-l border-slate-100" />);
 
 
-                    const subj = subjects.find((s) => s.id === cs.subjectId);
-                    const colorClass = getSubjectColor(cs.subjectId);
-                    const parsed = parseScheduleValue(cs.schedule);
-                    return (
-                      <td
-                        key={day.label}
-                        className="px-2 py-2 border-l border-slate-100">
+                        const subj = subjects.find((s) => s.id === cs.subjectId);
+                        const colorClass = getSubjectColor(cs.subjectId);
+                        const parsed = parseScheduleValue(cs.schedule);
+                        return (
+                          <td
+                            key={day.label}
+                            className="px-2 py-2 border-l border-slate-100">
 
                             <div
-                          className={`rounded-lg border p-2 ${colorClass}`}>
+                              className={`rounded-lg border p-2 ${colorClass}`}>
 
                               <p className="font-semibold text-xs leading-tight mb-1">
                                 {subj?.name}
@@ -281,27 +282,27 @@ export function Schedule() {
                             </div>
                           </td>);
 
-                  })}
+                      })}
                     </tr>
-                )}
+                  )}
                 </tbody>
               </table>
             </div>
           </Card> :
 
-        <div className="space-y-3">
+          <div className="space-y-3">
             {listSections.map((cs, idx) => {
-            if (!cs) return null;
-            const subj = subjects.find((s) => s.id === cs.subjectId);
-            const colorClass = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
-            const parsed = parseScheduleValue(cs.schedule);
-            const actualDate = parsed.scheduleDate ?
-              currentWeekDays.find((item) => toDateKey(item.date) === parsed.scheduleDate)?.date :
-              undefined;
-            return (
-              <div
-                key={cs.id}
-                className={`rounded-xl border p-4 ${colorClass}`}>
+              if (!cs) return null;
+              const subj = subjects.find((s) => s.id === cs.subjectId);
+              const colorClass = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
+              const parsed = parseScheduleValue(cs.schedule);
+              const actualDate = parsed.scheduleDate ?
+                currentWeekDays.find((item) => toDateKey(item.date) === parsed.scheduleDate)?.date :
+                undefined;
+              return (
+                <div
+                  key={cs.id}
+                  className={`rounded-xl border p-4 ${colorClass}`}>
 
                   <div className="flex items-start justify-between">
                     <div>
@@ -314,8 +315,8 @@ export function Schedule() {
                       {parsed?.dayLabel && parsed?.dateLabel && parsed?.timeLabel
                         ? `${parsed.dayLabel} · ${parsed.dateLabel} · ${parsed.timeLabel}`
                         : parsed?.day && parsed?.timeLabel
-                        ? `${parsed.day} · ${actualDate ? formatVNDate(`${toDateKey(actualDate)}T00:00:00`) : ''} · ${parsed.timeLabel}`
-                        : cs.schedule}
+                          ? `${parsed.day} · ${actualDate ? formatVNDate(`${toDateKey(actualDate)}T00:00:00`) : ''} · ${parsed.timeLabel}`
+                          : cs.schedule}
                     </span>
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs opacity-75">
@@ -324,33 +325,33 @@ export function Schedule() {
                   </div>
                 </div>);
 
-          })}
+            })}
             {myCourseSections.length === 0 &&
-          <div className="text-center py-16 text-slate-400">
+              <div className="text-center py-16 text-slate-400">
                 <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p>Chưa có lịch học nào</p>
               </div>
-          }
+            }
           </div>
         }
 
         {/* Legend */}
         {viewMode === 'grid' && myCourseSections.length > 0 &&
-        <Card title="Chú thích">
+          <Card title="Chú thích">
             <div className="flex flex-wrap gap-3">
               {myCourseSections.map((cs, idx) => {
-              if (!cs) return null;
-              const subj = subjects.find((s) => s.id === cs.subjectId);
-              const colorClass = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
-              return (
-                <div
-                  key={cs.id}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${colorClass}`}>
+                if (!cs) return null;
+                const subj = subjects.find((s) => s.id === cs.subjectId);
+                const colorClass = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
+                return (
+                  <div
+                    key={cs.id}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium ${colorClass}`}>
 
                     <span>{subj?.name}</span>
                   </div>);
 
-            })}
+              })}
             </div>
           </Card>
         }

@@ -22,6 +22,7 @@ export interface Department {
   name: string;
   code: string;
   headLecturerId?: string;
+  headLecturerName?: string;
   studentCount: number;
   subjectCount: number;
   description?: string;
