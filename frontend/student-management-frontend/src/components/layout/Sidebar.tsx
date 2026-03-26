@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboardIcon,
   BuildingIcon,
@@ -10,7 +10,6 @@ import {
   ClipboardListIcon,
   BarChart3Icon,
   LogOutIcon,
-  MenuIcon,
   XIcon,
   UserCircleIcon,
   BookmarkIcon,
@@ -19,260 +18,259 @@ import {
   UserIcon,
   ChevronRightIcon,
   ListChecksIcon,
-  BotIcon } from
-'lucide-react';
+  BotIcon
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Role } from '../../types';
+
 interface NavItem {
   label: string;
   path: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }
+
 const adminNav: NavItem[] = [
-{
-  label: 'Dashboard',
-  path: '/admin',
-  icon: <LayoutDashboardIcon className="w-4 h-4" />
-},
-{
-  label: 'Khoa',
-  path: '/admin/departments',
-  icon: <BuildingIcon className="w-4 h-4" />
-},
-{
-  label: 'Lớp học',
-  path: '/admin/classes',
-  icon: <UsersIcon className="w-4 h-4" />
-},
-{
-  label: 'Môn học',
-  path: '/admin/subjects',
-  icon: <BookOpenIcon className="w-4 h-4" />
-},
-{
-  label: 'Tài khoản',
-  path: '/admin/users',
-  icon: <UserCircleIcon className="w-4 h-4" />
-},
-{
-  label: 'Học kỳ & Lớp HP',
-  path: '/admin/semesters',
-  icon: <CalendarIcon className="w-4 h-4" />
-},
-{
-  label: 'AI Chatbot',
-  path: '/chatbot',
-  icon: <BotIcon className="w-4 h-4" />
-}];
+  {
+    label: 'Dashboard',
+    path: '/admin',
+    icon: <LayoutDashboardIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Khoa',
+    path: '/admin/departments',
+    icon: <BuildingIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Lớp học',
+    path: '/admin/classes',
+    icon: <UsersIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Môn học',
+    path: '/admin/subjects',
+    icon: <BookOpenIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Tài khoản',
+    path: '/admin/users',
+    icon: <UserCircleIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Học kỳ & Lớp HP',
+    path: '/admin/semesters',
+    icon: <CalendarIcon className="h-4 w-4" />
+  },
+  {
+    label: 'AI Chatbot',
+    path: '/chatbot',
+    icon: <BotIcon className="h-4 w-4" />
+  }
+];
 
 const lecturerNav: NavItem[] = [
-{
-  label: 'Dashboard',
-  path: '/lecturer',
-  icon: <LayoutDashboardIcon className="w-4 h-4" />
-},
-{
-  label: 'Lớp học của tôi',
-  path: '/lecturer/classes',
-  icon: <BookOpenIcon className="w-4 h-4" />
-},
-{
-  label: 'Điểm danh',
-  path: '/lecturer/attendance',
-  icon: <ListChecksIcon className="w-4 h-4" />
-},
-{
-  label: 'Nhập điểm',
-  path: '/lecturer/grades',
-  icon: <ClipboardListIcon className="w-4 h-4" />
-},
-{
-  label: 'AI Chatbot',
-  path: '/chatbot',
-  icon: <BotIcon className="w-4 h-4" />
-}];
+  {
+    label: 'Dashboard',
+    path: '/lecturer',
+    icon: <LayoutDashboardIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Lớp học của tôi',
+    path: '/lecturer/classes',
+    icon: <BookOpenIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Điểm danh',
+    path: '/lecturer/attendance',
+    icon: <ListChecksIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Nhập điểm',
+    path: '/lecturer/grades',
+    icon: <ClipboardListIcon className="h-4 w-4" />
+  },
+  {
+    label: 'AI Chatbot',
+    path: '/chatbot',
+    icon: <BotIcon className="h-4 w-4" />
+  }
+];
 
 const studentNav: NavItem[] = [
-{
-  label: 'Dashboard',
-  path: '/student',
-  icon: <LayoutDashboardIcon className="w-4 h-4" />
-},
-{
-  label: 'Đăng ký môn học',
-  path: '/student/registration',
-  icon: <BookmarkIcon className="w-4 h-4" />
-},
-{
-  label: 'Thời khóa biểu',
-  path: '/student/schedule',
-  icon: <ClockIcon className="w-4 h-4" />
-},
-{
-  label: 'Bảng điểm',
-  path: '/student/transcript',
-  icon: <FileTextIcon className="w-4 h-4" />
-},
-{
-  label: 'AI Chatbot',
-  path: '/chatbot',
-  icon: <BotIcon className="w-4 h-4" />
-},
-{
-  label: 'Hồ sơ',
-  path: '/student/profile',
-  icon: <UserIcon className="w-4 h-4" />
-}];
-
-const roleConfig: Record<
-  Role,
   {
-    nav: NavItem[];
-    accent: string;
-    label: string;
-    gradient: string;
-  }> =
-{
+    label: 'Dashboard',
+    path: '/student',
+    icon: <LayoutDashboardIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Đăng ký môn học',
+    path: '/student/registration',
+    icon: <BookmarkIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Thời khóa biểu',
+    path: '/student/schedule',
+    icon: <ClockIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Bảng điểm',
+    path: '/student/transcript',
+    icon: <FileTextIcon className="h-4 w-4" />
+  },
+  {
+    label: 'AI Chatbot',
+    path: '/chatbot',
+    icon: <BotIcon className="h-4 w-4" />
+  },
+  {
+    label: 'Hồ sơ',
+    path: '/student/profile',
+    icon: <UserIcon className="h-4 w-4" />
+  }
+];
+
+const roleConfig: Record<Role, { nav: NavItem[]; label: string }> = {
   ADMIN: {
     nav: adminNav,
-    accent: 'bg-blue-600 text-white',
-    label: 'Quản trị viên',
-    gradient: 'from-blue-900 to-blue-800'
+    label: 'Quản trị viên'
   },
   LECTURER: {
     nav: lecturerNav,
-    accent: 'bg-teal-600 text-white',
-    label: 'Giảng viên',
-    gradient: 'from-teal-900 to-slate-900'
+    label: 'Giảng viên'
   },
   STUDENT: {
     nav: studentNav,
-    accent: 'bg-sky-600 text-white',
-    label: 'Sinh viên',
-    gradient: 'from-sky-900 to-slate-900'
+    label: 'Sinh viên'
   }
 };
+
 interface SidebarProps {
   mobileOpen: boolean;
   onMobileClose: () => void;
 }
+
 export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
   if (!currentUser) return null;
+
   const config = roleConfig[currentUser.role];
   const navItems = config.nav;
+
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
   const handleNav = (path: string) => {
     navigate(path);
     onMobileClose();
   };
+
   const isActive = (path: string) => {
     if (path === '/admin' || path === '/lecturer' || path === '/student') {
       return location.pathname === path;
     }
+
     return location.pathname.startsWith(path);
   };
-  const SidebarContent = () =>
-  <div
-    className={`h-full flex flex-col bg-gradient-to-b ${config.gradient} text-white dark:from-[#020202] dark:via-[#090d12] dark:to-[#11161d]`}>
 
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10 dark:border-white/5">
-        <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 dark:bg-white/5 dark:ring-1 dark:ring-white/10">
-          <GraduationCapIcon className="w-5 h-5 text-white" />
+  const SidebarContent = () => (
+    <div className="ui-sidebar-shell flex h-full flex-col text-white">
+      <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
+        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.06] ring-1 ring-white/5">
+          <GraduationCapIcon className="h-5 w-5 text-white" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-white leading-tight">UniEdu</p>
-          <p className="text-xs text-white/60 leading-tight">Quản lý Đào tạo</p>
+          <p className="text-sm font-bold leading-tight text-white">UniEdu</p>
+          <p className="text-xs leading-tight text-white/60">Quản lý Đào tạo</p>
         </div>
         <button
-        onClick={onMobileClose}
-        className="ml-auto lg:hidden p-1 rounded text-white/60 hover:text-white dark:hover:bg-white/5">
-
-          <XIcon className="w-4 h-4" />
+          onClick={onMobileClose}
+          className="ml-auto rounded-xl p-1 text-white/60 transition hover:bg-white/[0.06] hover:text-white lg:hidden"
+        >
+          <XIcon className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Role badge */}
       <div className="px-4 py-3">
-        <span
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${config.accent} dark:bg-white/5 dark:text-white dark:ring-1 dark:ring-white/10`}>
-
-          <BarChart3Icon className="w-3 h-3" />
+        <span className="ui-sidebar-role-badge inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-[0.08em]">
+          <BarChart3Icon className="h-3 w-3" />
           {config.label}
         </span>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-2 overflow-y-auto space-y-0.5">
-        {navItems.map((item) =>
-      <button
-        key={item.path}
-        onClick={() => handleNav(item.path)}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${isActive(item.path) ? 'bg-white/20 text-white shadow-lg shadow-black/10 dark:bg-white/6 dark:ring-1 dark:ring-white/10' : 'text-white/70 hover:text-white hover:bg-white/10 dark:hover:bg-white/4'}`}>
-
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
+        {navItems.map((item) => (
+          <button
+            key={item.path}
+            onClick={() => handleNav(item.path)}
+            className={`ui-sidebar-item group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+              isActive(item.path) ? 'ui-sidebar-item-active' : ''
+            }`}
+          >
             <span
-          className={`flex-shrink-0 ${isActive(item.path) ? 'text-white' : 'text-white/60 group-hover:text-white/90'}`}>
-
+              className={`flex-shrink-0 ${
+                isActive(item.path)
+                  ? 'text-white'
+                  : 'text-white/50 group-hover:text-white/85'
+              }`}
+            >
               {item.icon}
             </span>
             <span className="flex-1 text-left">{item.label}</span>
-            {isActive(item.path) &&
-        <ChevronRightIcon className="w-3 h-3 text-white/60" />
-        }
+            {isActive(item.path) && (
+              <ChevronRightIcon className="h-3 w-3 text-white/60" />
+            )}
           </button>
-      )}
+        ))}
       </nav>
 
-      {/* User section */}
-      <div className="p-4 border-t border-white/10 dark:border-white/5">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-sm font-bold text-white">
-            {(currentUser?.name ?? "").charAt(0)}
+      <div className="border-t border-white/10 p-4">
+        <div className="mb-3 flex items-center gap-3">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-sm font-bold text-white">
+            {(currentUser.name ?? '').charAt(0)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-white truncate">
+            <p className="truncate text-xs font-semibold text-white">
               {currentUser.name}
             </p>
-            <p className="text-xs text-white/50 truncate">
+            <p className="truncate text-xs text-white/50">
               {currentUser.email}
             </p>
           </div>
         </div>
-        <button
-        onClick={handleLogout}
-        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors dark:hover:bg-white/4">
 
-          <LogOutIcon className="w-4 h-4" />
+        <button
+          onClick={handleLogout}
+          className="ui-sidebar-item flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium"
+        >
+          <LogOutIcon className="h-4 w-4" />
           Đăng xuất
         </button>
       </div>
-    </div>;
+    </div>
+  );
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 flex-shrink-0 h-screen sticky top-0">
+      <aside className="ui-panel-surface hidden h-full w-64 flex-shrink-0 overflow-hidden rounded-[30px] lg:flex lg:flex-col">
         <SidebarContent />
       </aside>
 
-      {/* Mobile overlay */}
-      {mobileOpen &&
-      <div className="lg:hidden fixed inset-0 z-40">
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
           <div
-          className="absolute inset-0 bg-black/50"
-          onClick={onMobileClose} />
+            className="absolute inset-0 bg-black/50"
+            onClick={onMobileClose}
+          />
 
-          <aside className="absolute left-0 top-0 bottom-0 w-64 z-50">
+          <aside className="absolute bottom-0 left-0 top-0 z-50 w-64 overflow-hidden rounded-r-[26px] shadow-[0_24px_64px_-34px_rgba(0,0,0,0.5)]">
             <SidebarContent />
           </aside>
         </div>
-      }
-    </>);
-
+      )}
+    </>
+  );
 }

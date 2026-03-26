@@ -1,9 +1,11 @@
-import React from 'react';
+import { SelectHTMLAttributes } from 'react';
 import { ChevronDownIcon } from 'lucide-react';
+
 interface SelectOption {
   value: string;
   label: string;
 }
+
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   options: SelectOption[];
@@ -11,6 +13,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   placeholder?: string;
   required?: boolean;
 }
+
 export function Select({
   label,
   options,
@@ -21,35 +24,38 @@ export function Select({
   ...rest
 }: SelectProps) {
   return (
-    <div className="flex flex-col gap-1">
-      {label &&
-      <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+    <div className="flex flex-col gap-1.5">
+      {label && (
+        <label className="ui-form-label text-sm font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="ml-1 text-red-500">*</span>}
         </label>
-      }
+      )}
+
       <div className="relative">
         <select
           className={`
-            w-full px-3 py-2 text-sm rounded-lg border bg-white text-slate-900 appearance-none pr-9
-            transition-colors duration-150
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-900/80 dark:text-slate-100 dark:focus:ring-slate-400
-            disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed dark:disabled:bg-slate-900/60 dark:disabled:text-slate-500
-            ${error ? 'border-red-400 dark:border-red-500/70' : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600'}
+            ui-form-field w-full appearance-none rounded-2xl px-4 py-3 pr-10 text-sm
+            transition-all duration-200
+            focus:border-transparent focus:outline-none focus:ring-2 ui-focus-accent
+            disabled:cursor-not-allowed
+            ${error ? 'ui-form-field-error' : ''}
             ${className}
           `}
-          {...rest}>
-
+          {...rest}
+        >
           {placeholder && <option value="">{placeholder}</option>}
-          {options.map((opt) =>
-          <option key={opt.value} value={opt.value}>
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
-          )}
+          ))}
         </select>
-        <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none dark:text-slate-500" />
-      </div>
-      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
-    </div>);
 
+        <ChevronDownIcon className="ui-text-muted pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2" />
+      </div>
+
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
+    </div>
+  );
 }

@@ -1,33 +1,38 @@
-import React from 'react';
-type BadgeVariant =
-'success' |
-'error' |
-'warning' |
-'info' |
-'neutral' |
-'purple';
+import { ReactNode } from 'react';
+
+type BadgeVariant = 'success' | 'error' | 'warning' | 'info' | 'neutral' | 'purple';
+
 interface BadgeProps {
   variant?: BadgeVariant;
   children: ReactNode;
   dot?: boolean;
   className?: string;
 }
+
 const variantClasses: Record<BadgeVariant, string> = {
-  success: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20',
-  error: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20',
-  warning: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20',
-  info: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700',
-  neutral: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-[#11161d] dark:text-slate-300 dark:border-slate-800',
-  purple: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700'
+  success:
+    'border-emerald-500/15 bg-emerald-500/[0.08] text-emerald-700 dark:border-emerald-400/15 dark:bg-emerald-400/[0.08] dark:text-emerald-200',
+  error:
+    'border-red-500/15 bg-red-500/[0.08] text-red-700 dark:border-red-400/15 dark:bg-red-400/[0.08] dark:text-red-200',
+  warning:
+    'border-amber-500/15 bg-amber-500/[0.08] text-amber-700 dark:border-amber-400/15 dark:bg-amber-400/[0.08] dark:text-amber-200',
+  info:
+    'ui-accent-surface',
+  neutral:
+    'ui-subtle-surface ui-text-base',
+  purple:
+    'border-violet-500/15 bg-violet-500/[0.08] text-violet-700 dark:border-violet-400/15 dark:bg-violet-400/[0.08] dark:text-violet-200'
 };
+
 const dotClasses: Record<BadgeVariant, string> = {
-  success: 'bg-emerald-500',
-  error: 'bg-red-500',
-  warning: 'bg-amber-500',
-  info: 'bg-blue-500',
-  neutral: 'bg-slate-400',
-  purple: 'bg-purple-500'
+  success: 'bg-emerald-500 dark:bg-emerald-300',
+  error: 'bg-red-500 dark:bg-red-300',
+  warning: 'bg-amber-500 dark:bg-amber-300',
+  info: 'ui-accent-dot',
+  neutral: 'bg-slate-400 dark:bg-slate-400',
+  purple: 'bg-violet-500 dark:bg-violet-300'
 };
+
 export function Badge({
   variant = 'neutral',
   children,
@@ -36,14 +41,10 @@ export function Badge({
 }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${variantClasses[variant]} ${className}`}>
-
-      {dot &&
-      <span
-        className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotClasses[variant]}`} />
-
-      }
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.01em] ${variantClasses[variant]} ${className}`}
+    >
+      {dot && <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${dotClasses[variant]}`} />}
       {children}
-    </span>);
-
+    </span>
+  );
 }

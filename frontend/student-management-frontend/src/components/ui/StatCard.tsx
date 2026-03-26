@@ -1,5 +1,6 @@
-import React from 'react';
-import { TrendingUpIcon, TrendingDownIcon } from 'lucide-react';
+import { ReactNode } from 'react';
+import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react';
+
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -9,80 +10,58 @@ interface StatCardProps {
   color: 'blue' | 'teal' | 'sky' | 'emerald' | 'amber' | 'purple' | 'rose';
   subtitle?: string;
 }
-const colorClasses = {
-  blue: {
-    bg: 'bg-blue-50',
-    icon: 'text-blue-600',
-    border: 'border-blue-100'
-  },
-  teal: {
-    bg: 'bg-teal-50',
-    icon: 'text-teal-600',
-    border: 'border-teal-100'
-  },
-  sky: {
-    bg: 'bg-sky-50',
-    icon: 'text-sky-600',
-    border: 'border-sky-100'
-  },
-  emerald: {
-    bg: 'bg-emerald-50',
-    icon: 'text-emerald-600',
-    border: 'border-emerald-100'
-  },
-  amber: {
-    bg: 'bg-amber-50',
-    icon: 'text-amber-600',
-    border: 'border-amber-100'
-  },
-  purple: {
-    bg: 'bg-purple-50',
-    icon: 'text-purple-600',
-    border: 'border-purple-100'
-  },
-  rose: {
-    bg: 'bg-rose-50',
-    icon: 'text-rose-600',
-    border: 'border-rose-100'
-  }
-};
+
 export function StatCard({
   title,
   value,
   change,
   changeType = 'neutral',
   icon,
-  color,
+  color: _color,
   subtitle
 }: StatCardProps) {
-  const colors = colorClasses[color];
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white/90 shadow-card p-5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/75">
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider dark:text-slate-400">
+    <div className="ui-panel-surface ui-panel-surface-strong relative overflow-hidden rounded-[28px] p-5">
+      <div className="pointer-events-none absolute inset-0 ui-stat-accent-glow" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/45 to-transparent dark:via-white/[0.1]" />
+
+      <div className="relative flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <p className="ui-text-muted text-[11px] font-semibold uppercase tracking-[0.18em]">
             {title}
           </p>
-          <p className="text-2xl font-bold text-slate-900 mt-1 dark:text-slate-100">{value}</p>
-          {subtitle &&
-          <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{subtitle}</p>
-          }
-          {change &&
-          <div
-            className={`flex items-center gap-1 mt-2 text-xs font-medium ${changeType === 'up' ? 'text-emerald-600 dark:text-emerald-300' : changeType === 'down' ? 'text-red-500 dark:text-red-300' : 'text-slate-500 dark:text-slate-400'}`}>
 
-              {changeType === 'up' && <TrendingUpIcon className="w-3 h-3" />}
-              {changeType === 'down' &&
-            <TrendingDownIcon className="w-3 h-3" />
-            }
+          <p className="ui-text-strong mt-3 text-[2rem] font-semibold tracking-[-0.05em]">
+            {value}
+          </p>
+
+          {subtitle && (
+            <p className="ui-text-muted mt-1 text-xs leading-6">
+              {subtitle}
+            </p>
+          )}
+
+          {change && (
+            <div
+              className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+                changeType === 'up'
+                  ? 'border-emerald-500/15 bg-emerald-500/[0.08] text-emerald-700 dark:border-emerald-400/15 dark:bg-emerald-400/[0.08] dark:text-emerald-200'
+                  : changeType === 'down'
+                    ? 'border-red-500/15 bg-red-500/[0.08] text-red-700 dark:border-red-400/15 dark:bg-red-400/[0.08] dark:text-red-200'
+                    : 'ui-subtle-surface ui-text-base'
+              }`}
+            >
+              {changeType === 'up' && <TrendingUpIcon className="h-3 w-3" />}
+              {changeType === 'down' && <TrendingDownIcon className="h-3 w-3" />}
               {change}
             </div>
-          }
+          )}
         </div>
-        <div className={`p-3 rounded-xl ${colors.bg} ${colors.border} border dark:bg-slate-800/90 dark:border-slate-700`}>
-          <div className={colors.icon}>{icon}</div>
+
+        <div className="ui-accent-surface relative flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[18px] border">
+          <div className="ui-accent-text">{icon}</div>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

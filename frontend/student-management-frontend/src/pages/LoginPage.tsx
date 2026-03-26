@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   GraduationCapIcon,
   EyeIcon,
   EyeOffIcon,
   UserIcon,
-  LockIcon } from
-'lucide-react';
+  LockIcon
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,28 +24,35 @@ export function LoginPage() {
   const { login, isLoading } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+
   const validate = () => {
     const newErrors: {
       email?: string;
       password?: string;
     } = {};
+
     if (!email) newErrors.email = 'Vui lòng nhập tài khoản';
     if (!password) newErrors.password = 'Vui lòng nhập mật khẩu';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const handleSubmit = async (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+
     const result = await login(email, password);
+
     if (result.success) {
       showToast('Đăng nhập thành công!', 'success');
       const stored = localStorage.getItem('uni_user');
+
       if (stored) {
         const user = JSON.parse(stored);
-        if (user.role === 'ADMIN') navigate('/admin');else
-        if (user.role === 'LECTURER') navigate('/lecturer');else
-        navigate('/student');
+        if (user.role === 'ADMIN') navigate('/admin');
+        else if (user.role === 'LECTURER') navigate('/lecturer');
+        else navigate('/student');
       } else {
         navigate('/');
       }
@@ -57,99 +65,98 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-12 relative overflow-hidden dark:from-[#05070b] dark:via-[#0c1117] dark:to-[#171d26]">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/5 dark:bg-white/4" />
-          <div className="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-white/5 dark:bg-white/3" />
-          <div className="absolute top-1/2 left-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/3 dark:bg-white/[0.02]" />
-        </div>
+    <div className="min-h-screen bg-[var(--app-bg)] lg:grid lg:grid-cols-[1.02fr_0.98fr]">
+      <div className="ui-sidebar-shell relative hidden overflow-hidden px-12 py-10 text-white lg:flex lg:flex-col lg:justify-between">
+        <div className="absolute inset-0 ui-layout-accent-glow opacity-90" />
+        <div className="absolute inset-0 bg-[linear-gradient(140deg,rgba(255,255,255,0.04),transparent_36%)]" />
+        <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-white/[0.04]" />
+        <div className="absolute -bottom-24 -left-12 h-80 w-80 rounded-full bg-white/[0.03]" />
 
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-12">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-              <GraduationCapIcon className="w-6 h-6 text-white" />
+          <div className="mb-12 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/14">
+              <GraduationCapIcon className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-white font-bold text-lg leading-tight">
+              <p className="text-lg font-bold leading-tight text-white">
                 UniEdu
               </p>
-              <p className="text-white/60 text-xs">Hệ thống Quản lý Đào tạo</p>
+              <p className="text-xs text-white/60">Hệ thống Quản lý Đào tạo</p>
             </div>
           </div>
 
           <div className="space-y-6">
-            <h2 className="text-4xl font-bold text-white leading-tight">
-              Nền tảng quản lý
+            <h2 className="text-4xl font-bold leading-tight text-white">
+              Giao diện gọn gàng,
               <br />
-              <span className="text-blue-300 dark:text-slate-300">đào tạo đại học</span>
+              dễ theo dõi,
               <br />
-              hiện đại
+              học tập hiệu quả hơn
             </h2>
-            <p className="text-white/70 text-base leading-relaxed max-w-sm">
-              Hệ thống tích hợp toàn diện cho Quản trị viên, Giảng viên và Sinh
-              viên — quản lý học tập thông minh, hiệu quả.
+            <p className="max-w-md text-base leading-relaxed text-white/72">
+              Nền tảng quản lý đào tạo cho Quản trị viên, Giảng viên và Sinh viên
+              với bố cục rõ ràng, thao tác nhanh và dark mode dễ dùng trong thời
+              gian dài.
             </p>
           </div>
         </div>
 
         <div className="relative z-10 grid grid-cols-3 gap-4">
           {[
-          {
-            label: 'Sinh viên',
-            value: '1,180+',
-            color: 'bg-white/10'
-          },
-          {
-            label: 'Giảng viên',
-            value: '85+',
-            color: 'bg-white/10'
-          },
-          {
-            label: 'Môn học',
-            value: '150+',
-            color: 'bg-white/10'
-          }].
-          map((stat) =>
-          <div
-            key={stat.label}
-            className={`${stat.color} rounded-xl p-4 backdrop-blur-sm dark:border dark:border-white/5 dark:bg-white/[0.04]`}>
-
+            {
+              label: 'Sinh viên',
+              value: '1,180+',
+              color: 'bg-white/10'
+            },
+            {
+              label: 'Giảng viên',
+              value: '85+',
+              color: 'bg-white/10'
+            },
+            {
+              label: 'Môn học',
+              value: '150+',
+              color: 'bg-white/10'
+            }
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className={`${stat.color} rounded-2xl border border-white/10 p-4 backdrop-blur-sm`}
+            >
               <p className="text-2xl font-bold text-white">{stat.value}</p>
-              <p className="text-white/60 text-xs mt-1">{stat.label}</p>
+              <p className="mt-1 text-xs text-white/60">{stat.label}</p>
             </div>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* Right panel - Login form */}
-      <div className="relative flex-1 flex items-center justify-center p-6 bg-slate-50 dark:bg-slate-950">
+      <div className="relative flex items-center justify-center p-6 lg:p-10">
         <div className="absolute right-6 top-6">
           <ThemeToggle />
         </div>
+
         <div className="w-full max-w-md">
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-blue-700 dark:bg-slate-100 flex items-center justify-center">
-              <GraduationCapIcon className="w-6 h-6 text-white dark:text-slate-950" />
+          <div className="mb-8 flex items-center gap-3 lg:hidden">
+            <div className="ui-panel-surface flex h-10 w-10 items-center justify-center rounded-xl">
+              <GraduationCapIcon className="ui-text-strong h-6 w-6" />
             </div>
             <div>
-              <p className="font-bold text-slate-900 dark:text-slate-100 text-lg">UniEdu</p>
-              <p className="text-slate-500 dark:text-slate-400 text-xs">Hệ thống Quản lý Đào tạo</p>
+              <p className="ui-text-strong text-lg font-bold">UniEdu</p>
+              <p className="ui-text-muted text-xs">Hệ thống Quản lý Đào tạo</p>
             </div>
           </div>
 
-          <div className="bg-white/90 rounded-[28px] border border-slate-200 shadow-card p-8 backdrop-blur-sm dark:bg-slate-900/80 dark:border-slate-800">
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Đăng nhập</h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+          <div className="ui-panel-surface ui-panel-surface-strong relative overflow-hidden rounded-[30px] p-8 shadow-card">
+            <div className="pointer-events-none absolute inset-0 ui-hero-accent-glow-login" />
+
+            <div className="relative mb-8">
+              <h1 className="ui-text-strong text-2xl font-bold">Đăng nhập</h1>
+              <p className="ui-text-muted mt-1 text-sm">
                 Vui lòng đăng nhập bằng tài khoản được cấp bởi quản trị viên.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="relative space-y-4">
               <Input
                 label="Tài khoản"
                 type="text"
@@ -163,20 +170,20 @@ export function LoginPage() {
                   }));
                 }}
                 error={errors.email}
-                icon={<UserIcon className="w-4 h-4" />}
+                icon={<UserIcon className="h-4 w-4" />}
                 required
-                autoComplete="username" />
-
+                autoComplete="username"
+              />
 
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                <label className="ui-form-label text-sm font-medium">
                   Mật khẩu <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
-                    <LockIcon className="w-4 h-4" />
+                  <div className="ui-text-muted absolute left-3 top-1/2 -translate-y-1/2">
+                    <LockIcon className="h-4 w-4" />
                   </div>
-                  <input
+                  <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Nhập mật khẩu"
                     value={password}
@@ -188,23 +195,24 @@ export function LoginPage() {
                       }));
                     }}
                     autoComplete="current-password"
-                    className={`w-full pl-10 pr-10 py-2 text-sm rounded-lg border bg-white text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-slate-900/80 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-slate-400 ${errors.password ? 'border-red-400 dark:border-red-500/70' : 'border-slate-300 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-600'}`} />
+                    className={`pl-10 pr-10 ${errors.password ? 'ui-form-field-error' : ''}`}
+                  />
 
                   <button
                     type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors dark:text-slate-500 dark:hover:text-slate-300">
-
-                    {showPassword ?
-                    <EyeOffIcon className="w-4 h-4" /> :
-
-                    <EyeIcon className="w-4 h-4" />
-                    }
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="ui-text-muted absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-slate-700 dark:hover:text-slate-200"
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon className="h-4 w-4" />
+                    ) : (
+                      <EyeIcon className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
-                {errors.password &&
-                <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>
-                }
+                {errors.password && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.password}</p>
+                )}
               </div>
 
               <Button
@@ -212,16 +220,14 @@ export function LoginPage() {
                 fullWidth
                 loading={isLoading}
                 size="lg"
-                className="mt-2">
-
+                className="mt-2"
+              >
                 {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
               </Button>
             </form>
-
-
           </div>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

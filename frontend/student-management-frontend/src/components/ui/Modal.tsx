@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { XIcon } from 'lucide-react';
+
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,12 +11,14 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
 }
+
 const sizeClasses: Record<ModalSize, string> = {
   sm: 'max-w-sm',
   md: 'max-w-md',
   lg: 'max-w-lg',
   xl: 'max-w-2xl'
 };
+
 export function Modal({
   isOpen,
   onClose,
@@ -24,60 +28,60 @@ export function Modal({
   footer
 }: ModalProps) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    if (isOpen) document.addEventListener('keydown', handleKey);
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKey);
+    }
+
     return () => document.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose]);
+
   if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
 
       <div
-        className={`relative w-full max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-modal animate-fade-in dark:bg-slate-900 ${sizeClasses[size]}`}
+        className={`ui-panel-surface ui-panel-surface-strong relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-[30px] ${sizeClasses[size]}`}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="modal-title">
+        aria-labelledby="modal-title"
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-200/90 to-transparent dark:via-white/[0.1]" />
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-          <h2
-            id="modal-title"
-            className="text-base font-semibold text-slate-900 dark:text-slate-100">
-
+        <div className="flex items-center justify-between border-b ui-divider px-6 py-5">
+          <h2 id="modal-title" className="ui-text-strong text-base font-semibold tracking-[-0.02em]">
             {title}
           </h2>
+
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors dark:text-slate-500 dark:hover:text-slate-200 dark:hover:bg-slate-800"
-            aria-label="Đóng">
-
-            <XIcon className="w-4 h-4" />
+            className="ui-subtle-hover rounded-2xl border border-transparent p-2 ui-text-muted"
+            aria-label="Đóng"
+          >
+            <XIcon className="h-4 w-4" />
           </button>
         </div>
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
-        {/* Footer */}
-        {footer &&
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 dark:border-slate-800">
+
+        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+
+        {footer && (
+          <div className="flex items-center justify-end gap-3 border-t ui-divider px-6 py-5">
             {footer}
           </div>
-        }
+        )}
       </div>
-    </div>);
-
+    </div>
+  );
 }

@@ -68,6 +68,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void hydrateUser();
   }, [refreshProfile]);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    if (currentUser?.role) {
+      document.body.dataset.role = currentUser.role;
+      document.documentElement.dataset.role = currentUser.role;
+    } else {
+      delete document.body.dataset.role;
+      delete document.documentElement.dataset.role;
+    }
+  }, [currentUser?.role]);
+
 const login = useCallback(async (email: string, password: string) => {
   try {
     setIsLoading(true);

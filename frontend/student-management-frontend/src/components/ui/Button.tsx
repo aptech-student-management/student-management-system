@@ -1,7 +1,9 @@
-import React, { ButtonHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { LoaderIcon } from 'lucide-react';
+
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -10,20 +12,22 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   children?: ReactNode;
 }
+
 const variantClasses: Record<ButtonVariant, string> = {
-  primary:
-  'bg-blue-700 hover:bg-blue-800 text-white border-transparent shadow-sm dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-white dark:shadow-[0_12px_30px_-14px_rgba(255,255,255,0.35)]',
-  secondary:
-  'bg-slate-100 hover:bg-slate-200 text-slate-700 border-transparent dark:bg-slate-900 dark:text-slate-100 dark:border-slate-800 dark:hover:bg-slate-800',
-  danger: 'bg-red-600 hover:bg-red-700 text-white border-transparent shadow-sm dark:bg-red-500 dark:hover:bg-red-400 dark:text-white',
-  ghost: 'bg-transparent hover:bg-slate-100 text-slate-600 border-transparent dark:text-slate-300 dark:hover:bg-slate-900',
-  outline: 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300 dark:bg-[#0b0f14]/90 dark:hover:bg-slate-900 dark:text-slate-100 dark:border-slate-800'
+  primary: 'ui-btn-primary-role',
+  secondary: 'ui-btn-secondary',
+  danger:
+    'border-transparent bg-red-600 text-white shadow-[0_18px_40px_-24px_rgba(239,68,68,0.45)] hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400',
+  ghost: 'ui-btn-ghost',
+  outline: 'ui-btn-outline'
 };
+
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-xs gap-1.5',
-  md: 'px-4 py-2 text-sm gap-2',
-  lg: 'px-5 py-2.5 text-base gap-2'
+  sm: 'gap-1.5 px-3.5 py-2 text-xs',
+  md: 'gap-2 px-4 py-2.5 text-sm',
+  lg: 'gap-2 px-5 py-3 text-base'
 };
+
 export function Button({
   variant = 'primary',
   size = 'md',
@@ -39,22 +43,23 @@ export function Button({
     <button
       disabled={disabled || loading}
       className={`
-        inline-flex items-center justify-center font-medium rounded-lg border
-        transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 dark:focus:ring-slate-400 dark:focus:ring-offset-slate-950
-        disabled:opacity-50 disabled:cursor-not-allowed
+        inline-flex items-center justify-center rounded-2xl border font-medium
+        transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white ui-focus-accent
+        disabled:cursor-not-allowed disabled:opacity-50
+        dark:focus:ring-offset-[#0b1220]
         ${variantClasses[variant]}
         ${sizeClasses[size]}
         ${fullWidth ? 'w-full' : ''}
         ${className}
       `}
-      {...rest}>
-
-      {loading ?
-      <LoaderIcon className="w-4 h-4 animate-spin" /> :
-      icon ?
-      <span className="flex-shrink-0">{icon}</span> :
-      null}
+      {...rest}
+    >
+      {loading ? (
+        <LoaderIcon className="h-4 w-4 animate-spin" />
+      ) : icon ? (
+        <span className="flex-shrink-0">{icon}</span>
+      ) : null}
       {children}
-    </button>);
-
+    </button>
+  );
 }

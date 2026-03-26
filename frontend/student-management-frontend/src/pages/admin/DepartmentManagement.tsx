@@ -276,7 +276,7 @@ export function DepartmentManagement() {
   return (
     <Layout title="Quản lý Khoa">
 
-      <div className="space-y-6 max-w-[1300px] mx-auto">
+      <div className="space-y-6">
 
         {/* PAGE HEADER */}
 

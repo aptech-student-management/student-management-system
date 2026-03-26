@@ -36,10 +36,10 @@ const roleLabel: Record<Role, string> = {
   STUDENT: "Sinh viên"
 };
 
-const roleBadgeVariant: Record<Role, "info" | "success" | "neutral"> = {
+const roleBadgeVariant: Record<Role, "info"> = {
   ADMIN: "info",
-  LECTURER: "success",
-  STUDENT: "neutral"
+  LECTURER: "info",
+  STUDENT: "info"
 };
 
 export function ProfilePage() {
@@ -289,7 +289,7 @@ export function ProfilePage() {
 
     <Layout title="Hồ sơ cá nhân">
 
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="space-y-6">
 
         {/* PROFILE HEADER */}
 
@@ -394,137 +394,141 @@ export function ProfilePage() {
 
         {/* PROFILE FORM */}
 
-        <Card title="Thông tin cá nhân">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
 
-          <div className="space-y-4">
+          <Card title="Thông tin cá nhân">
 
-            <Input
-              label="Họ và tên"
-              value={profileForm.name}
-              onChange={(e) =>
-                setProfileForm(p => ({ ...p, name: e.target.value }))
-              }
-              onBlur={() => setProfileErrors((prev) => {
-                const next = { ...prev };
-                delete next.name;
-                return next;
-              })}
-              error={profileErrors.name}
-              icon={<UserIcon className="w-4 h-4"/>}
-            />
+            <div className="space-y-4">
 
-            <Input
-              label="Email"
-              value={profileForm.email}
-              onChange={(e) =>
-                setProfileForm(p => ({ ...p, email: e.target.value }))
-              }
-              onBlur={() => setProfileErrors((prev) => {
-                const next = { ...prev };
-                delete next.email;
-                return next;
-              })}
-              error={profileErrors.email}
-              icon={<MailIcon className="w-4 h-4"/>}
-            />
+              <Input
+                label="Họ và tên"
+                value={profileForm.name}
+                onChange={(e) =>
+                  setProfileForm(p => ({ ...p, name: e.target.value }))
+                }
+                onBlur={() => setProfileErrors((prev) => {
+                  const next = { ...prev };
+                  delete next.name;
+                  return next;
+                })}
+                error={profileErrors.name}
+                icon={<UserIcon className="w-4 h-4"/>}
+              />
 
-            <Input
-              label="Số điện thoại"
-              value={profileForm.phone}
-              onChange={(e) =>
-                setProfileForm(p => ({ ...p, phone: e.target.value }))
-              }
-              onBlur={() => setProfileErrors((prev) => {
-                const next = { ...prev };
-                delete next.phone;
-                return next;
-              })}
-              error={profileErrors.phone}
-              icon={<PhoneIcon className="w-4 h-4"/>}
-            />
+              <Input
+                label="Email"
+                value={profileForm.email}
+                onChange={(e) =>
+                  setProfileForm(p => ({ ...p, email: e.target.value }))
+                }
+                onBlur={() => setProfileErrors((prev) => {
+                  const next = { ...prev };
+                  delete next.email;
+                  return next;
+                })}
+                error={profileErrors.email}
+                icon={<MailIcon className="w-4 h-4"/>}
+              />
 
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                <p className="text-xs text-slate-500">Mã người dùng</p>
-                <p className="text-sm font-medium text-slate-900">{currentUser.id}</p>
+              <Input
+                label="Số điện thoại"
+                value={profileForm.phone}
+                onChange={(e) =>
+                  setProfileForm(p => ({ ...p, phone: e.target.value }))
+                }
+                onBlur={() => setProfileErrors((prev) => {
+                  const next = { ...prev };
+                  delete next.phone;
+                  return next;
+                })}
+                error={profileErrors.phone}
+                icon={<PhoneIcon className="w-4 h-4"/>}
+              />
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-3 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Mã người dùng</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{currentUser.id}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-3 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Mã sinh viên</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{currentUser.studentId || "—"}</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200/70 bg-slate-50/70 px-4 py-3 dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Lớp</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{cls?.name || "—"}</p>
+                </div>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                <p className="text-xs text-slate-500">Mã sinh viên</p>
-                <p className="text-sm font-medium text-slate-900">{currentUser.studentId || "—"}</p>
+
+              <div className="flex justify-end pt-2">
+
+                <Button
+                  icon={<SaveIcon className="w-4 h-4"/>}
+                  loading={saving}
+                  onClick={handleSaveProfile}
+                >
+                  Lưu thay đổi
+                </Button>
+
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                <p className="text-xs text-slate-500">Lớp</p>
-                <p className="text-sm font-medium text-slate-900">{cls?.name || "—"}</p>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
-
-              <Button
-                icon={<SaveIcon className="w-4 h-4"/>}
-                loading={saving}
-                onClick={handleSaveProfile}
-              >
-                Lưu thay đổi
-              </Button>
-
-            </div>
-
-          </div>
-
-        </Card>
-
-        {/* PASSWORD */}
-
-        <Card title="Đổi mật khẩu">
-
-          <div className="space-y-4">
-
-            <Input
-              label="Mật khẩu hiện tại"
-              type="password"
-              value={passwordForm.oldPassword}
-              error={passwordErrors.oldPassword}
-              onChange={(e) =>
-                setPasswordForm(p => ({ ...p, oldPassword: e.target.value }))
-              }
-            />
-
-            <Input
-              label="Mật khẩu mới"
-              type="password"
-              value={passwordForm.newPassword}
-              error={passwordErrors.newPassword}
-              onChange={(e) =>
-                setPasswordForm(p => ({ ...p, newPassword: e.target.value }))
-              }
-            />
-
-            <Input
-              label="Xác nhận mật khẩu"
-              type="password"
-              value={passwordForm.confirmPassword}
-              error={passwordErrors.confirmPassword}
-              onChange={(e) =>
-                setPasswordForm(p => ({ ...p, confirmPassword: e.target.value }))
-              }
-            />
-
-            <div className="flex justify-end">
-
-              <Button
-                icon={<LockIcon className="w-4 h-4"/>}
-                loading={changingPassword}
-                onClick={handleChangePassword}
-              >
-                Đổi mật khẩu
-              </Button>
 
             </div>
 
-          </div>
+          </Card>
 
-        </Card>
+          {/* PASSWORD */}
+
+          <Card title="Đổi mật khẩu">
+
+            <div className="space-y-4">
+
+              <Input
+                label="Mật khẩu hiện tại"
+                type="password"
+                value={passwordForm.oldPassword}
+                error={passwordErrors.oldPassword}
+                onChange={(e) =>
+                  setPasswordForm(p => ({ ...p, oldPassword: e.target.value }))
+                }
+              />
+
+              <Input
+                label="Mật khẩu mới"
+                type="password"
+                value={passwordForm.newPassword}
+                error={passwordErrors.newPassword}
+                onChange={(e) =>
+                  setPasswordForm(p => ({ ...p, newPassword: e.target.value }))
+                }
+              />
+
+              <Input
+                label="Xác nhận mật khẩu"
+                type="password"
+                value={passwordForm.confirmPassword}
+                error={passwordErrors.confirmPassword}
+                onChange={(e) =>
+                  setPasswordForm(p => ({ ...p, confirmPassword: e.target.value }))
+                }
+              />
+
+              <div className="flex justify-end">
+
+                <Button
+                  icon={<LockIcon className="w-4 h-4"/>}
+                  loading={changingPassword}
+                  onClick={handleChangePassword}
+                >
+                  Đổi mật khẩu
+                </Button>
+
+              </div>
+
+            </div>
+
+          </Card>
+
+        </div>
 
       </div>
 

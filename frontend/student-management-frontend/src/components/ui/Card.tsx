@@ -1,4 +1,5 @@
-import React from 'react';
+import { ReactNode } from 'react';
+
 interface CardProps {
   title?: string;
   subtitle?: string;
@@ -7,7 +8,14 @@ interface CardProps {
   children: ReactNode;
   className?: string;
   padding?: boolean;
+  variant?: 'default' | 'dashboard';
 }
+
+const variantClasses = {
+  default: 'ui-panel-surface ui-panel-surface-strong relative overflow-hidden rounded-[28px]',
+  dashboard: 'ui-panel-surface ui-panel-surface-strong relative overflow-hidden rounded-[30px]'
+};
+
 export function Card({
   title,
   subtitle,
@@ -15,31 +23,45 @@ export function Card({
   action,
   children,
   className = '',
-  padding = true
+  padding = true,
+  variant = 'default'
 }: CardProps) {
-  return (
-    <div
-      className={`rounded-2xl border border-slate-200 bg-white/90 shadow-card backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/75 ${className}`}>
+  const cardClass = variantClasses[variant];
 
-      {(title || action) &&
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800/80">
-          <div className="flex items-center gap-3">
-            {icon && <div className="text-slate-500 dark:text-slate-400">{icon}</div>}
-            <div>
-              {title &&
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+  return (
+    <section className={`${cardClass} ${className}`}>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-200/90 to-transparent dark:via-white/[0.1]" />
+      <div className="pointer-events-none absolute inset-0 ui-hero-accent-glow opacity-60" />
+
+      {(title || action) && (
+        <div className="relative flex items-start justify-between gap-3 border-b ui-divider px-6 py-5">
+          <div className="flex min-w-0 items-start gap-3">
+            {icon && (
+              <div className="ui-icon-surface flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl">
+                {icon}
+              </div>
+            )}
+
+            <div className="min-w-0">
+              {title && (
+                <h3 className="ui-text-strong text-sm font-semibold tracking-[-0.02em]">
                   {title}
                 </h3>
-            }
-              {subtitle &&
-            <p className="text-xs text-slate-500 mt-0.5 dark:text-slate-400">{subtitle}</p>
-            }
+              )}
+
+              {subtitle && (
+                <p className="ui-text-muted mt-1 text-xs leading-6">
+                  {subtitle}
+                </p>
+              )}
             </div>
           </div>
-          {action && <div>{action}</div>}
-        </div>
-      }
-      <div className={padding ? 'p-6' : ''}>{children}</div>
-    </div>);
 
+          {action && <div className="relative flex-shrink-0">{action}</div>}
+        </div>
+      )}
+
+      <div className={padding ? 'relative p-6' : 'relative'}>{children}</div>
+    </section>
+  );
 }
