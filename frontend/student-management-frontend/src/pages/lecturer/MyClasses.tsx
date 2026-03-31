@@ -69,7 +69,9 @@ export function MyClasses() {
 
         const activeSem = semesterData.find((s) => s.status === 'ACTIVE')
         setFilterSemester(activeSem?.id ?? '')
-      } catch {}
+      } catch (error) {
+        console.error('Failed to load lecturer classes', error)
+      }
     }
 
     void loadData()

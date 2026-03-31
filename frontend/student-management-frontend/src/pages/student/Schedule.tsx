@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CalendarIcon,
   ListIcon
@@ -14,7 +14,7 @@ import { getLecturersApi } from '../../services/userService';
 import { getSemestersApi } from '../../services/semesterService';
 import type { CourseSection, Enrollment, Semester, Subject, User } from '../../types';
 import { formatVNDate } from '../../utils/date';
-import { SCHEDULE_DAYS, TIME_SLOTS, parseScheduleValue } from '../../utils/schedule';
+import { getScheduleWeekMatch, SCHEDULE_DAYS, TIME_SLOTS, parseScheduleValue } from '../../utils/schedule';
 const PERIODS = TIME_SLOTS.map((item) => item.period);
 const SUBJECT_COLORS = [
   'bg-sky-100 border-sky-300 text-sky-800',
@@ -83,10 +83,10 @@ export function Schedule() {
     });
   }, []);
 
-  const semesterStart = activeSemester?.startDate ? new Date(activeSemester.startDate) : null;
-  const semesterEnd = activeSemester?.endDate ? new Date(activeSemester.endDate) : null;
+  const isDateInActiveSemester = useCallback((date: Date) => {
+    const semesterStart = activeSemester?.startDate ? new Date(activeSemester.startDate) : null;
+    const semesterEnd = activeSemester?.endDate ? new Date(activeSemester.endDate) : null;
 
-  const isDateInActiveSemester = (date: Date) => {
     if (!semesterStart || !semesterEnd) return true;
 
     const value = new Date(date);
@@ -98,7 +98,7 @@ export function Schedule() {
     end.setHours(0, 0, 0, 0);
 
     return value >= start && value <= end;
-  };
+  }, [activeSemester?.endDate, activeSemester?.startDate]);
 
   const myCourseSections = useMemo(() => {
     const myEnrollments = enrollments.filter(
@@ -121,41 +121,29 @@ export function Schedule() {
 
     myCourseSections.forEach((cs) => {
       if (!cs) return;
-      const parsed = parseScheduleValue(cs.schedule);
-      if (!parsed.scheduleDate) {
+      const { parsed, matchedDay, actualDate } = getScheduleWeekMatch(cs.schedule, currentWeekDays);
+      if (!matchedDay || !actualDate) {
         return;
       }
 
-      const matchedDay = currentWeekDays.find(
-        (item) => toDateKey(item.date) === parsed.scheduleDate
-      );
-
-      if (!matchedDay || !isDateInActiveSemester(matchedDay.date)) {
+      if (!isDateInActiveSemester(actualDate)) {
         return;
       }
 
-      if (grid[parsed.day] && PERIODS.includes(parsed.periodLabel)) {
-        grid[parsed.day][parsed.periodLabel] = cs;
+      if (grid[matchedDay.label] && PERIODS.includes(parsed.periodLabel)) {
+        grid[matchedDay.label][parsed.periodLabel] = cs;
       }
     });
 
     return grid;
-  }, [currentWeekDays, myCourseSections]);
+  }, [currentWeekDays, isDateInActiveSemester, myCourseSections]);
 
   const listSections = useMemo(() => {
     return [...myCourseSections]
-      .map((section) => {
-        const parsed = parseScheduleValue(section.schedule);
-        const matchedDay = parsed.scheduleDate ?
-          currentWeekDays.find((item) => toDateKey(item.date) === parsed.scheduleDate) :
-          undefined;
-
-        return {
-          section,
-          parsed,
-          actualDate: matchedDay?.date ?? null
-        };
-      })
+      .map((section) => ({
+        section,
+        ...getScheduleWeekMatch(section.schedule, currentWeekDays)
+      }))
       .filter((item) => item.actualDate && isDateInActiveSemester(item.actualDate))
       .sort((a, b) => {
         const dateA = a.actualDate ? a.actualDate.getTime() : Number.MAX_SAFE_INTEGER;
@@ -171,9 +159,8 @@ export function Schedule() {
         const normalizedPeriodB = periodIndexB === -1 ? 99 : periodIndexB;
 
         return normalizedPeriodA - normalizedPeriodB;
-      })
-      .map((item) => item.section);
-  }, [currentWeekDays, myCourseSections]);
+      });
+  }, [currentWeekDays, isDateInActiveSemester, myCourseSections]);
 
   const getSubjectColor = (subjectId: string) => {
     const idx = myCourseSections.findIndex((cs) => cs?.subjectId === subjectId);
@@ -291,14 +278,10 @@ export function Schedule() {
           </Card> :
 
           <div className="space-y-3">
-            {listSections.map((cs, idx) => {
+            {listSections.map(({ section: cs, parsed, actualDate }, idx) => {
               if (!cs) return null;
               const subj = subjects.find((s) => s.id === cs.subjectId);
               const colorClass = SUBJECT_COLORS[idx % SUBJECT_COLORS.length];
-              const parsed = parseScheduleValue(cs.schedule);
-              const actualDate = parsed.scheduleDate ?
-                currentWeekDays.find((item) => toDateKey(item.date) === parsed.scheduleDate)?.date :
-                undefined;
               return (
                 <div
                   key={cs.id}
@@ -312,11 +295,9 @@ export function Schedule() {
                       </p>
                     </div>
                     <span className="text-xs font-medium opacity-75 bg-white/50 px-2 py-1 rounded-full">
-                      {parsed?.dayLabel && parsed?.dateLabel && parsed?.timeLabel
-                        ? `${parsed.dayLabel} · ${parsed.dateLabel} · ${parsed.timeLabel}`
-                        : parsed?.day && parsed?.timeLabel
-                          ? `${parsed.day} · ${actualDate ? formatVNDate(`${toDateKey(actualDate)}T00:00:00`) : ''} · ${parsed.timeLabel}`
-                          : cs.schedule}
+                      {parsed?.dayLabel && parsed?.timeLabel
+                        ? `${parsed.dayLabel} · ${actualDate ? formatVNDate(`${toDateKey(actualDate)}T00:00:00`) : parsed.dateLabel} · ${parsed.timeLabel}`
+                        : cs.schedule}
                     </span>
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs opacity-75">
@@ -324,12 +305,11 @@ export function Schedule() {
                     <span>Giảng viên: {getLecturerName(cs.lecturerId)}</span>
                   </div>
                 </div>);
-
             })}
-            {myCourseSections.length === 0 &&
+            {listSections.length === 0 &&
               <div className="text-center py-16 text-slate-400">
                 <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>Chưa có lịch học nào</p>
+                <p>Không có lịch học trong tuần hiện tại</p>
               </div>
             }
           </div>

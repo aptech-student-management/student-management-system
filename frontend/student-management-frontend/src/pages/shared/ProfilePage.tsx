@@ -94,7 +94,9 @@ export function ProfilePage() {
         setDepartments(deptData);
         setClasses(classData);
 
-      } catch {}
+      } catch (error) {
+        console.error("Failed to load profile metadata", error);
+      }
 
     };
 

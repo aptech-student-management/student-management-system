@@ -34,9 +34,11 @@ import { getSubjectsApi } from "../../services/subjectService";
 import { getGradesApi } from "../../services/gradeService";
 import { getSemestersApi } from "../../services/semesterService";
 import { getEarlyWarningApi } from "../../services/earlyWarningService";
+import { parseScheduleValue, TIME_SLOTS } from "../../utils/schedule";
 import type { EarlyWarning } from "../../types";
 
 const TOTAL_CREDITS_REQUIRED = 120;
+const PERIODS = TIME_SLOTS.map((item) => item.period);
 
 export function StudentDashboard() {
 
@@ -227,6 +229,43 @@ export function StudentDashboard() {
     (completedCredits / TOTAL_CREDITS_REQUIRED) * 100,
     100
   );
+
+  const todaySchedule = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const semesterStart = activeSemester?.startDate ? new Date(activeSemester.startDate) : null;
+    const semesterEnd = activeSemester?.endDate ? new Date(activeSemester.endDate) : null;
+
+    if (semesterStart) {
+      semesterStart.setHours(0, 0, 0, 0);
+    }
+
+    if (semesterEnd) {
+      semesterEnd.setHours(0, 0, 0, 0);
+    }
+
+    if ((semesterStart && today < semesterStart) || (semesterEnd && today > semesterEnd)) {
+      return [];
+    }
+
+    const todayDayValue = today.getDay() === 0 ? "8" : String(today.getDay() + 1);
+
+    return currentCourses
+      .map((courseSection) => ({
+        courseSection,
+        parsed: parseScheduleValue(courseSection?.schedule)
+      }))
+      .filter((item) => item.parsed.dayValue === todayDayValue)
+      .sort((a, b) => {
+        const periodIndexA = PERIODS.indexOf(a.parsed.periodLabel ?? "");
+        const periodIndexB = PERIODS.indexOf(b.parsed.periodLabel ?? "");
+        const normalizedPeriodA = periodIndexA === -1 ? 99 : periodIndexA;
+        const normalizedPeriodB = periodIndexB === -1 ? 99 : periodIndexB;
+
+        return normalizedPeriodA - normalizedPeriodB;
+      });
+  }, [activeSemester?.endDate, activeSemester?.startDate, currentCourses]);
 
   useEffect(() => {
     const loadEarlyWarning = async () => {
@@ -507,7 +546,7 @@ export function StudentDashboard() {
 
           <div className="space-y-3">
 
-            {currentCourses.slice(0,2).map((cs)=>{
+            {todaySchedule.map(({ courseSection: cs, parsed })=>{
 
               const subj = subjects.find(
                 s => s.id === cs?.subjectId
@@ -521,7 +560,7 @@ export function StudentDashboard() {
                 >
 
                   <div className="text-xs font-semibold text-sky-700 min-w-[60px]">
-                    {cs?.schedule}
+                    {parsed.timeLabel || cs?.schedule}
                   </div>
 
                   <div className="flex-1">
@@ -542,7 +581,7 @@ export function StudentDashboard() {
 
             })}
 
-            {currentCourses.length === 0 && (
+            {todaySchedule.length === 0 && (
 
               <p className="text-sm text-slate-400 text-center py-4">
                 Không có lịch học hôm nay

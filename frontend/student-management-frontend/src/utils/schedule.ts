@@ -16,6 +16,12 @@ export const TIME_SLOTS = [
 
 export const DEFAULT_TIME_SLOT = TIME_SLOTS[0].value;
 
+type WeekDayLike = {
+  value: string;
+  label: string;
+  date: Date;
+};
+
 const formatDateLabel = (dateValue: string) => {
   const date = new Date(`${dateValue}T00:00:00`);
   return date.toLocaleDateString("vi-VN", {
@@ -36,6 +42,7 @@ export const parseScheduleValue = (schedule?: string) => {
     return {
       scheduleDate: "",
       timeRange: "",
+      dayValue: "",
       dayLabel: "",
       dateLabel: "",
       timeLabel: "",
@@ -60,6 +67,7 @@ export const parseScheduleValue = (schedule?: string) => {
     return {
       scheduleDate,
       timeRange,
+      dayValue: dayOfWeek,
       dayLabel,
       dateLabel: formatDateLabel(scheduleDate),
       timeLabel: timeRange,
@@ -80,6 +88,7 @@ export const parseScheduleValue = (schedule?: string) => {
     return {
       scheduleDate,
       timeRange,
+      dayValue: dayOfWeek,
       dayLabel,
       dateLabel: "",
       timeLabel: timeRange,
@@ -99,6 +108,7 @@ export const parseScheduleValue = (schedule?: string) => {
     return {
       scheduleDate: "",
       timeRange: slot?.value ?? "",
+      dayValue: dayOfWeek,
       dayLabel: `Thứ ${dayOfWeek}`,
       dateLabel: "",
       timeLabel: slot?.value ?? periodLabel,
@@ -110,10 +120,27 @@ export const parseScheduleValue = (schedule?: string) => {
   return {
     scheduleDate: "",
     timeRange: "",
+    dayValue: "",
     dayLabel: compact,
     dateLabel: "",
     timeLabel: compact,
     periodLabel: "",
     day: compact
+  };
+};
+
+export const getScheduleWeekMatch = (
+  schedule: string | undefined,
+  weekDays: WeekDayLike[]
+) => {
+  const parsed = parseScheduleValue(schedule);
+  const matchedDay = parsed.dayValue
+    ? weekDays.find((item) => item.value === parsed.dayValue)
+    : undefined;
+
+  return {
+    parsed,
+    matchedDay,
+    actualDate: matchedDay?.date ?? null
   };
 };
